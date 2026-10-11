@@ -166,7 +166,6 @@
             min-height: 120px;
         }
 
-        /* Estilos para los Radio Buttons del tipo de tarea */
         .radio-group {
             display: flex;
             gap: 20px;
@@ -192,7 +191,6 @@
             cursor: pointer;
         }
 
-        /* Animación suave para desplegar el selector de programas */
         #grupo-programa-vinculado {
             display: none;
             animation: fadeInDown 0.3s ease-out forwards;
@@ -252,7 +250,7 @@
             
             <div class="form-group">
                 <label for="logo-cliente">Logo de la Empresa (Formato PNG/JPG)</label>
-                <input type="file" id="logo-cliente" accept="image/png, image/jpeg" required>
+                <input type="file" id="logo-cliente" accept="image/png, image/jpeg">
             </div>
 
             <div class="form-group">
@@ -293,7 +291,6 @@
         <h2 class="panel-titulo">Asignación de Tareas</h2>
         <form id="form-tarea">
             
-            <!-- NUEVO: Selector de Tipo de Tarea -->
             <div class="form-group">
                 <label>Tipo de Función a Delegar</label>
                 <div class="radio-group">
@@ -306,14 +303,11 @@
                 </div>
             </div>
 
-            <!-- Desplegable dinámico (Oculto por defecto) -->
+            <!-- Desplegable dinámico de programas (se llena desde la base de datos) -->
             <div class="form-group" id="grupo-programa-vinculado">
                 <label for="programa-vinculado">Seleccionar Programa Activo</label>
                 <select id="programa-vinculado">
-                    <option value="" disabled selected>Selecciona el cliente/programa correspondiente...</option>
-                    <!-- Estos datos serán inyectados por la Base de Datos en la Fase 3 -->
-                    <option value="id_1">12 Oct - Industrias ACME (Seguridad Industrial)</option>
-                    <option value="id_2">13 Oct - TechCorp (Bases de Datos)</option>
+                    <option value="" disabled selected>Cargando programas...</option>
                 </select>
             </div>
 
@@ -348,16 +342,13 @@
     </div>
 
     <script>
-        // Función para cambiar entre pestañas
         function cambiarFormulario(vistaId) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
-        // Lógica para mostrar/ocultar el selector de programa vinculado
         const radiosTipoTarea = document.querySelectorAll('input[name="tipo-tarea"]');
         const grupoPrograma = document.getElementById('grupo-programa-vinculado');
         const selectPrograma = document.getElementById('programa-vinculado');
@@ -366,30 +357,120 @@
             radio.addEventListener('change', function() {
                 if (this.value === 'vinculada') {
                     grupoPrograma.style.display = 'block';
-                    selectPrograma.required = true; // Se vuelve obligatorio seleccionarlo
+                    selectPrograma.required = true;
                 } else {
                     grupoPrograma.style.display = 'none';
-                    selectPrograma.required = false; // Ya no es obligatorio
-                    selectPrograma.value = ""; // Resetea el valor por si acaso
+                    selectPrograma.required = false;
+                    selectPrograma.value = "";
                 }
             });
         });
 
-        // Simulación de envíos (Fase 3: Conexión a Base de Datos)
-        document.getElementById('form-cliente').addEventListener('submit', function(e) {
+        // Extraer programas activos de la BD para el menú desplegable
+        async function cargarProgramasDropdown() {
+            try {
+                const res = await fetch('/api/clientes');
+                if (!res.ok) throw new Error("Fallo en la red");
+                const clientes = await res.json();
+                
+                selectPrograma.innerHTML = '<option value="" disabled selected>Selecciona el cliente/programa correspondiente...</option>';
+                
+                clientes.forEach(c => {
+                    const fechaObj = new Date(c.fecha_atencion);
+                    const fechaStr = fechaObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                    selectPrograma.innerHTML += `<option value="${c.id}">${fechaStr} - ${c.nombre_cliente} (${c.curso})</option>`;
+                });
+            } catch (error) {
+                console.error("Error cargando programas:", error);
+                selectPrograma.innerHTML = '<option value="" disabled>Error al cargar programas</option>';
+            }
+        }
+
+        // GUARDAR CLIENTE EN BASE DE DATOS
+        document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault();
-            alert("Simulación: Cliente y logo registrados exitosamente.");
-            this.reset();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.textContent = "Guardando...";
+            btn.disabled = true;
+
+            const nuevoCliente = {
+                fecha_atencion: document.getElementById('fecha-cliente').value,
+                logo_url: "COFTAH.png.png", // Temporal hasta integrar almacenamiento de imágenes
+                nombre_cliente: document.getElementById('nombre-cliente').value,
+                lugar_atencion: document.getElementById('lugar-cliente').value,
+                curso: document.getElementById('curso-cliente').value,
+                facilitador: document.getElementById('facilitador-cliente').value,
+                estatus: document.getElementById('estatus-cliente').value
+            };
+
+            try {
+                const res = await fetch('/api/clientes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevoCliente)
+                });
+
+                if (res.ok) {
+                    alert("✅ Cliente guardado exitosamente.");
+                    this.reset();
+                    cargarProgramasDropdown(); // Refrescar el dropdown de tareas
+                } else {
+                    alert("Error guardando el cliente.");
+                }
+            } catch (error) {
+                alert("Error de conexión al guardar.");
+            } finally {
+                btn.textContent = "Guardar Cliente en Cronograma";
+                btn.disabled = false;
+            }
         });
 
-        document.getElementById('form-tarea').addEventListener('submit', function(e) {
+        // GUARDAR TAREA EN BASE DE DATOS
+        document.getElementById('form-tarea').addEventListener('submit', async function(e) {
             e.preventDefault();
-            alert("Simulación: Función delegada exitosamente.");
-            this.reset();
-            // Asegurar que el selector se oculte tras enviar una tarea
-            grupoPrograma.style.display = 'none';
-            selectPrograma.required = false;
+            const btn = this.querySelector('button[type="submit"]');
+            btn.textContent = "Delegando...";
+            btn.disabled = true;
+
+            const tipoTarea = document.querySelector('input[name="tipo-tarea"]:checked').value;
+            
+            const nuevaTarea = {
+                tipo_tarea: tipoTarea,
+                programa_id: tipoTarea === 'vinculada' ? selectPrograma.value : null,
+                responsable: document.getElementById('responsable-tarea').value,
+                descripcion: document.getElementById('descripcion-tarea').value,
+                fecha_limite: document.getElementById('fecha-tarea').value,
+                urgencia: document.getElementById('urgencia-tarea').value
+            };
+
+            try {
+                const res = await fetch('/api/tareas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nuevaTarea)
+                });
+
+                if (res.ok) {
+                    alert("✅ Función delegada exitosamente.");
+                    this.reset();
+                    grupoPrograma.style.display = 'none';
+                    selectPrograma.required = false;
+                    
+                    // Asegurar que el radio vuelva a 'aislada'
+                    document.querySelector('input[name="tipo-tarea"][value="aislada"]').checked = true;
+                } else {
+                    alert("Error delegando la función.");
+                }
+            } catch (error) {
+                alert("Error de conexión al delegar la función.");
+            } finally {
+                btn.textContent = "Delegar Función al Equipo";
+                btn.disabled = false;
+            }
         });
+
+        // Inicializar dropdown al abrir el panel
+        cargarProgramasDropdown();
     </script>
 </body>
 </html>
