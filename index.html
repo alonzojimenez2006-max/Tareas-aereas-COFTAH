@@ -32,16 +32,15 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding: 20px;
+            padding: 15px; /* Reducido para más espacio */
         }
 
-        /* Header Corporativo con Logo */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
+            margin-bottom: 15px; /* Reducido para más espacio */
+            padding-bottom: 10px;
             border-bottom: 2px solid var(--bg-paneles);
         }
 
@@ -54,13 +53,34 @@
         .brand img {
             height: 45px;
             width: auto;
-            /* El logo ya no se filtra a blanco si prefieres los colores originales */
         }
 
-        .brand h1 {
-            font-size: 1.5rem;
+        .titulos {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .titulos h1 {
+            font-size: 1.4rem;
             font-weight: 600;
             letter-spacing: 1px;
+            margin-bottom: 2px;
+        }
+
+        /* NUEVO: Subtítulo dinámico en amarillo */
+        #subtitulo-vista {
+            font-size: 1rem;
+            color: var(--acento-amarillo);
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .header-derecha {
+            display: flex;
+            align-items: center;
+            gap: 20px;
         }
 
         .reloj {
@@ -70,59 +90,91 @@
             font-family: monospace;
         }
 
-        /* Navegación por Pestañas y Filtro */
-        .controles-superiores {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+        /* NUEVO: Contenedor y Botón Hamburguesa */
+        .menu-container {
+            position: relative;
         }
 
-        .tab-btn {
+        .btn-hamburguesa {
+            background: none;
+            border: none;
+            color: var(--texto-principal);
+            font-size: 2.2rem;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            padding: 0 10px;
+        }
+
+        .btn-hamburguesa:hover, .btn-hamburguesa:focus {
+            color: var(--acento-amarillo);
+            outline: none;
+        }
+
+        /* NUEVO: Menú desplegable */
+        .menu-desplegable {
+            display: none; 
+            position: absolute;
+            top: 110%;
+            right: 0;
             background-color: var(--bg-paneles);
+            border: 1px solid var(--texto-secundario);
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 1000;
+            min-width: 260px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .menu-desplegable.show {
+            display: flex;
+        }
+
+        .menu-item {
+            background-color: transparent;
             color: var(--texto-secundario);
-            border: 2px solid transparent;
-            padding: 12px 25px;
+            border: none;
+            padding: 12px;
+            text-align: left;
             font-size: 1.1rem;
             font-weight: bold;
-            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
+            border-radius: 5px;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
-        .tab-btn:hover {
-            color: var(--texto-principal);
+        .menu-item:hover {
             background-color: rgba(255, 215, 0, 0.1);
+            color: var(--texto-principal);
         }
 
-        .tab-btn.active {
+        .menu-item.active {
             background-color: rgba(255, 215, 0, 0.15);
             color: var(--acento-amarillo);
-            border: 2px solid var(--acento-amarillo);
+            border-left: 4px solid var(--acento-amarillo);
         }
 
         .dropdown-dias {
-            display: none; 
-            background-color: var(--bg-paneles);
+            display: none; /* Oculto por defecto, se muestra en JS */
+            width: 100%;
+            background-color: var(--bg-principal);
             color: var(--texto-principal);
-            border: 2px solid var(--texto-secundario);
-            padding: 12px 20px;
-            font-size: 1.1rem;
+            border: 1px solid var(--texto-secundario);
+            padding: 10px;
+            font-size: 1rem;
             font-weight: bold;
-            border-radius: 8px;
+            border-radius: 5px;
             cursor: pointer;
             outline: none;
-            transition: all 0.3s ease;
+            margin-top: 5px;
         }
 
-        .dropdown-dias:focus, .dropdown-dias:hover {
+        .dropdown-dias:focus {
             border-color: var(--acento-amarillo);
-            color: var(--acento-amarillo);
         }
 
-        /* Contenedores de Vistas */
         .vista {
             display: none; 
             background-color: var(--bg-paneles);
@@ -138,7 +190,6 @@
             display: flex; 
         }
 
-        /* Grids */
         .fila-header, .fila-item {
             display: grid;
             gap: 15px;
@@ -147,13 +198,8 @@
             border-radius: 8px;
         }
 
-        .grid-clientes {
-            grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px;
-        }
-        
-        .grid-tareas {
-            grid-template-columns: 1fr 4fr 150px 150px 120px;
-        }
+        .grid-clientes { grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px; }
+        .grid-tareas { grid-template-columns: 1fr 4fr 150px 150px 120px; }
 
         .fila-header {
             font-size: 0.9rem;
@@ -198,6 +244,8 @@
         .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
         .estatus-critica { background-color: var(--urgencia-critica); color: #fff; animation: parpadeo 1.5s infinite; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
+        .estatus-programado { background-color: var(--urgencia-baja); color: #000; }
+        .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
 
         @keyframes destelloVerde {
             0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); }
@@ -217,7 +265,6 @@
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--acento-amarillo); }
-
     </style>
 </head>
 <body>
@@ -225,19 +272,31 @@
     <header>
         <div class="brand">
             <img src="COFTAH.png.png" alt="Logo de COFTAH">
-            <h1>COFTAH / TABLERO DE OPERACIONES</h1>
+            <div class="titulos">
+                <h1>COFTAH / TABLERO DE OPERACIONES</h1>
+                <div id="subtitulo-vista">CRONOGRAMA DE CLIENTES</div>
+            </div>
         </div>
-        <div class="reloj" id="reloj-digital">00:00:00</div>
+        
+        <div class="header-derecha">
+            <div class="reloj" id="reloj-digital">00:00:00</div>
+            
+            <div class="menu-container">
+                <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
+                
+                <div id="menu-desplegable" class="menu-desplegable">
+                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
+                    <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
+                    
+                    <!-- El select de días ahora vive dentro del menú -->
+                    <select id="filtro-dias" class="dropdown-dias" onchange="renderizarTareas()">
+                    </select>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <div class="controles-superiores">
-        <button class="tab-btn active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
-        <button class="tab-btn" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
-        
-        <select id="filtro-dias" class="dropdown-dias" onchange="renderizarTareas()">
-            <!-- Opciones generadas por JavaScript -->
-        </select>
-    </div>
+    <!-- Se eliminó el div <div class="controles-superiores"> para ahorrar espacio -->
 
     <!-- Vista 1: Clientes -->
     <div class="vista active" id="vista-clientes">
@@ -272,9 +331,28 @@
             document.getElementById('reloj-digital').textContent = ahora.toLocaleTimeString('en-US', { hour12: true });
         }, 1000);
 
+        // Funciones del Menú Hamburguesa
+        function toggleMenu() {
+            document.getElementById('menu-desplegable').classList.toggle('show');
+        }
+
+        // Cerrar el menú si se hace clic fuera de él
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('menu-desplegable');
+            const boton = document.getElementById('btn-menu');
+            if (!menu.contains(event.target) && event.target !== boton) {
+                menu.classList.remove('show');
+            }
+        });
+
         let clientes = [];
         let tareas = [];
-        let tareasAvisadas = new Set();
+        
+        // Memorias para la voz automática (Se mantiene el código intacto)
+        let tareasAvisadas30 = new Set(); 
+        let clientesConocidos = new Set(); 
+        let tareasConocidas = new Set();   
+        let esPrimeraCarga = true;         
 
         async function cargarDatos() {
             try {
@@ -292,6 +370,29 @@
                         horaLimite: fechaObj.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })
                     };
                 });
+
+                if (esPrimeraCarga) {
+                    clientes.forEach(c => clientesConocidos.add(c.id));
+                    tareas.forEach(t => tareasConocidas.add(t.id));
+                    esPrimeraCarga = false;
+                } else {
+                    clientes.forEach(c => {
+                        if (!clientesConocidos.has(c.id)) {
+                            hablar(`Atención equipo. Nuevo programa registrado: ${c.nombre_cliente}. Curso de ${c.curso}.`);
+                            clientesConocidos.add(c.id);
+                        }
+                    });
+
+                    tareas.forEach(t => {
+                        if (!tareasConocidas.has(t.id)) {
+                            let msjNuevaTarea = t.nombre_cliente 
+                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
+                            hablar(msjNuevaTarea);
+                            tareasConocidas.add(t.id);
+                        }
+                    });
+                }
 
                 inicializarFiltroFechas();
                 renderizarClientes();
@@ -317,19 +418,29 @@
         }
 
         function cambiarVista(vistaId) {
+            // Quitar clase active de todo
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
             
+            // Activar la vista seleccionada
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
 
+            // Configurar el subtítulo y el selector de fechas
+            const subtitulo = document.getElementById('subtitulo-vista');
             const selectDias = document.getElementById('filtro-dias');
+
             if (vistaId === 'tareas') {
-                selectDias.style.display = 'inline-block';
+                subtitulo.textContent = 'DELEGACIÓN DE FUNCIONES';
+                selectDias.style.display = 'block'; // Muestra el selector dentro del menú
                 renderizarTareas(); 
             } else {
-                selectDias.style.display = 'none';
+                subtitulo.textContent = 'CRONOGRAMA DE CLIENTES';
+                selectDias.style.display = 'none'; // Oculta el selector
             }
+
+            // Ocultar el menú automáticamente después de elegir
+            document.getElementById('menu-desplegable').classList.remove('show');
         }
 
         function renderizarClientes() {
@@ -367,7 +478,6 @@
                 let filaClase = t.id === idAnimar ? "animacion-completado" : "";
                 let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
 
-                // NUEVO: Formateo visual del responsable (Aislada vs Vinculada)
                 let infoResponsable = t.responsable;
                 if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
                     infoResponsable = `${t.responsable} <br><span style="color: #64FFDA; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: inline-block;">Para: ${t.nombre_cliente}</span>`;
@@ -406,17 +516,16 @@
                 const tiempoRestante = limite.getTime() - ahora.getTime();
 
                 if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30)) {
-                    if (!tareasAvisadas.has(t.id)) {
+                    if (!tareasAvisadas30.has(t.id)) {
                         const minRestantes = Math.ceil(tiempoRestante / 60000);
                         let txtMinutos = minRestantes === 1 ? '1 minuto' : `${minRestantes} minutos`;
                         
-                        // NUEVO: Presión personalizada si es para un cliente
                         let mensajePresion = t.nombre_cliente 
                             ? `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función del cliente ${t.nombre_cliente}: ${t.descripcion}`
                             : `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función: ${t.descripcion}`;
                         
                         hablar(mensajePresion);
-                        tareasAvisadas.add(t.id);
+                        tareasAvisadas30.add(t.id);
                     }
                 }
             });
@@ -437,7 +546,6 @@
                     
                     tareaObj.completada = true;
                     
-                    // NUEVO: Mensaje de éxito leyendo la tarea y el cliente
                     let mensajeExito = tareaObj.nombre_cliente
                         ? `${tareaObj.responsable} completó la tarea para el cliente ${tareaObj.nombre_cliente}. Tarea finalizada: ${tareaObj.descripcion}.`
                         : `${tareaObj.responsable} completó la tarea. Tarea finalizada: ${tareaObj.descripcion}.`;
@@ -451,8 +559,8 @@
         }
 
         cargarDatos();
-        setInterval(cargarDatos, 15000);
-        setInterval(verificarTiempos, 10000);
+        setInterval(cargarDatos, 15000);       
+        setInterval(verificarTiempos, 10000);  
         
     </script>
 </body>
