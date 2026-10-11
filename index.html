@@ -274,19 +274,19 @@
 
         let clientes = [];
         let tareas = [];
+        
+        // NUEVO: Memoria para no repetir la alerta del 30% como un disco rayado
+        let tareasAvisadas = new Set();
 
         // Función que consulta a la Base de Datos (Neon) a través de Vercel
         async function cargarDatos() {
             try {
-                // Fetch a la ruta API de clientes en Vercel
                 const resClientes = await fetch('/api/clientes');
                 clientes = await resClientes.json();
                 
-                // Fetch a la ruta API de tareas en Vercel
                 const resTareas = await fetch('/api/tareas');
                 const tareasDB = await resTareas.json();
                 
-                // Adaptamos la fecha límite para el formato de lectura amigable
                 tareas = tareasDB.map(t => {
                     const fechaObj = new Date(t.fecha_limite);
                     return {
@@ -299,7 +299,6 @@
                 inicializarFiltroFechas();
                 renderizarClientes();
                 
-                // Si la vista de tareas está activa, re-renderizamos para mostrar los cambios
                 if(document.getElementById('vista-tareas').classList.contains('active')) {
                     renderizarTareas();
                 }
@@ -310,14 +309,13 @@
 
         function inicializarFiltroFechas() {
             const selectDias = document.getElementById('filtro-dias');
-            const valorActual = selectDias.value; // Guardar selección actual
+            const valorActual = selectDias.value; 
             const fechasUnicas = [...new Set(tareas.map(t => t.fechaAsignada))];
             
             selectDias.innerHTML = fechasUnicas.map(fecha => 
                 `<option value="${fecha}">${fecha}</option>`
             ).join('');
             
-            // Restaurar selección si aún existe
             if(fechasUnicas.includes(valorActual)) selectDias.value = valorActual;
         }
 
@@ -384,6 +382,7 @@
             });
         }
 
+        // MOTOR DE VOZ
         function hablar(texto) {
             if ('speechSynthesis' in window) {
                 const mensaje = new SpeechSynthesisUtterance(texto);
@@ -392,16 +391,41 @@
             }
         }
 
-        async function marcarCompletada(id, responsable) {
-            // 1. Añadimos la ventana de confirmación para evitar clics por error
-            const confirmacion = confirm(`¿Confirmas que la función asignada a ${responsable} fue realizada exitosamente?`);
+        // NUEVO: Revisa constantemente si alguna tarea entró en su último 30% de tiempo
+        function verificarTiempos() {
+            const ahora = new Date();
             
-            // 2. Si el usuario cancela, detenemos la función aquí mismo
-            if (!confirmacion) {
-                return; 
-            }
+            tareas.forEach(t => {
+                if (t.completada || !t.created_at) return; 
 
-            // 3. Si acepta, procede a marcarla
+                const limite = new Date(t.fecha_limite);
+                const inicio = new Date(t.created_at); 
+
+                const tiempoTotal = limite.getTime() - inicio.getTime();
+                const tiempoRestante = limite.getTime() - ahora.getTime();
+
+                // Si queda el 30% o menos del tiempo y aún no ha vencido
+                if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30)) {
+                    // Verificamos en el Set para asegurarnos de que la voz hable solo UNA vez por tarea
+                    if (!tareasAvisadas.has(t.id)) {
+                        const minRestantes = Math.ceil(tiempoRestante / 60000);
+                        let txtMinutos = minRestantes === 1 ? '1 minuto' : `${minRestantes} minutos`;
+                        
+                        // Mensaje de presión al equipo
+                        hablar(`Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función: ${t.descripcion}`);
+                        
+                        tareasAvisadas.add(t.id);
+                    }
+                }
+            });
+        }
+
+        // NUEVO: Mensaje de voz personalizado y con nombre completo de la tarea
+        async function marcarCompletada(id, responsable) {
+            // Ventana de confirmación (anti-errores)
+            const confirmacion = confirm(`¿Confirmas que la función asignada a ${responsable} fue realizada exitosamente?`);
+            if (!confirmacion) return; 
+
             const tareaObj = tareas.find(t => t.id === id);
             if (tareaObj && !tareaObj.completada) {
                 try {
@@ -412,7 +436,10 @@
                     });
                     
                     tareaObj.completada = true;
-                    hablar(`Tarea completada por ${responsable}`);
+                    
+                    // Orden de voz con todos los detalles
+                    hablar(`${tareaObj.responsable} completó la tarea. ${tareaObj.descripcion}.`);
+                    
                     renderizarTareas(id); 
                 } catch (error) {
                     console.error("Error al completar la tarea:", error);
@@ -420,11 +447,11 @@
             }
         }
 
-        // Ejecuta la primera carga al abrir la página
+        // Cargas iniciales e intervalos
         cargarDatos();
         
-        // Auto-refresca la base de datos cada 15 segundos (15000 ms)
-        setInterval(cargarDatos, 15000);
+        setInterval(cargarDatos, 15000);       // Refresca la BD cada 15 segundos
+        setInterval(verificarTiempos, 10000);  // Revisa los tiempos de las alertas cada 10 segundos
         
     </script>
 </body>
