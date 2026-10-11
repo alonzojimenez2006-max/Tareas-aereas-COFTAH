@@ -54,8 +54,7 @@
         .brand img {
             height: 45px;
             width: auto;
-            /* Si prefieres que el logo mantenga sus colores azul y amarillo originales, borra la siguiente línea: */
-            filter: grayscale(100%) brightness(200%);
+            /* El logo ya no se filtra a blanco si prefieres los colores originales */
         }
 
         .brand h1 {
@@ -225,7 +224,6 @@
 
     <header>
         <div class="brand">
-            <!-- Archivo actualizado al nombre exacto -->
             <img src="COFTAH.png.png" alt="Logo de COFTAH">
             <h1>COFTAH / TABLERO DE OPERACIONES</h1>
         </div>
@@ -260,7 +258,7 @@
         <div class="fila-header grid-tareas">
             <div>Responsable</div>
             <div>Tarea Asignada</div>
-            <div>Hora</div>
+            <div>Hora Límite</div>
             <div>Tiempo Restante</div>
             <div>Estatus</div>
         </div>
@@ -268,34 +266,59 @@
     </div>
 
     <script>
-        // Reloj en tiempo real (Formato 12 horas AM/PM)
+        // Reloj en tiempo real
         setInterval(() => {
             const ahora = new Date();
             document.getElementById('reloj-digital').textContent = ahora.toLocaleTimeString('en-US', { hour12: true });
         }, 1000);
 
-        // Datos: Clientes (Horas ajustadas al formato 12h)
-        const clientes = [
-            { dia: "12 Oct - 2:00 PM", cliente: "Industrias ACME", lugar: "Sala A", curso: "Seguridad Industrial", facilitador: "Goretty M.", estatus: "importante", estatusTexto: "En 2 horas" },
-            { dia: "13 Oct - 9:00 AM", cliente: "TechCorp", lugar: "Remoto", curso: "Bases de Datos", facilitador: "Alonzo J.", estatus: "rutina", estatusTexto: "Programado" }
-        ];
+        let clientes = [];
+        let tareas = [];
 
-        // Datos: Tareas (Horas ajustadas al formato 12h)
-        let tareas = [
-            { id: 1, fechaAsignada: "Lunes 12 de Octubre", responsable: "Carlos", descripcion: "Actualizar base de datos de inventario y revisar registros.", horaLimite: "3:00 PM", estatus: "critica", completada: false },
-            { id: 2, fechaAsignada: "Lunes 12 de Octubre", responsable: "José L.", descripcion: "Preparar servidores para despliegue web.", horaLimite: "5:00 PM", estatus: "alta", completada: false },
-            { id: 3, fechaAsignada: "Martes 13 de Octubre", responsable: "Esteban O.", descripcion: "Revisión de UI/UX en el catálogo de productos.", horaLimite: "10:00 AM", estatus: "urgente", completada: false },
-            { id: 4, fechaAsignada: "Martes 13 de Octubre", responsable: "Carlos", descripcion: "Reunión de planificación semanal.", horaLimite: "2:00 PM", estatus: "rutina", completada: false },
-            { id: 5, fechaAsignada: "Miércoles 14 de Octubre", responsable: "Alonzo J.", descripcion: "Migración de base de datos a producción.", horaLimite: "9:00 AM", estatus: "importante", completada: false }
-        ];
+        // Función que consulta a la Base de Datos (Neon) a través de Vercel
+        async function cargarDatos() {
+            try {
+                // Fetch a la ruta API de clientes en Vercel
+                const resClientes = await fetch('/api/clientes');
+                clientes = await resClientes.json();
+                
+                // Fetch a la ruta API de tareas en Vercel
+                const resTareas = await fetch('/api/tareas');
+                const tareasDB = await resTareas.json();
+                
+                // Adaptamos la fecha límite para el formato de lectura amigable
+                tareas = tareasDB.map(t => {
+                    const fechaObj = new Date(t.fecha_limite);
+                    return {
+                        ...t,
+                        fechaAsignada: fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
+                        horaLimite: fechaObj.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })
+                    };
+                });
+
+                inicializarFiltroFechas();
+                renderizarClientes();
+                
+                // Si la vista de tareas está activa, re-renderizamos para mostrar los cambios
+                if(document.getElementById('vista-tareas').classList.contains('active')) {
+                    renderizarTareas();
+                }
+            } catch (error) {
+                console.error("Error conectando con la base de datos:", error);
+            }
+        }
 
         function inicializarFiltroFechas() {
             const selectDias = document.getElementById('filtro-dias');
+            const valorActual = selectDias.value; // Guardar selección actual
             const fechasUnicas = [...new Set(tareas.map(t => t.fechaAsignada))];
             
             selectDias.innerHTML = fechasUnicas.map(fecha => 
                 `<option value="${fecha}">${fecha}</option>`
             ).join('');
+            
+            // Restaurar selección si aún existe
+            if(fechasUnicas.includes(valorActual)) selectDias.value = valorActual;
         }
 
         function cambiarVista(vistaId) {
@@ -306,7 +329,6 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
 
             const selectDias = document.getElementById('filtro-dias');
-            
             if (vistaId === 'tareas') {
                 selectDias.style.display = 'inline-block';
                 renderizarTareas(); 
@@ -317,41 +339,41 @@
 
         function renderizarClientes() {
             const contenedor = document.getElementById('lista-clientes');
-            contenedor.innerHTML = clientes.map(c => `
+            contenedor.innerHTML = clientes.map(c => {
+                const fechaFormat = new Date(c.fecha_atencion).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit', hour12: true });
+                return `
                 <div class="fila-item grid-clientes">
-                    <div style="font-weight: bold; color: var(--acento-amarillo);">${c.dia}</div>
-                    <div><div class="logo-cliente"></div></div>
-                    <div style="font-weight: bold;">${c.cliente}</div>
-                    <div>${c.lugar}</div>
+                    <div style="font-weight: bold; color: var(--acento-amarillo);">${fechaFormat}</div>
+                    <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'" alt="Logo"></div>
+                    <div style="font-weight: bold;">${c.nombre_cliente}</div>
+                    <div>${c.lugar_atencion}</div>
                     <div>${c.curso}</div>
                     <div>${c.facilitador}</div>
-                    <div><span class="badge estatus-${c.estatus}">${c.estatusTexto}</span></div>
+                    <div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function renderizarTareas(idAnimar = null) {
             const contenedor = document.getElementById('lista-tareas');
             const fechaSeleccionada = document.getElementById('filtro-dias').value;
-            
             contenedor.innerHTML = ''; 
 
             const tareasDelDia = tareas.filter(t => t.fechaAsignada === fechaSeleccionada);
-            const tareasOrdenadas = [...tareasDelDia].sort((a, b) => a.completada - b.completada);
-
-            if (tareasOrdenadas.length === 0) {
+            
+            if (tareasDelDia.length === 0) {
                 contenedor.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--texto-secundario);">No hay tareas asignadas para este día.</div>`;
                 return;
             }
 
-            tareasOrdenadas.forEach(t => {
-                let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.estatus}`;
-                let badgeText = t.completada ? "COMPLETADA" : t.estatus.toUpperCase();
+            tareasDelDia.forEach(t => {
+                let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.urgencia}`;
+                let badgeText = t.completada ? "COMPLETADA" : t.urgencia.toUpperCase();
                 let filaClase = t.id === idAnimar ? "animacion-completado" : "";
                 let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
 
                 contenedor.innerHTML += `
-                    <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id})">
+                    <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id}, '${t.responsable}')">
                         <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${t.responsable}</div>
                         <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
                         <div style="font-family: monospace; font-size: 1.1rem;">${t.horaLimite}</div>
@@ -366,22 +388,35 @@
             if ('speechSynthesis' in window) {
                 const mensaje = new SpeechSynthesisUtterance(texto);
                 mensaje.lang = 'es-ES';
-                mensaje.rate = 1.0;
                 window.speechSynthesis.speak(mensaje);
             }
         }
 
-        function marcarCompletada(id) {
-            const index = tareas.findIndex(t => t.id === id);
-            if (index !== -1 && !tareas[index].completada) {
-                tareas[index].completada = true;
-                hablar(`Tarea completada por ${tareas[index].responsable}`);
-                renderizarTareas(id); 
+        async function marcarCompletada(id, responsable) {
+            const tareaObj = tareas.find(t => t.id === id);
+            if (tareaObj && !tareaObj.completada) {
+                try {
+                    // Enviar orden de completado a la Base de Datos a través de Vercel
+                    await fetch('/api/tareas', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    });
+                    
+                    tareaObj.completada = true;
+                    hablar(`Tarea completada por ${responsable}`);
+                    renderizarTareas(id); 
+                } catch (error) {
+                    console.error("Error al completar la tarea:", error);
+                }
             }
         }
 
-        inicializarFiltroFechas();
-        renderizarClientes();
+        // Ejecuta la primera carga al abrir la página
+        cargarDatos();
+        
+        // Auto-refresca la base de datos cada 15 segundos (15000 ms)
+        setInterval(cargarDatos, 15000);
         
     </script>
 </body>
