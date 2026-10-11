@@ -274,11 +274,8 @@
 
         let clientes = [];
         let tareas = [];
-        
-        // NUEVO: Memoria para no repetir la alerta del 30% como un disco rayado
         let tareasAvisadas = new Set();
 
-        // Función que consulta a la Base de Datos (Neon) a través de Vercel
         async function cargarDatos() {
             try {
                 const resClientes = await fetch('/api/clientes');
@@ -370,9 +367,15 @@
                 let filaClase = t.id === idAnimar ? "animacion-completado" : "";
                 let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
 
+                // NUEVO: Formateo visual del responsable (Aislada vs Vinculada)
+                let infoResponsable = t.responsable;
+                if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
+                    infoResponsable = `${t.responsable} <br><span style="color: #64FFDA; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: inline-block;">Para: ${t.nombre_cliente}</span>`;
+                }
+
                 contenedor.innerHTML += `
                     <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id}, '${t.responsable}')">
-                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${t.responsable}</div>
+                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${infoResponsable}</div>
                         <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
                         <div style="font-family: monospace; font-size: 1.1rem;">${t.horaLimite}</div>
                         <div>${t.completada ? '--' : 'Pendiente'}</div>
@@ -382,7 +385,6 @@
             });
         }
 
-        // MOTOR DE VOZ
         function hablar(texto) {
             if ('speechSynthesis' in window) {
                 const mensaje = new SpeechSynthesisUtterance(texto);
@@ -391,7 +393,6 @@
             }
         }
 
-        // NUEVO: Revisa constantemente si alguna tarea entró en su último 30% de tiempo
         function verificarTiempos() {
             const ahora = new Date();
             
@@ -404,25 +405,24 @@
                 const tiempoTotal = limite.getTime() - inicio.getTime();
                 const tiempoRestante = limite.getTime() - ahora.getTime();
 
-                // Si queda el 30% o menos del tiempo y aún no ha vencido
                 if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30)) {
-                    // Verificamos en el Set para asegurarnos de que la voz hable solo UNA vez por tarea
                     if (!tareasAvisadas.has(t.id)) {
                         const minRestantes = Math.ceil(tiempoRestante / 60000);
                         let txtMinutos = minRestantes === 1 ? '1 minuto' : `${minRestantes} minutos`;
                         
-                        // Mensaje de presión al equipo
-                        hablar(`Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función: ${t.descripcion}`);
+                        // NUEVO: Presión personalizada si es para un cliente
+                        let mensajePresion = t.nombre_cliente 
+                            ? `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función del cliente ${t.nombre_cliente}: ${t.descripcion}`
+                            : `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función: ${t.descripcion}`;
                         
+                        hablar(mensajePresion);
                         tareasAvisadas.add(t.id);
                     }
                 }
             });
         }
 
-        // NUEVO: Mensaje de voz personalizado y con nombre completo de la tarea
         async function marcarCompletada(id, responsable) {
-            // Ventana de confirmación (anti-errores)
             const confirmacion = confirm(`¿Confirmas que la función asignada a ${responsable} fue realizada exitosamente?`);
             if (!confirmacion) return; 
 
@@ -437,9 +437,12 @@
                     
                     tareaObj.completada = true;
                     
-                    // Orden de voz con todos los detalles
-                    hablar(`${tareaObj.responsable} completó la tarea. ${tareaObj.descripcion}.`);
+                    // NUEVO: Mensaje de éxito leyendo la tarea y el cliente
+                    let mensajeExito = tareaObj.nombre_cliente
+                        ? `${tareaObj.responsable} completó la tarea para el cliente ${tareaObj.nombre_cliente}. Tarea finalizada: ${tareaObj.descripcion}.`
+                        : `${tareaObj.responsable} completó la tarea. Tarea finalizada: ${tareaObj.descripcion}.`;
                     
+                    hablar(mensajeExito);
                     renderizarTareas(id); 
                 } catch (error) {
                     console.error("Error al completar la tarea:", error);
@@ -447,11 +450,9 @@
             }
         }
 
-        // Cargas iniciales e intervalos
         cargarDatos();
-        
-        setInterval(cargarDatos, 15000);       // Refresca la BD cada 15 segundos
-        setInterval(verificarTiempos, 10000);  // Revisa los tiempos de las alertas cada 10 segundos
+        setInterval(cargarDatos, 15000);
+        setInterval(verificarTiempos, 10000);
         
     </script>
 </body>
