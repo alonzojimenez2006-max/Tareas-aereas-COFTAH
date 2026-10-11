@@ -393,10 +393,18 @@
         }
 
         async function marcarCompletada(id, responsable) {
+            // 1. Añadimos la ventana de confirmación para evitar clics por error
+            const confirmacion = confirm(`¿Confirmas que la función asignada a ${responsable} fue realizada exitosamente?`);
+            
+            // 2. Si el usuario cancela, detenemos la función aquí mismo
+            if (!confirmacion) {
+                return; 
+            }
+
+            // 3. Si acepta, procede a marcarla
             const tareaObj = tareas.find(t => t.id === id);
             if (tareaObj && !tareaObj.completada) {
                 try {
-                    // Enviar orden de completado a la Base de Datos a través de Vercel
                     await fetch('/api/tareas', {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
