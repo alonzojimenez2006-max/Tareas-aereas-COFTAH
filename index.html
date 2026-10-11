@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard COFTAH</title>
+    <style>
+        :root {
+            --bg-principal: #0A192F; 
+            --bg-paneles: #112240; 
+            --texto-principal: #FFFFFF; 
+            --texto-secundario: #8892B0; 
+            --acento-amarillo: #FFD700; 
+            --urgencia-baja: #64FFDA; 
+            --urgencia-media: #FFD700; 
+            --urgencia-alta: #FF8C00; 
+            --urgencia-critica: #FF3366; 
+            --completado: #2E8B57; 
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: var(--texto-principal);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        /* Header Corporativo con Logo */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-paneles);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand img {
+            height: 45px;
+            width: auto;
+            /* Si prefieres que el logo mantenga sus colores azul y amarillo originales, borra la siguiente línea: */
+            filter: grayscale(100%) brightness(200%);
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .reloj {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--acento-amarillo);
+            font-family: monospace;
+        }
+
+        /* Navegación por Pestañas y Filtro */
+        .controles-superiores {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            background-color: var(--bg-paneles);
+            color: var(--texto-secundario);
+            border: 2px solid transparent;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tab-btn:hover {
+            color: var(--texto-principal);
+            background-color: rgba(255, 215, 0, 0.1);
+        }
+
+        .tab-btn.active {
+            background-color: rgba(255, 215, 0, 0.15);
+            color: var(--acento-amarillo);
+            border: 2px solid var(--acento-amarillo);
+        }
+
+        .dropdown-dias {
+            display: none; 
+            background-color: var(--bg-paneles);
+            color: var(--texto-principal);
+            border: 2px solid var(--texto-secundario);
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-dias:focus, .dropdown-dias:hover {
+            border-color: var(--acento-amarillo);
+            color: var(--acento-amarillo);
+        }
+
+        /* Contenedores de Vistas */
+        .vista {
+            display: none; 
+            background-color: var(--bg-paneles);
+            flex: 1;
+            border-radius: 12px;
+            padding: 20px;
+            flex-direction: column;
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        .vista.active {
+            display: flex; 
+        }
+
+        /* Grids */
+        .fila-header, .fila-item {
+            display: grid;
+            gap: 15px;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 8px;
+        }
+
+        .grid-clientes {
+            grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px;
+        }
+        
+        .grid-tareas {
+            grid-template-columns: 1fr 4fr 150px 150px 120px;
+        }
+
+        .fila-header {
+            font-size: 0.9rem;
+            color: var(--texto-secundario);
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 10px;
+        }
+
+        .fila-item {
+            background-color: rgba(255, 255, 255, 0.03);
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .fila-item:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-2px);
+        }
+
+        .logo-cliente {
+            width: 35px;
+            height: 35px;
+            background-color: white;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            text-align: center;
+            display: inline-block;
+            width: 100%;
+        }
+
+        .estatus-rutina { background-color: var(--urgencia-baja); color: #000; }
+        .estatus-importante { background-color: var(--urgencia-media); color: #000; }
+        .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
+        .estatus-critica { background-color: var(--urgencia-critica); color: #fff; animation: parpadeo 1.5s infinite; }
+        .estatus-completado { background-color: var(--completado); color: #fff; }
+
+        @keyframes destelloVerde {
+            0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); }
+            50% { background-color: var(--completado); transform: scale(1.01); }
+            100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); }
+        }
+        .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
+        @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .contenedor-lista {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-paneles); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--acento-amarillo); }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <!-- Archivo actualizado al nombre exacto -->
+            <img src="COFTAH.png.png" alt="Logo de COFTAH">
+            <h1>COFTAH / TABLERO DE OPERACIONES</h1>
+        </div>
+        <div class="reloj" id="reloj-digital">00:00:00</div>
+    </header>
+
+    <div class="controles-superiores">
+        <button class="tab-btn active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
+        <button class="tab-btn" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
+        
+        <select id="filtro-dias" class="dropdown-dias" onchange="renderizarTareas()">
+            <!-- Opciones generadas por JavaScript -->
+        </select>
+    </div>
+
+    <!-- Vista 1: Clientes -->
+    <div class="vista active" id="vista-clientes">
+        <div class="fila-header grid-clientes">
+            <div>Fecha/Hora</div>
+            <div>Logo</div>
+            <div>Cliente</div>
+            <div>Lugar</div>
+            <div>Curso al detal</div>
+            <div>Facilitador</div>
+            <div>Estatus</div>
+        </div>
+        <div class="contenedor-lista" id="lista-clientes"></div>
+    </div>
+
+    <!-- Vista 2: Tareas -->
+    <div class="vista" id="vista-tareas">
+        <div class="fila-header grid-tareas">
+            <div>Responsable</div>
+            <div>Tarea Asignada</div>
+            <div>Hora</div>
+            <div>Tiempo Restante</div>
+            <div>Estatus</div>
+        </div>
+        <div class="contenedor-lista" id="lista-tareas"></div>
+    </div>
+
+    <script>
+        // Reloj en tiempo real (Formato 12 horas AM/PM)
+        setInterval(() => {
+            const ahora = new Date();
+            document.getElementById('reloj-digital').textContent = ahora.toLocaleTimeString('en-US', { hour12: true });
+        }, 1000);
+
+        // Datos: Clientes (Horas ajustadas al formato 12h)
+        const clientes = [
+            { dia: "12 Oct - 2:00 PM", cliente: "Industrias ACME", lugar: "Sala A", curso: "Seguridad Industrial", facilitador: "Goretty M.", estatus: "importante", estatusTexto: "En 2 horas" },
+            { dia: "13 Oct - 9:00 AM", cliente: "TechCorp", lugar: "Remoto", curso: "Bases de Datos", facilitador: "Alonzo J.", estatus: "rutina", estatusTexto: "Programado" }
+        ];
+
+        // Datos: Tareas (Horas ajustadas al formato 12h)
+        let tareas = [
+            { id: 1, fechaAsignada: "Lunes 12 de Octubre", responsable: "Carlos", descripcion: "Actualizar base de datos de inventario y revisar registros.", horaLimite: "3:00 PM", estatus: "critica", completada: false },
+            { id: 2, fechaAsignada: "Lunes 12 de Octubre", responsable: "José L.", descripcion: "Preparar servidores para despliegue web.", horaLimite: "5:00 PM", estatus: "alta", completada: false },
+            { id: 3, fechaAsignada: "Martes 13 de Octubre", responsable: "Esteban O.", descripcion: "Revisión de UI/UX en el catálogo de productos.", horaLimite: "10:00 AM", estatus: "urgente", completada: false },
+            { id: 4, fechaAsignada: "Martes 13 de Octubre", responsable: "Carlos", descripcion: "Reunión de planificación semanal.", horaLimite: "2:00 PM", estatus: "rutina", completada: false },
+            { id: 5, fechaAsignada: "Miércoles 14 de Octubre", responsable: "Alonzo J.", descripcion: "Migración de base de datos a producción.", horaLimite: "9:00 AM", estatus: "importante", completada: false }
+        ];
+
+        function inicializarFiltroFechas() {
+            const selectDias = document.getElementById('filtro-dias');
+            const fechasUnicas = [...new Set(tareas.map(t => t.fechaAsignada))];
+            
+            selectDias.innerHTML = fechasUnicas.map(fecha => 
+                `<option value="${fecha}">${fecha}</option>`
+            ).join('');
+        }
+
+        function cambiarVista(vistaId) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById(`vista-${vistaId}`).classList.add('active');
+            document.getElementById(`btn-${vistaId}`).classList.add('active');
+
+            const selectDias = document.getElementById('filtro-dias');
+            
+            if (vistaId === 'tareas') {
+                selectDias.style.display = 'inline-block';
+                renderizarTareas(); 
+            } else {
+                selectDias.style.display = 'none';
+            }
+        }
+
+        function renderizarClientes() {
+            const contenedor = document.getElementById('lista-clientes');
+            contenedor.innerHTML = clientes.map(c => `
+                <div class="fila-item grid-clientes">
+                    <div style="font-weight: bold; color: var(--acento-amarillo);">${c.dia}</div>
+                    <div><div class="logo-cliente"></div></div>
+                    <div style="font-weight: bold;">${c.cliente}</div>
+                    <div>${c.lugar}</div>
+                    <div>${c.curso}</div>
+                    <div>${c.facilitador}</div>
+                    <div><span class="badge estatus-${c.estatus}">${c.estatusTexto}</span></div>
+                </div>
+            `).join('');
+        }
+
+        function renderizarTareas(idAnimar = null) {
+            const contenedor = document.getElementById('lista-tareas');
+            const fechaSeleccionada = document.getElementById('filtro-dias').value;
+            
+            contenedor.innerHTML = ''; 
+
+            const tareasDelDia = tareas.filter(t => t.fechaAsignada === fechaSeleccionada);
+            const tareasOrdenadas = [...tareasDelDia].sort((a, b) => a.completada - b.completada);
+
+            if (tareasOrdenadas.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--texto-secundario);">No hay tareas asignadas para este día.</div>`;
+                return;
+            }
+
+            tareasOrdenadas.forEach(t => {
+                let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.estatus}`;
+                let badgeText = t.completada ? "COMPLETADA" : t.estatus.toUpperCase();
+                let filaClase = t.id === idAnimar ? "animacion-completado" : "";
+                let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
+
+                contenedor.innerHTML += `
+                    <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id})">
+                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${t.responsable}</div>
+                        <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
+                        <div style="font-family: monospace; font-size: 1.1rem;">${t.horaLimite}</div>
+                        <div>${t.completada ? '--' : 'Pendiente'}</div>
+                        <div><span class="badge ${badgeClass}">${badgeText}</span></div>
+                    </div>
+                `;
+            });
+        }
+
+        function hablar(texto) {
+            if ('speechSynthesis' in window) {
+                const mensaje = new SpeechSynthesisUtterance(texto);
+                mensaje.lang = 'es-ES';
+                mensaje.rate = 1.0;
+                window.speechSynthesis.speak(mensaje);
+            }
+        }
+
+        function marcarCompletada(id) {
+            const index = tareas.findIndex(t => t.id === id);
+            if (index !== -1 && !tareas[index].completada) {
+                tareas[index].completada = true;
+                hablar(`Tarea completada por ${tareas[index].responsable}`);
+                renderizarTareas(id); 
+            }
+        }
+
+        inicializarFiltroFechas();
+        renderizarClientes();
+        
+    </script>
+</body>
+</html>
