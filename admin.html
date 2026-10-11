@@ -13,6 +13,7 @@
             --acento-amarillo: #FFD700; 
             --input-bg: #1A365D;
             --borde-input: #234E8A;
+            --btn-borrar: #FF3366;
         }
 
         * {
@@ -54,6 +55,7 @@
             display: flex;
             gap: 15px;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
         .tab-btn {
@@ -67,7 +69,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .tab-btn:hover {
@@ -87,7 +88,7 @@
             border-radius: 12px;
             padding: 30px;
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
 
@@ -100,28 +101,14 @@
             text-transform: uppercase;
             color: var(--acento-amarillo);
             margin-bottom: 25px;
-            letter-spacing: 1px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 10px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--texto-secundario);
-            font-size: 0.95rem;
-            font-weight: bold;
-        }
-
-        input[type="text"],
-        input[type="datetime-local"],
-        input[type="file"],
-        select,
-        textarea {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             background-color: var(--input-bg);
@@ -130,101 +117,57 @@
             color: var(--texto-principal);
             font-size: 1rem;
             outline: none;
-            transition: all 0.3s ease;
         }
 
-        input[type="file"] {
-            padding: 9px;
-            cursor: pointer;
-        }
-        
-        input[type="file"]::file-selector-button {
-            background-color: var(--bg-principal);
-            color: var(--texto-principal);
-            border: 1px solid var(--acento-amarillo);
-            padding: 8px 16px;
-            border-radius: 4px;
-            margin-right: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        input[type="file"]::file-selector-button:hover {
-            background-color: var(--acento-amarillo);
-            color: #000;
-        }
-
-        input:focus,
-        select:focus,
-        textarea:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: var(--acento-amarillo);
-            box-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 120px;
         }
 
         .radio-group {
-            display: flex;
-            gap: 20px;
-            background-color: var(--input-bg);
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid var(--borde-input);
+            display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px;
         }
 
-        .radio-opcion {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            color: var(--texto-principal);
-            font-size: 1rem;
-        }
-
-        .radio-opcion input[type="radio"] {
-            accent-color: var(--acento-amarillo);
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-
-        #grupo-programa-vinculado {
-            display: none;
-            animation: fadeInDown 0.3s ease-out forwards;
-        }
-
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        select option[value="rutina"] { background-color: #64FFDA; color: #000; }
-        select option[value="importante"] { background-color: #FFD700; color: #000; }
-        select option[value="urgente"] { background-color: #FF8C00; color: #fff; }
-        select option[value="critica"] { background-color: #FF3366; color: #fff; }
-
-        .btn-submit {
+        /* Estilos para la tabla de gestión */
+        .tabla-gestion {
             width: 100%;
-            padding: 15px;
-            background-color: var(--acento-amarillo);
-            color: #000;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            background-color: var(--input-bg);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .tabla-gestion th, .tabla-gestion td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--borde-input);
+        }
+
+        .tabla-gestion th {
+            background-color: var(--bg-principal);
+            color: var(--acento-amarillo);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .btn-accion {
+            padding: 6px 12px;
             border: none;
-            border-radius: 6px;
-            font-size: 1.1rem;
+            border-radius: 4px;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 15px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: white;
         }
 
-        .btn-submit:hover {
-            background-color: #e6c200;
+        .btn-borrar { background-color: var(--btn-borrar); }
+        .btn-borrar:hover { background-color: #d12650; }
+
+        .btn-submit {
+            width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000;
+            border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
         }
+
+        #grupo-programa-vinculado { display: none; }
     </style>
 </head>
 <body>
@@ -235,110 +178,118 @@
     </header>
 
     <div class="tabs-container">
-        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Nuevo Cliente</button>
-        <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Nueva Función</button>
+        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Cliente</button>
+        <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
+        <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestionar Registros</button>
     </div>
 
-    <!-- Vista 1: Formulario de Clientes -->
+    <!-- VISTA 1: CLIENTES -->
     <div class="vista active" id="vista-clientes">
         <h2 class="panel-titulo">Datos del Cliente</h2>
         <form id="form-cliente">
             <div class="form-group">
-                <label for="fecha-cliente">Fecha y Hora de Atención</label>
+                <label>Fecha y Hora de Atención</label>
                 <input type="datetime-local" id="fecha-cliente" required>
             </div>
-            
             <div class="form-group">
-                <label for="logo-cliente">Logo de la Empresa (Formato PNG/JPG)</label>
-                <input type="file" id="logo-cliente" accept="image/png, image/jpeg">
+                <label>Nombre del Cliente / Empresa</label>
+                <input type="text" id="nombre-cliente" required>
             </div>
-
             <div class="form-group">
-                <label for="nombre-cliente">Nombre del Cliente / Empresa</label>
-                <input type="text" id="nombre-cliente" placeholder="Ej. Industrias ACME" required>
+                <label>Lugar de Atención</label>
+                <input type="text" id="lugar-cliente" required>
             </div>
-            
             <div class="form-group">
-                <label for="lugar-cliente">Lugar de Atención</label>
-                <input type="text" id="lugar-cliente" placeholder="Ej. Sala A, Remoto, Instalaciones del cliente" required>
+                <label>Curso al detal</label>
+                <input type="text" id="curso-cliente" required>
             </div>
-            
             <div class="form-group">
-                <label for="curso-cliente">Curso al detal</label>
-                <input type="text" id="curso-cliente" placeholder="Ej. Seguridad Industrial y Salud Ocupacional" required>
+                <label>Facilitador Asignado</label>
+                <input type="text" id="facilitador-cliente" required>
             </div>
-            
             <div class="form-group">
-                <label for="facilitador-cliente">Facilitador Asignado</label>
-                <input type="text" id="facilitador-cliente" placeholder="Ej. Goretty M." required>
-            </div>
-
-            <div class="form-group">
-                <label for="estatus-cliente">Estatus Inicial del Cliente</label>
+                <label>Estatus Inicial</label>
                 <select id="estatus-cliente" required>
-                    <option value="programado" selected>Programado (Normal)</option>
-                    <option value="importante">Aviso Próximo (Importante)</option>
-                    <option value="retrasado">Retrasado (Urgente)</option>
+                    <option value="programado" selected>Programado</option>
+                    <option value="importante">Aviso Próximo</option>
+                    <option value="retrasado">Retrasado</option>
                 </select>
             </div>
-
-            <button type="submit" class="btn-submit">Guardar Cliente en Cronograma</button>
+            <button type="submit" class="btn-submit">Guardar Cliente</button>
         </form>
     </div>
 
-    <!-- Vista 2: Formulario de Delegación de Funciones -->
+    <!-- VISTA 2: TAREAS -->
     <div class="vista" id="vista-tareas">
         <h2 class="panel-titulo">Asignación de Tareas</h2>
         <form id="form-tarea">
-            
             <div class="form-group">
                 <label>Tipo de Función a Delegar</label>
                 <div class="radio-group">
-                    <label class="radio-opcion">
-                        <input type="radio" name="tipo-tarea" value="aislada" checked> Función Aislada
-                    </label>
-                    <label class="radio-opcion">
-                        <input type="radio" name="tipo-tarea" value="vinculada"> Vincular a un Programa Creado
-                    </label>
+                    <label><input type="radio" name="tipo-tarea" value="aislada" checked> Aislada</label>
+                    <label><input type="radio" name="tipo-tarea" value="vinculada"> Vincular a Programa</label>
                 </div>
             </div>
-
-            <!-- Desplegable dinámico de programas (se llena desde la base de datos) -->
             <div class="form-group" id="grupo-programa-vinculado">
-                <label for="programa-vinculado">Seleccionar Programa Activo</label>
-                <select id="programa-vinculado">
-                    <option value="" disabled selected>Cargando programas...</option>
-                </select>
+                <label>Seleccionar Programa Activo</label>
+                <select id="programa-vinculado"></select>
             </div>
-
             <div class="form-group">
-                <label for="responsable-tarea">Responsable (Personal interno)</label>
-                <input type="text" id="responsable-tarea" placeholder="Ej. Carlos, Alonzo J." required>
+                <label>Responsable</label>
+                <input type="text" id="responsable-tarea" required>
             </div>
-            
             <div class="form-group">
-                <label for="descripcion-tarea">Descripción de la Tarea</label>
-                <textarea id="descripcion-tarea" placeholder="Detalla las instrucciones precisas de la actividad..." required></textarea>
+                <label>Descripción de la Tarea</label>
+                <textarea id="descripcion-tarea" required></textarea>
             </div>
-            
             <div class="form-group">
-                <label for="fecha-tarea">Fecha y Hora Límite</label>
+                <label>Fecha y Hora Límite</label>
                 <input type="datetime-local" id="fecha-tarea" required>
             </div>
-            
             <div class="form-group">
-                <label for="urgencia-tarea">Nivel de Importancia / Urgencia</label>
+                <label>Nivel de Urgencia</label>
                 <select id="urgencia-tarea" required>
-                    <option value="" disabled selected>Selecciona un nivel...</option>
-                    <option value="rutina">Rutina (Baja)</option>
-                    <option value="importante">Importante (Media)</option>
-                    <option value="urgente">Urgente (Alta)</option>
-                    <option value="critica">Crítica (Inmediata)</option>
+                    <option value="rutina">Rutina</option>
+                    <option value="importante">Importante</option>
+                    <option value="urgente">Urgente</option>
+                    <option value="critica">Crítica</option>
                 </select>
             </div>
-
-            <button type="submit" class="btn-submit">Delegar Función al Equipo</button>
+            <button type="submit" class="btn-submit">Delegar Función</button>
         </form>
+    </div>
+
+    <!-- VISTA 3: GESTIÓN DE REGISTROS -->
+    <div class="vista" id="vista-gestion">
+        <h2 class="panel-titulo">Programas Activos (Clientes)</h2>
+        <table class="tabla-gestion">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Cliente</th>
+                    <th>Curso al detal</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-clientes">
+                <tr><td colspan="4">Cargando...</td></tr>
+            </tbody>
+        </table>
+
+        <h2 class="panel-titulo">Funciones Delegadas</h2>
+        <table class="tabla-gestion">
+            <thead>
+                <tr>
+                    <th>Responsable</th>
+                    <th>Descripción</th>
+                    <th>Estatus</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="tbody-tareas">
+                <tr><td colspan="4">Cargando...</td></tr>
+            </tbody>
+        </table>
     </div>
 
     <script>
@@ -361,79 +312,90 @@
                 } else {
                     grupoPrograma.style.display = 'none';
                     selectPrograma.required = false;
-                    selectPrograma.value = "";
                 }
             });
         });
 
-        // Extraer programas activos de la BD para el menú desplegable
         async function cargarProgramasDropdown() {
-            try {
-                const res = await fetch('/api/clientes');
-                if (!res.ok) throw new Error("Fallo en la red");
-                const clientes = await res.json();
-                
-                selectPrograma.innerHTML = '<option value="" disabled selected>Selecciona el cliente/programa correspondiente...</option>';
-                
-                clientes.forEach(c => {
-                    const fechaObj = new Date(c.fecha_atencion);
-                    const fechaStr = fechaObj.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-                    selectPrograma.innerHTML += `<option value="${c.id}">${fechaStr} - ${c.nombre_cliente} (${c.curso})</option>`;
+            const res = await fetch('/api/clientes');
+            const clientes = await res.json();
+            selectPrograma.innerHTML = '<option value="" disabled selected>Selecciona un programa...</option>';
+            clientes.forEach(c => {
+                const fechaStr = new Date(c.fecha_atencion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
+                selectPrograma.innerHTML += `<option value="${c.id}">${fechaStr} - ${c.nombre_cliente}</option>`;
+            });
+        }
+
+        // --- LÓGICA DE LA PESTAÑA DE GESTIÓN ---
+        async function cargarDatosGestion() {
+            // Cargar Clientes
+            const resC = await fetch('/api/clientes');
+            const clientes = await resC.json();
+            const tbC = document.getElementById('tbody-clientes');
+            tbC.innerHTML = '';
+            clientes.forEach(c => {
+                const fecha = new Date(c.fecha_atencion).toLocaleDateString();
+                tbC.innerHTML += `
+                    <tr>
+                        <td>${fecha}</td>
+                        <td>${c.nombre_cliente}</td>
+                        <td>${c.curso}</td>
+                        <td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td>
+                    </tr>
+                `;
+            });
+
+            // Cargar Tareas
+            const resT = await fetch('/api/tareas');
+            const tareas = await resT.json();
+            const tbT = document.getElementById('tbody-tareas');
+            tbT.innerHTML = '';
+            tareas.forEach(t => {
+                const estado = t.completada ? 'Completada' : 'Pendiente';
+                tbT.innerHTML += `
+                    <tr>
+                        <td>${t.responsable}</td>
+                        <td>${t.descripcion.substring(0, 30)}...</td>
+                        <td>${estado}</td>
+                        <td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function borrarRegistro(tipo, id) {
+            if(confirm('¿Estás seguro de que deseas eliminar este registro de la base de datos?')) {
+                await fetch(`/api/${tipo}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id })
                 });
-            } catch (error) {
-                console.error("Error cargando programas:", error);
-                selectPrograma.innerHTML = '<option value="" disabled>Error al cargar programas</option>';
+                cargarDatosGestion(); // Recarga las tablas visualmente
+                cargarProgramasDropdown(); // Actualiza el dropdown
             }
         }
 
-        // GUARDAR CLIENTE EN BASE DE DATOS
+        // GUARDADOS
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
-            btn.textContent = "Guardando...";
-            btn.disabled = true;
-
             const nuevoCliente = {
                 fecha_atencion: document.getElementById('fecha-cliente').value,
-                logo_url: "COFTAH.png.png", // Temporal hasta integrar almacenamiento de imágenes
+                logo_url: "COFTAH.png.png", 
                 nombre_cliente: document.getElementById('nombre-cliente').value,
                 lugar_atencion: document.getElementById('lugar-cliente').value,
                 curso: document.getElementById('curso-cliente').value,
                 facilitador: document.getElementById('facilitador-cliente').value,
                 estatus: document.getElementById('estatus-cliente').value
             };
-
-            try {
-                const res = await fetch('/api/clientes', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevoCliente)
-                });
-
-                if (res.ok) {
-                    alert("✅ Cliente guardado exitosamente.");
-                    this.reset();
-                    cargarProgramasDropdown(); // Refrescar el dropdown de tareas
-                } else {
-                    alert("Error guardando el cliente.");
-                }
-            } catch (error) {
-                alert("Error de conexión al guardar.");
-            } finally {
-                btn.textContent = "Guardar Cliente en Cronograma";
-                btn.disabled = false;
-            }
+            await fetch('/api/clientes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(nuevoCliente) });
+            alert("✅ Cliente guardado");
+            this.reset();
+            cargarProgramasDropdown();
         });
 
-        // GUARDAR TAREA EN BASE DE DATOS
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
-            btn.textContent = "Delegando...";
-            btn.disabled = true;
-
             const tipoTarea = document.querySelector('input[name="tipo-tarea"]:checked').value;
-            
             const nuevaTarea = {
                 tipo_tarea: tipoTarea,
                 programa_id: tipoTarea === 'vinculada' ? selectPrograma.value : null,
@@ -442,34 +404,12 @@
                 fecha_limite: document.getElementById('fecha-tarea').value,
                 urgencia: document.getElementById('urgencia-tarea').value
             };
-
-            try {
-                const res = await fetch('/api/tareas', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevaTarea)
-                });
-
-                if (res.ok) {
-                    alert("✅ Función delegada exitosamente.");
-                    this.reset();
-                    grupoPrograma.style.display = 'none';
-                    selectPrograma.required = false;
-                    
-                    // Asegurar que el radio vuelva a 'aislada'
-                    document.querySelector('input[name="tipo-tarea"][value="aislada"]').checked = true;
-                } else {
-                    alert("Error delegando la función.");
-                }
-            } catch (error) {
-                alert("Error de conexión al delegar la función.");
-            } finally {
-                btn.textContent = "Delegar Función al Equipo";
-                btn.disabled = false;
-            }
+            await fetch('/api/tareas', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(nuevaTarea) });
+            alert("✅ Función delegada");
+            this.reset();
+            grupoPrograma.style.display = 'none';
         });
 
-        // Inicializar dropdown al abrir el panel
         cargarProgramasDropdown();
     </script>
 </body>
