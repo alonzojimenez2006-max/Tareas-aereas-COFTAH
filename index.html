@@ -15,6 +15,12 @@
         .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
         .header-derecha { display: flex; align-items: center; gap: 20px; }
+        
+        /* Indicador de conexión en vivo */
+        .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 10px; }
+        .punto-verde { width: 10px; height: 10px; background-color: var(--urgencia-baja); border-radius: 50%; box-shadow: 0 0 8px var(--urgencia-baja); animation: titilar 2s infinite; }
+        @keyframes titilar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
         .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
         #semana-actual { color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; }
         .menu-container { position: relative; }
@@ -41,13 +47,12 @@
         .estatus-rutina { background-color: var(--urgencia-baja); color: #000; }
         .estatus-importante { background-color: var(--urgencia-media); color: #000; }
         .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
-        .estatus-critica { background-color: var(--urgencia-critica); color: #fff; animation: parpadeo 1.5s infinite; }
+        .estatus-critica { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-programado { background-color: var(--urgencia-baja); color: #000; }
         .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
-        @keyframes destelloVerde { 0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); } 50% { background-color: var(--completado); transform: scale(1.01); } 100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); } }
         .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
-        @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes destelloVerde { 0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); } 50% { background-color: var(--completado); transform: scale(1.01); } 100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); } }
         .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
@@ -64,7 +69,14 @@
             </div>
         </div>
         <div class="header-derecha">
-            <div class="reloj"><span id="semana-actual">SEMANA --</span><span style="color: var(--texto-secundario); margin: 0 10px;">|</span><span id="reloj-digital">00:00:00</span></div>
+            <div class="estado-conexion" id="estado-conexion">
+                <div class="punto-verde"></div> Conectado
+            </div>
+            <div class="reloj">
+                <span id="semana-actual">SEMANA --</span>
+                <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
+                <span id="reloj-digital">00:00:00</span>
+            </div>
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
                 <div id="menu-desplegable" class="menu-desplegable">
@@ -72,7 +84,10 @@
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     <div class="filtros-semanales">
                         <label>Filtrar por Semana</label><select id="filtro-semana" onchange="renderizarVistas()"></select>
-                        <label>Filtrar por Día</label><select id="filtro-dia" onchange="renderizarVistas()"><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select>
+                        <label>Filtrar por Día</label>
+                        <select id="filtro-dia" onchange="renderizarVistas()">
+                            <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -97,6 +112,7 @@
         setInterval(() => { document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true }); }, 1000);
         function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
         document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
+        
         function getNumeroSemana(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7); }
         function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
 
@@ -105,11 +121,12 @@
             document.getElementById('semana-actual').textContent = `SEMANA ${getNumeroSemana(hoy)}`;
             let lunesActual = new Date(hoy); lunesActual.setDate(hoy.getDate() - getDiaSemana(hoy) + 1); lunesActual.setHours(0,0,0,0);
             selectSemana.innerHTML = '';
-            for (let i = 0; i < 12; i++) {
+            for (let i = -2; i < 10; i++) { 
                 let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
                 let label = `Semana ${getNumeroSemana(lunesSemana)} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
                 selectSemana.add(new Option(label, getNumeroSemana(lunesSemana)));
             }
+            selectSemana.value = getNumeroSemana(hoy);
             document.getElementById('filtro-dia').value = getDiaSemana(hoy);
         }
 
@@ -117,14 +134,18 @@
         let tareasAvisadas = new Set(); let clientesConocidos = new Set(); let tareasConocidas = new Set(); let esPrimeraCarga = true;
 
         async function cargarDatos() {
+            const ind = document.getElementById('estado-conexion');
+            ind.innerHTML = `<div class="punto-verde" style="background-color: var(--acento-amarillo); box-shadow: 0 0 8px var(--acento-amarillo);"></div> Actualizando...`;
+            
             try {
+                // FORZAR CACHE BYPASS ESTRICTO
+                const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' } };
                 const ts = new Date().getTime();
                 
-                // Blindaje 1: Solo intentamos convertir a JSON si Vercel respondió con un código "200 OK"
-                const resClientes = await fetch('/api/clientes?t=' + ts);
+                const resClientes = await fetch('/api/clientes?t=' + ts, conf);
                 if(resClientes.ok) clientes = await resClientes.json();
                 
-                const resTareas = await fetch('/api/tareas?t=' + ts);
+                const resTareas = await fetch('/api/tareas?t=' + ts, conf);
                 if(resTareas.ok) tareas = await resTareas.json();
                 
                 if (esPrimeraCarga) {
@@ -135,10 +156,11 @@
                     clientes.forEach(c => { if (!clientesConocidos.has(c.id)) { hablar(`Atención. Nuevo programa registrado: ${c.nombre_cliente}.`); clientesConocidos.add(c.id); }});
                     tareas.forEach(t => { if (!tareasConocidas.has(t.id)) { hablar(`Atención. Nueva función delegada a ${t.responsable}.`); tareasConocidas.add(t.id); }});
                 }
+                
                 renderizarVistas();
+                setTimeout(() => { ind.innerHTML = `<div class="punto-verde"></div> Conectado`; }, 1000);
             } catch (error) {
-                // Si la red falla, el script NO colapsa, simplemente intenta de nuevo en 15 segundos
-                console.warn("Retraso en la red, reintentando...", error);
+                ind.innerHTML = `<div class="punto-verde" style="background-color: var(--urgencia-critica); box-shadow: 0 0 8px var(--urgencia-critica);"></div> Desconectado`;
             }
         }
 
