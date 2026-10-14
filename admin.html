@@ -14,6 +14,7 @@
             --input-bg: #1A365D;
             --borde-input: #234E8A;
             --btn-borrar: #FF3366;
+            --completado: #2E8B57;
         }
 
         * {
@@ -106,6 +107,9 @@
         }
 
         .form-group { margin-bottom: 20px; }
+        .row-group { display: flex; gap: 15px; margin-bottom: 20px; }
+        .row-group > div { flex: 1; }
+        
         label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
 
         input, select, textarea {
@@ -119,10 +123,7 @@
             outline: none;
         }
 
-        input[type="file"] {
-            padding: 9px;
-            cursor: pointer;
-        }
+        input[type="file"] { padding: 9px; cursor: pointer; }
         
         input[type="file"]::file-selector-button {
             background-color: var(--bg-principal);
@@ -144,41 +145,20 @@
             border-color: var(--acento-amarillo);
         }
 
-        .radio-group {
-            display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px;
-        }
+        .radio-group { display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px; }
 
         .tabla-gestion {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 30px;
-            background-color: var(--input-bg);
-            border-radius: 8px;
-            overflow: hidden;
+            width: 100%; border-collapse: collapse; margin-bottom: 30px;
+            background-color: var(--input-bg); border-radius: 8px; overflow: hidden;
         }
 
         .tabla-gestion th, .tabla-gestion td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--borde-input);
+            padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input);
         }
 
-        .tabla-gestion th {
-            background-color: var(--bg-principal);
-            color: var(--acento-amarillo);
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
+        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); text-transform: uppercase; font-size: 0.9rem; }
 
-        .btn-accion {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-weight: bold;
-            cursor: pointer;
-            color: white;
-        }
-
+        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; }
         .btn-borrar { background-color: var(--btn-borrar); }
         .btn-borrar:hover { background-color: #d12650; }
 
@@ -186,11 +166,8 @@
             width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000;
             border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer;
         }
-
-        .btn-submit:disabled {
-            background-color: #8892B0;
-            cursor: not-allowed;
-        }
+        .btn-submit.success { background-color: var(--completado); color: white; }
+        .btn-submit:disabled { background-color: #8892B0; cursor: not-allowed; }
 
         #grupo-programa-vinculado { display: none; }
     </style>
@@ -205,22 +182,41 @@
     <div class="tabs-container">
         <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Cliente</button>
         <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
-        <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestionar Registros</button>
+        <button class="tab-btn" id="btn-personal" onclick="cambiarFormulario('personal')">Gestionar Equipo</button>
+        <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
     </div>
 
     <!-- VISTA 1: CLIENTES -->
     <div class="vista active" id="vista-clientes">
         <h2 class="panel-titulo">Datos del Cliente</h2>
         <form id="form-cliente">
-            <div class="form-group">
-                <label for="fecha-cliente">Fecha y Hora de Atención</label>
-                <input type="datetime-local" id="fecha-cliente" required>
+            <div class="row-group">
+                <div>
+                    <label>Semana</label>
+                    <select id="semana-cliente" required></select>
+                </div>
+                <div>
+                    <label>Día</label>
+                    <select id="dia-cliente" required>
+                        <option value="1">Lunes</option>
+                        <option value="2">Martes</option>
+                        <option value="3">Miércoles</option>
+                        <option value="4">Jueves</option>
+                        <option value="5">Viernes</option>
+                        <option value="6">Sábado</option>
+                        <option value="7">Domingo</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Hora</label>
+                    <input type="time" id="hora-cliente" required>
+                </div>
             </div>
             
-            <!-- RECUPERADO: Campo para el logo -->
             <div class="form-group">
-                <label for="logo-cliente">Logo de la Empresa (Formato PNG/JPG)</label>
-                <input type="file" id="logo-cliente" accept="image/png, image/jpeg" required>
+                <!-- Se quitó el "required" -->
+                <label for="logo-cliente">Logo de la Empresa (Opcional)</label>
+                <input type="file" id="logo-cliente" accept="image/png, image/jpeg">
             </div>
 
             <div class="form-group">
@@ -237,7 +233,9 @@
             </div>
             <div class="form-group">
                 <label for="facilitador-cliente">Facilitador Asignado</label>
-                <input type="text" id="facilitador-cliente" required>
+                <select id="facilitador-cliente" required>
+                    <option value="" disabled selected>Cargando personal...</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="estatus-cliente">Estatus Inicial</label>
@@ -268,16 +266,39 @@
             </div>
             <div class="form-group">
                 <label for="responsable-tarea">Responsable</label>
-                <input type="text" id="responsable-tarea" required>
+                <select id="responsable-tarea" required>
+                    <option value="" disabled selected>Cargando personal...</option>
+                </select>
             </div>
             <div class="form-group">
                 <label for="descripcion-tarea">Descripción de la Tarea</label>
                 <textarea id="descripcion-tarea" required></textarea>
             </div>
-            <div class="form-group">
-                <label for="fecha-tarea">Fecha y Hora Límite</label>
-                <input type="datetime-local" id="fecha-tarea" required>
+            
+            <!-- Selector Semanal para Tareas -->
+            <div class="row-group">
+                <div>
+                    <label>Semana Límite</label>
+                    <select id="semana-tarea" required></select>
+                </div>
+                <div>
+                    <label>Día Límite</label>
+                    <select id="dia-tarea" required>
+                        <option value="1">Lunes</option>
+                        <option value="2">Martes</option>
+                        <option value="3">Miércoles</option>
+                        <option value="4">Jueves</option>
+                        <option value="5">Viernes</option>
+                        <option value="6">Sábado</option>
+                        <option value="7">Domingo</option>
+                    </select>
+                </div>
+                <div>
+                    <label>Hora Límite</label>
+                    <input type="time" id="hora-tarea" required>
+                </div>
             </div>
+
             <div class="form-group">
                 <label for="urgencia-tarea">Nivel de Urgencia</label>
                 <select id="urgencia-tarea" required>
@@ -291,36 +312,37 @@
         </form>
     </div>
 
-    <!-- VISTA 3: GESTIÓN DE REGISTROS -->
+    <!-- VISTA 3: PERSONAL (NUEVA) -->
+    <div class="vista" id="vista-personal">
+        <h2 class="panel-titulo">Registrar Miembro del Equipo</h2>
+        <form id="form-personal">
+            <div class="form-group">
+                <label>Nombre de la Persona (o Apodo)</label>
+                <input type="text" id="nombre-personal" placeholder="Ej: TT, Alonzo, Jh..." required>
+            </div>
+            <div class="form-group">
+                <label>Rol</label>
+                <select id="rol-personal" required>
+                    <option value="facilitador">Facilitador (Cursos/Clientes)</option>
+                    <option value="responsable">Responsable (Delegación de Tareas)</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-submit">Añadir al Equipo</button>
+        </form>
+    </div>
+
+    <!-- VISTA 4: GESTIÓN DE REGISTROS -->
     <div class="vista" id="vista-gestion">
         <h2 class="panel-titulo">Programas Activos (Clientes)</h2>
         <table class="tabla-gestion">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Cliente</th>
-                    <th>Curso al detal</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="tbody-clientes">
-                <tr><td colspan="4">Cargando...</td></tr>
-            </tbody>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Curso</th><th>Acción</th></tr></thead>
+            <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
         </table>
 
         <h2 class="panel-titulo">Funciones Delegadas</h2>
         <table class="tabla-gestion">
-            <thead>
-                <tr>
-                    <th>Responsable</th>
-                    <th>Descripción</th>
-                    <th>Estatus</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="tbody-tareas">
-                <tr><td colspan="4">Cargando...</td></tr>
-            </tbody>
+            <thead><tr><th>Responsable</th><th>Descripción</th><th>Estatus</th><th>Acción</th></tr></thead>
+            <tbody id="tbody-tareas"><tr><td colspan="4">Cargando...</td></tr></tbody>
         </table>
     </div>
 
@@ -332,6 +354,105 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
+        // LÓGICA DE SEMANAS
+        function llenarSemanas() {
+            const selects = [document.getElementById('semana-cliente'), document.getElementById('semana-tarea')];
+            let hoy = new Date();
+            let diaSemana = hoy.getDay() || 7; 
+            let lunesActual = new Date(hoy);
+            lunesActual.setDate(hoy.getDate() - diaSemana + 1);
+            lunesActual.setHours(0,0,0,0);
+
+            selects.forEach(select => select.innerHTML = '');
+
+            for (let i = 0; i < 12; i++) {
+                let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
+                
+                // Calcular N° de semana ISO básico
+                let d = new Date(Date.UTC(lunesSemana.getFullYear(), lunesSemana.getMonth(), lunesSemana.getDate()));
+                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+                let yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+                let numSemana = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+
+                let fechaStr = lunesSemana.toISOString().split('T')[0];
+                let label = `Semana ${numSemana} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
+                
+                selects.forEach(select => select.add(new Option(label, fechaStr)));
+            }
+        }
+
+        // Función para transformar Semana + Día + Hora a formato para la BD
+        function construirFecha(idSemana, idDia, idHora) {
+            let fechaBase = new Date(document.getElementById(idSemana).value + "T00:00:00"); 
+            let diasSumar = parseInt(document.getElementById(idDia).value) - 1;
+            fechaBase.setDate(fechaBase.getDate() + diasSumar);
+            
+            let hora = document.getElementById(idHora).value; 
+            if(!hora) hora = "00:00";
+            let [hh, mm] = hora.split(':');
+            fechaBase.setHours(hh, mm, 0, 0);
+            
+            // Ajustar para evitar problemas de zona horaria al guardar
+            let tzoffset = (new Date()).getTimezoneOffset() * 60000;
+            return (new Date(fechaBase - tzoffset)).toISOString().slice(0, 16);
+        }
+
+        // LÓGICA DE PERSONAL
+        async function cargarPersonal() {
+            try {
+                const res = await fetch('/api/personal');
+                if(!res.ok) return;
+                const personal = await res.json();
+                
+                const selFacilitador = document.getElementById('facilitador-cliente');
+                const selResponsable = document.getElementById('responsable-tarea');
+                
+                selFacilitador.innerHTML = '<option value="" disabled selected>Seleccione facilitador...</option>';
+                selResponsable.innerHTML = '<option value="" disabled selected>Seleccione responsable...</option>';
+
+                personal.forEach(p => {
+                    // Usamos el nombre como valor para no romper tu base de datos actual
+                    if(p.rol === 'facilitador') selFacilitador.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+                    if(p.rol === 'responsable') selResponsable.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+                });
+            } catch (error) {
+                console.error("Error cargando personal");
+            }
+        }
+
+        document.getElementById('form-personal').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.textContent = "Registrando..."; btn.disabled = true;
+
+            const datos = {
+                nombre: document.getElementById('nombre-personal').value,
+                rol: document.getElementById('rol-personal').value
+            };
+
+            try {
+                const res = await fetch('/api/personal', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+                
+                const data = await res.json();
+                if (res.ok) {
+                    alert("✅ Persona registrada.");
+                    this.reset();
+                    cargarPersonal(); // Actualiza los selects automáticamente
+                } else {
+                    alert(data.error || "Error al registrar.");
+                }
+            } catch (error) {
+                alert("Error de red.");
+            } finally {
+                btn.textContent = "Añadir al Equipo"; btn.disabled = false;
+            }
+        });
+
+        // LÓGICA DE VINCULACIÓN
         const radiosTipoTarea = document.querySelectorAll('input[name="tipo-tarea"]');
         const grupoPrograma = document.getElementById('grupo-programa-vinculado');
         const selectPrograma = document.getElementById('programa-vinculado');
@@ -339,11 +460,9 @@
         radiosTipoTarea.forEach(radio => {
             radio.addEventListener('change', function() {
                 if (this.value === 'vinculada') {
-                    grupoPrograma.style.display = 'block';
-                    selectPrograma.required = true;
+                    grupoPrograma.style.display = 'block'; selectPrograma.required = true;
                 } else {
-                    grupoPrograma.style.display = 'none';
-                    selectPrograma.required = false;
+                    grupoPrograma.style.display = 'none'; selectPrograma.required = false;
                 }
             });
         });
@@ -351,95 +470,27 @@
         async function cargarProgramasDropdown() {
             try {
                 const res = await fetch('/api/clientes');
-                if (!res.ok) throw new Error('Fallo en la red');
                 const clientes = await res.json();
                 selectPrograma.innerHTML = '<option value="" disabled selected>Selecciona un programa...</option>';
                 clientes.forEach(c => {
                     const fechaStr = new Date(c.fecha_atencion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
                     selectPrograma.innerHTML += `<option value="${c.id}">${fechaStr} - ${c.nombre_cliente}</option>`;
                 });
-            } catch (error) {
-                console.error("Error cargando programas:", error);
-            }
-        }
-
-        // --- LÓGICA DE LA PESTAÑA DE GESTIÓN ---
-        async function cargarDatosGestion() {
-            try {
-                // Cargar Clientes
-                const resC = await fetch('/api/clientes');
-                const clientes = await resC.json();
-                const tbC = document.getElementById('tbody-clientes');
-                tbC.innerHTML = '';
-                if(clientes.length === 0) tbC.innerHTML = '<tr><td colspan="4">No hay clientes programados</td></tr>';
-                
-                clientes.forEach(c => {
-                    const fecha = new Date(c.fecha_atencion).toLocaleDateString();
-                    tbC.innerHTML += `
-                        <tr>
-                            <td>${fecha}</td>
-                            <td>${c.nombre_cliente}</td>
-                            <td>${c.curso}</td>
-                            <td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td>
-                        </tr>
-                    `;
-                });
-
-                // Cargar Tareas
-                const resT = await fetch('/api/tareas');
-                const tareas = await resT.json();
-                const tbT = document.getElementById('tbody-tareas');
-                tbT.innerHTML = '';
-                if(tareas.length === 0) tbT.innerHTML = '<tr><td colspan="4">No hay tareas delegadas</td></tr>';
-
-                tareas.forEach(t => {
-                    const estado = t.completada ? 'Completada' : 'Pendiente';
-                    tbT.innerHTML += `
-                        <tr>
-                            <td>${t.responsable}</td>
-                            <td>${t.descripcion.substring(0, 30)}...</td>
-                            <td>${estado}</td>
-                            <td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td>
-                        </tr>
-                    `;
-                });
-            } catch (error) {
-                console.error("Error cargando gestión:", error);
-            }
-        }
-
-        async function borrarRegistro(tipo, id) {
-            if(confirm('¿Estás seguro de que deseas eliminar este registro de la base de datos?')) {
-                try {
-                    const res = await fetch(`/api/${tipo}`, {
-                        method: 'DELETE',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: id })
-                    });
-                    
-                    if(res.ok) {
-                        alert("✅ Registro eliminado correctamente.");
-                        cargarDatosGestion(); 
-                        cargarProgramasDropdown(); 
-                    } else {
-                        alert("Hubo un error al intentar eliminar el registro.");
-                    }
-                } catch (error) {
-                    alert("Error de conexión al eliminar.");
-                }
-            }
+            } catch (error) {}
         }
 
         // GUARDADO DE CLIENTES
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
-            btn.textContent = "Guardando...";
-            btn.disabled = true;
+            btn.textContent = "Guardando..."; btn.disabled = true;
+
+            // Procesar la fecha con el planificador semanal
+            const fechaExacta = construirFecha('semana-cliente', 'dia-cliente', 'hora-cliente');
 
             const nuevoCliente = {
-                fecha_atencion: document.getElementById('fecha-cliente').value,
-                logo_url: "COFTAH.png.png", // Temporalmente usa la imagen por defecto
+                fecha_atencion: fechaExacta,
+                logo_url: "", // Si quieres subir archivos reales, necesitarías FormData. Por ahora lo dejamos vacío para que el backend ponga el por defecto.
                 nombre_cliente: document.getElementById('nombre-cliente').value,
                 lugar_atencion: document.getElementById('lugar-cliente').value,
                 curso: document.getElementById('curso-cliente').value,
@@ -453,20 +504,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(nuevoCliente)
                 });
-
+                
+                const data = await res.json();
                 if (res.ok) {
-                    alert("✅ Cliente guardado exitosamente en Neon.");
+                    alert("✅ Cliente guardado.");
                     this.reset();
                     cargarProgramasDropdown();
-                    if(document.getElementById('vista-gestion').classList.contains('active')) cargarDatosGestion();
                 } else {
-                    alert("⚠️ Error al guardar el cliente en la base de datos.");
+                    alert(data.error || "⚠️ Error al guardar el cliente.");
                 }
             } catch (error) {
-                alert("⚠️ Error de conexión con el servidor.");
+                alert("⚠️ Error de conexión.");
             } finally {
-                btn.textContent = "Guardar Cliente";
-                btn.disabled = false;
+                btn.textContent = "Guardar Cliente"; btn.disabled = false;
             }
         });
 
@@ -474,16 +524,17 @@
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
             e.preventDefault();
             const btn = this.querySelector('button[type="submit"]');
-            btn.textContent = "Delegando...";
-            btn.disabled = true;
+            btn.textContent = "Delegando..."; btn.disabled = true;
 
             const tipoTarea = document.querySelector('input[name="tipo-tarea"]:checked').value;
+            const fechaExacta = construirFecha('semana-tarea', 'dia-tarea', 'hora-tarea');
+
             const nuevaTarea = {
                 tipo_tarea: tipoTarea,
                 programa_id: tipoTarea === 'vinculada' ? selectPrograma.value : null,
                 responsable: document.getElementById('responsable-tarea').value,
                 descripcion: document.getElementById('descripcion-tarea').value,
-                fecha_limite: document.getElementById('fecha-tarea').value,
+                fecha_limite: fechaExacta,
                 urgencia: document.getElementById('urgencia-tarea').value
             };
 
@@ -495,21 +546,57 @@
                 });
 
                 if (res.ok) {
-                    alert("✅ Función delegada exitosamente.");
+                    alert("✅ Función delegada.");
                     this.reset();
-                    grupoPrograma.style.display = 'none';
-                    if(document.getElementById('vista-gestion').classList.contains('active')) cargarDatosGestion();
                 } else {
                     alert("⚠️ Error al delegar la función.");
                 }
             } catch (error) {
-                alert("⚠️ Error de conexión con el servidor.");
+                alert("⚠️ Error de conexión.");
             } finally {
-                btn.textContent = "Delegar Función";
-                btn.disabled = false;
+                btn.textContent = "Delegar Función"; btn.disabled = false;
             }
         });
 
+        // LÓGICA DE GESTIÓN Y BORRADO (Igual que antes)
+        async function cargarDatosGestion() {
+            try {
+                const resC = await fetch('/api/clientes');
+                const clientes = await resC.json();
+                const tbC = document.getElementById('tbody-clientes');
+                tbC.innerHTML = '';
+                if(clientes.length === 0) tbC.innerHTML = '<tr><td colspan="4">Sin clientes</td></tr>';
+                clientes.forEach(c => {
+                    tbC.innerHTML += `<tr><td>${new Date(c.fecha_atencion).toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.curso}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`;
+                });
+
+                const resT = await fetch('/api/tareas');
+                const tareas = await resT.json();
+                const tbT = document.getElementById('tbody-tareas');
+                tbT.innerHTML = '';
+                if(tareas.length === 0) tbT.innerHTML = '<tr><td colspan="4">Sin tareas</td></tr>';
+                tareas.forEach(t => {
+                    tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0, 30)}...</td><td>${t.completada ? 'Completada' : 'Pendiente'}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`;
+                });
+            } catch (error) {}
+        }
+
+        async function borrarRegistro(tipo, id) {
+            if(confirm('¿Eliminar este registro?')) {
+                try {
+                    const res = await fetch(`/api/${tipo}`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: id })
+                    });
+                    if(res.ok) { alert("Eliminado."); cargarDatosGestion(); cargarProgramasDropdown(); }
+                } catch (error) {}
+            }
+        }
+
+        // Inicializar
+        llenarSemanas();
+        cargarPersonal();
         cargarProgramasDropdown();
     </script>
 </body>
