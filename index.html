@@ -331,13 +331,21 @@
                     await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
                     tObj.completada = true; 
                     
+                    // Texto dinámico con la descripción de la base de datos
                     let mensajeExito = tObj.nombre_cliente
                         ? `Excelente trabajo ${tObj.responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
                         : `Excelente trabajo ${tObj.responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
                     
-                    hablar(mensajeExito); 
+                    // Cerramos la ventana visualmente de inmediato
                     cerrarModal(); 
                     renderizarVistas(); 
+
+                    // BLINDAJE DE VOZ: Limpiamos audios pendientes y le damos 500ms para hablar tranquilo
+                    window.speechSynthesis.cancel();
+                    setTimeout(() => {
+                        hablar(mensajeExito);
+                    }, 500);
+                    
                 } catch (error) {
                     console.error("Error marcando completada", error);
                 }
