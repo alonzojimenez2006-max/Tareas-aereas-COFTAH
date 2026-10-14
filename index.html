@@ -59,7 +59,7 @@
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* NUEVO: ESTILOS PARA LA VENTANA MODAL */
+        /* VENTANA MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
@@ -127,16 +127,13 @@
         <div class="contenedor-lista" id="lista-tareas"></div>
     </div>
 
-    <!-- NUEVO: ESTRUCTURA DE LA VENTANA MODAL -->
     <div class="modal-overlay" id="modal-tarea">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modal-titulo">Detalles de la Misión</h2>
                 <button class="modal-close" onclick="cerrarModal()">×</button>
             </div>
-            <div class="modal-body" id="modal-body">
-                <!-- Se llena dinámicamente con JS -->
-            </div>
+            <div class="modal-body" id="modal-body"></div>
             <div class="modal-footer" id="modal-footer">
                 <button class="btn-modal btn-modal-cancelar" onclick="cerrarModal()">Volver</button>
                 <button class="btn-modal btn-modal-completar" id="btn-completar-modal">Marcar como Hecho</button>
@@ -150,8 +147,6 @@
         document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
         
         function getNumeroSemana(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7); }
-        function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
-        
         function parseFechaLocal(fechaStr) {
             if (!fechaStr) return new Date();
             let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
@@ -160,11 +155,17 @@
 
         const nombresDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
+        // SE INICIA DIRECTAMENTE EN LA SEMANA ACTUAL
         function inicializarFiltrosSemanales() {
-            const selectSemana = document.getElementById('filtro-semana'); let hoy = new Date();
-            document.getElementById('semana-actual').textContent = `SEMANA ${getNumeroSemana(hoy)}`;
-            let lunesActual = new Date(hoy); let dia = hoy.getDay() === 0 ? 7 : hoy.getDay();
-            lunesActual.setDate(hoy.getDate() - dia + 1); lunesActual.setHours(0,0,0,0);
+            const selectSemana = document.getElementById('filtro-semana'); 
+            let hoy = new Date();
+            let numSemanaHoy = getNumeroSemana(hoy);
+            document.getElementById('semana-actual').textContent = `SEMANA ${numSemanaHoy}`;
+            
+            let lunesActual = new Date(hoy); 
+            let dia = hoy.getDay() === 0 ? 7 : hoy.getDay();
+            lunesActual.setDate(hoy.getDate() - dia + 1); 
+            lunesActual.setHours(0,0,0,0);
             
             selectSemana.innerHTML = '';
             for (let i = -2; i < 10; i++) { 
@@ -173,7 +174,7 @@
                 let label = `Semana ${numSem} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
                 selectSemana.add(new Option(label, numSem));
             }
-            selectSemana.value = getNumeroSemana(hoy);
+            selectSemana.value = numSemanaHoy.toString();
         }
 
         let clientes = []; let tareas = [];
@@ -207,15 +208,17 @@
                 } else {
                     clientes.forEach(c => { 
                         if (!clientesConocidos.has(c.id)) { 
-                            hablar(`Atención. Nuevo programa registrado para la semana ${getNumeroSemana(new Date(c.fecha_atencion))}: ${c.nombre_cliente}.`); 
+                            let d = new Date(c.fecha_atencion);
+                            hablar(`Atención equipo. Nuevo programa registrado para la semana ${getNumeroSemana(d)}: ${c.nombre_cliente}.`); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
+                            let d = new Date(t.fecha_limite);
                             let msj = t.nombre_cliente
-                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}.`;
+                                ? `Atención. Nueva función delegada a ${t.responsable} para la semana ${getNumeroSemana(d)}, cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable} para la semana ${getNumeroSemana(d)}. Tarea: ${t.descripcion}.`;
                             hablar(msj); 
                             tareasConocidas.add(t.id); 
                         }
@@ -246,10 +249,10 @@
             document.getElementById('semana-actual').textContent = `SEMANA ${sem}`;
 
             const contC = document.getElementById('lista-clientes');
-            const filtC = clientes.filter(c => getNumeroSemana(new Date(c.fecha_atencion)) === sem);
+            const filtC = clientes.filter(c => getNumeroSemana(parseFechaLocal(c.fecha_atencion)) === sem);
             if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta semana.</div>`;
             else contC.innerHTML = filtC.map(c => {
-                let d = new Date(c.fecha_atencion);
+                let d = parseFechaLocal(c.fecha_atencion);
                 return `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`;
             }).join('');
 
@@ -259,34 +262,28 @@
                 return getNumeroSemana(d) === sem && (filtroResp === 'TODOS' || t.responsable === filtroResp);
             });
 
-            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas.</div>`;
+            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas en esta vista.</div>`;
             else {
                 contT.innerHTML = '';
                 filtT.forEach(t => {
                     let d = parseFechaLocal(t.fecha_limite);
-                    
-                    // ETIQUETA RESUMIDA EN LA TARJETA PRINCIPAL
                     let infoResp = t.responsable;
                     if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
                         let diaPrg = nombresDias[parseFechaLocal(t.fecha_programa).getDay()];
                         let etiqueta = `${t.nombre_cliente} | ${t.curso} (${diaPrg})`;
                         infoResp = `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${etiqueta}</span>`;
                     }
-
-                    // EL CLIC AHORA ABRE EL MODAL EN LUGAR DE PREGUNTAR DIRECTAMENTE
                     contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="abrirModal(${t.id})"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div style="font-family:monospace; font-size:1.1rem;">${d.toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
                 });
             }
         }
 
-        // --- FUNCIONES DEL MODAL INTERACTIVO ---
+        // --- VENTANA MODAL (Clickeo de tareas) ---
         function abrirModal(id) {
             const t = tareas.find(x => x.id === id);
             if(!t) return;
-            
             let htmlBody = '';
 
-            // SI LA TAREA ESTÁ VINCULADA, MOSTRAMOS TODO EL DESGLOSE DEL CLIENTE
             if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
                 let dProg = parseFechaLocal(t.fecha_programa);
                 htmlBody += `
@@ -294,14 +291,13 @@
                         <strong>INFORMACIÓN DEL PROGRAMA VINCULADO</strong>
                         <p><b>Cliente / Empresa:</b> ${t.nombre_cliente}</p>
                         <p><b>Curso a dictar:</b> ${t.curso}</p>
-                        <p><b>Fecha de Ejecución:</b> ${dProg.toLocaleString('es-ES', { weekday:'long', day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</p>
+                        <p><b>Fecha:</b> ${dProg.toLocaleString('es-ES', { weekday:'long', day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</p>
                         <p><b>Lugar:</b> ${t.lugar_atencion}</p>
                         <p><b>Facilitador a cargo:</b> <span style="color: var(--urgencia-baja); font-weight: bold;">${t.facilitador}</span></p>
                     </div>
                 `;
             }
 
-            // LUEGO MOSTRAMOS LA INSTRUCCIÓN DE LA TAREA GIGANTE
             htmlBody += `
                 <div class="modal-seccion" style="border-left-color: var(--acento-amarillo);">
                     <strong>MISIÓN ASIGNADA A ${t.responsable.toUpperCase()}</strong>
@@ -315,37 +311,29 @@
 
             document.getElementById('modal-body').innerHTML = htmlBody;
 
-            // Lógica del botón de completar
             const btn = document.getElementById('btn-completar-modal');
             if(t.completada) {
-                btn.style.display = 'none'; // Si ya se hizo, se oculta el botón verde
+                btn.style.display = 'none';
             } else {
                 btn.style.display = 'block';
                 btn.onclick = () => marcarCompletadaDesdeModal(t.id, t.responsable);
             }
-
             document.getElementById('modal-tarea').classList.add('active');
         }
 
-        function cerrarModal() {
-            document.getElementById('modal-tarea').classList.remove('active');
-        }
+        function cerrarModal() { document.getElementById('modal-tarea').classList.remove('active'); }
 
         async function marcarCompletadaDesdeModal(id, responsable) {
-            const confirmacion = confirm(`¿Confirmas que terminaste la tarea, ${responsable}?`);
-            if (!confirmacion) return;
-
+            if (!confirm(`¿Confirmas que terminaste la tarea, ${responsable}?`)) return;
             const tObj = tareas.find(t => t.id === id);
             if (tObj && !tObj.completada) {
                 try {
                     await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
                     tObj.completada = true; 
                     hablar(`Excelente trabajo ${tObj.responsable}. Tarea marcada como completada.`); 
-                    cerrarModal(); // Cierra la ventana pop-up automáticamente
-                    renderizarVistas(); // Actualiza la pantalla para mostrarla en verde
-                } catch (error) {
-                    console.error("Error marcando completada", error);
-                }
+                    cerrarModal(); 
+                    renderizarVistas(); 
+                } catch (error) {}
             }
         }
 
