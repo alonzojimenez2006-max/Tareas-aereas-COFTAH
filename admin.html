@@ -85,9 +85,9 @@
             <div class="form-group"><label>Responsable</label><select id="responsable-tarea" required><option value="" disabled selected>Cargando personal...</option></select></div>
             <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
             <div class="row-group">
-                <div><label>Semana</label><select id="semana-tarea" required></select></div>
-                <div><label>Día</label><select id="dia-tarea" required><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
-                <div><label>Hora</label><input type="time" id="hora-tarea" required></div>
+                <div><label>Semana Límite</label><select id="semana-tarea" required></select></div>
+                <div><label>Día Límite</label><select id="dia-tarea" required><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
+                <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
             </div>
             <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
             <button type="submit" class="btn-submit">Delegar Función</button>
@@ -144,6 +144,7 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
+        // --- SISTEMA DE FECHAS ESTRICTO ANTICHOQUE DE ZONAS HORARIAS ---
         function llenarSemanas() {
             const selects = [document.getElementById('semana-cliente'), document.getElementById('semana-tarea')];
             let hoy = new Date(); let diaSemana = hoy.getDay() || 7; 
@@ -155,30 +156,38 @@
                 d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
                 let yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
                 let numSemana = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-                let fechaStr = lunesSemana.toISOString().split('T')[0];
-                let label = `Semana ${numSemana} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
+                
+                // Guardamos la fecha estricta del Lunes de esa semana (YYYY-MM-DD)
+                let mes = String(lunesSemana.getMonth() + 1).padStart(2, '0');
+                let dia = String(lunesSemana.getDate()).padStart(2, '0');
+                let fechaStr = `${lunesSemana.getFullYear()}-${mes}-${dia}`;
+                
+                let label = `Semana ${numSemana} (Inicio: ${dia}/${mes})`;
                 selects.forEach(select => select.add(new Option(label, fechaStr)));
             }
         }
 
-        // Corrige el envío de fechas exactas para la Base de Datos
         function construirFecha(idSemana, idDia, idHora) {
+            // Se toma el Lunes de la semana y se le suman los días
             let fechaBase = new Date(document.getElementById(idSemana).value + "T00:00:00"); 
             fechaBase.setDate(fechaBase.getDate() + parseInt(document.getElementById(idDia).value) - 1);
+            
             let yyyy = fechaBase.getFullYear();
             let mm = String(fechaBase.getMonth() + 1).padStart(2, '0');
             let dd = String(fechaBase.getDate()).padStart(2, '0');
             let hora = document.getElementById(idHora).value || "00:00";
+            
+            // Retorna un string ISO exacto sin la "Z" al final para que la BD no aplique UTC offsets
             return `${yyyy}-${mm}-${dd}T${hora}:00`;
         }
 
+        // --- SISTEMA DE PERSONAL Y PAPELERA ---
         let personalCompleto = [];
         let enPapelera = new Set(); 
 
         async function cargarPersonal() {
             try {
-                const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache' } };
-                const res = await fetch('/api/personal?t=' + new Date().getTime(), conf);
+                const res = await fetch('/api/personal?t=' + new Date().getTime(), { cache: 'no-store' });
                 if(res.ok) {
                     personalCompleto = await res.json();
                     renderizarTablasPersonal();
@@ -191,7 +200,6 @@
             const tbFac = document.getElementById('tbody-facilitadores');
             const tbResp = document.getElementById('tbody-responsables');
             const tbPap = document.getElementById('tbody-papelera');
-            
             tbFac.innerHTML = ''; tbResp.innerHTML = ''; tbPap.innerHTML = '';
             let contadorPapelera = 0;
 
@@ -247,6 +255,7 @@
             } catch (error) {} finally { btn.textContent = "Añadir al Equipo"; btn.disabled = false; }
         });
 
+        // --- SISTEMA DE VINCULACIÓN Y REGISTROS ---
         document.querySelectorAll('input[name="tipo-tarea"]').forEach(r => r.addEventListener('change', function() {
             document.getElementById('grupo-programa-vinculado').style.display = this.value === 'vinculada' ? 'block' : 'none';
             document.getElementById('programa-vinculado').required = this.value === 'vinculada';
@@ -254,15 +263,18 @@
 
         async function cargarProgramasDropdown() {
             try {
-                const conf = { cache: 'no-store' };
-                const res = await fetch('/api/clientes?t='+new Date().getTime(), conf); const clientes = await res.json();
+                const res = await fetch('/api/clientes?t='+new Date().getTime(), { cache: 'no-store' }); const clientes = await res.json();
                 const sel = document.getElementById('programa-vinculado');
                 sel.innerHTML = '<option value="" disabled selected>Selecciona un programa...</option>';
-                clientes.forEach(c => sel.innerHTML += `<option value="${c.id}">${new Date(c.fecha_atencion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} - ${c.nombre_cliente}</option>`);
+                clientes.forEach(c => {
+                    let d = new Date(c.fecha_atencion);
+                    let mes = String(d.getMonth() + 1).padStart(2, '0');
+                    let dia = String(d.getDate()).padStart(2, '0');
+                    sel.innerHTML += `<option value="${c.id}">${dia}/${mes} - ${c.nombre_cliente}</option>`
+                });
             } catch (error) {}
         }
 
-        // GUARDAR CLIENTE (Con soporte de Imagen opcional a Base64)
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
@@ -271,7 +283,12 @@
             const procesarEnvio = async (logoStr) => {
                 try {
                     const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                        fecha_atencion: construirFecha('semana-cliente', 'dia-cliente', 'hora-cliente'), logo_url: logoStr, nombre_cliente: document.getElementById('nombre-cliente').value, lugar_atencion: document.getElementById('lugar-cliente').value, curso: document.getElementById('curso-cliente').value, facilitador: document.getElementById('facilitador-cliente').value, estatus: document.getElementById('estatus-cliente').value
+                        fecha_atencion: construirFecha('semana-cliente', 'dia-cliente', 'hora-cliente'), 
+                        logo_url: logoStr, nombre_cliente: document.getElementById('nombre-cliente').value, 
+                        lugar_atencion: document.getElementById('lugar-cliente').value, 
+                        curso: document.getElementById('curso-cliente').value, 
+                        facilitador: document.getElementById('facilitador-cliente').value, 
+                        estatus: document.getElementById('estatus-cliente').value
                     })});
                     if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); cargarProgramasDropdown(); } 
                     else { const data = await res.json(); alert(data.error || "Error al guardar el cliente."); }
@@ -290,20 +307,25 @@
             const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
             try {
                 const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: construirFecha('semana-tarea', 'dia-tarea', 'hora-tarea'), urgencia: document.getElementById('urgencia-tarea').value
+                    tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, 
+                    responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, 
+                    fecha_limite: construirFecha('semana-tarea', 'dia-tarea', 'hora-tarea'), urgencia: document.getElementById('urgencia-tarea').value
                 })});
-                if (res.ok) { alert("Delegado."); this.reset(); } else alert("Error.");
-            } catch (error) { alert("Error."); } finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
+                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); } else alert("Error al delegar función.");
+            } catch (error) { alert("Error de red."); } finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
         });
 
         async function cargarDatosGestion() {
             try {
-                const conf = { cache: 'no-store' }; const ts = new Date().getTime();
+                const ts = new Date().getTime(); const conf = { cache: 'no-store' };
                 const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
                 if(resC.ok) {
                     const clientes = await resC.json(); tbC.innerHTML = '';
                     if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin clientes</td></tr>';
-                    clientes.forEach(c => tbC.innerHTML += `<tr><td>${new Date(c.fecha_atencion).toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.curso}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`);
+                    clientes.forEach(c => {
+                        let d = new Date(c.fecha_atencion);
+                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.curso}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`;
+                    });
                 }
                 const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
                 if(resT.ok) {
@@ -315,7 +337,7 @@
         }
 
         async function borrarRegistro(tipo, id) {
-            if(confirm('¿Eliminar este registro?')) {
+            if(confirm('¿Eliminar este registro de la base de datos de manera definitiva?')) {
                 try {
                     const res = await fetch(`/api/${tipo}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
                     if(res.ok) { alert("Eliminado exitosamente."); cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown(); }
@@ -323,6 +345,7 @@
             }
         }
 
+        // INICIALIZACIÓN
         llenarSemanas(); cargarPersonal(); cargarProgramasDropdown();
     </script>
 </body>
