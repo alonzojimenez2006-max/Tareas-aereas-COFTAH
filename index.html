@@ -16,7 +16,6 @@
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
         .header-derecha { display: flex; align-items: center; gap: 20px; }
         
-        /* Indicador de conexión en vivo */
         .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 10px; }
         .punto-verde { width: 10px; height: 10px; background-color: var(--urgencia-baja); border-radius: 50%; box-shadow: 0 0 8px var(--urgencia-baja); animation: titilar 2s infinite; }
         @keyframes titilar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
@@ -86,6 +85,7 @@
                         <label>Filtrar por Semana</label><select id="filtro-semana" onchange="renderizarVistas()"></select>
                         <label>Filtrar por Día</label>
                         <select id="filtro-dia" onchange="renderizarVistas()">
+                            <option value="0" style="font-weight:bold; color:var(--acento-amarillo);">Toda la semana</option>
                             <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
                         </select>
                     </div>
@@ -116,6 +116,13 @@
         function getNumeroSemana(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7); }
         function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
 
+        // Función CRÍTICA para evitar que la zona horaria oculte los registros del día correcto
+        function parseFechaLocal(fechaStr) {
+            if (!fechaStr) return new Date();
+            let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
+            return new Date(limpia);
+        }
+
         function inicializarFiltrosSemanales() {
             const selectSemana = document.getElementById('filtro-semana'); let hoy = new Date();
             document.getElementById('semana-actual').textContent = `SEMANA ${getNumeroSemana(hoy)}`;
@@ -138,7 +145,6 @@
             ind.innerHTML = `<div class="punto-verde" style="background-color: var(--acento-amarillo); box-shadow: 0 0 8px var(--acento-amarillo);"></div> Actualizando...`;
             
             try {
-                // FORZAR CACHE BYPASS ESTRICTO
                 const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' } };
                 const ts = new Date().getTime();
                 
@@ -181,19 +187,27 @@
 
             // Clientes
             const contC = document.getElementById('lista-clientes');
-            const filtC = clientes.filter(c => getNumeroSemana(new Date(c.fecha_atencion)) === sem && getDiaSemana(new Date(c.fecha_atencion)) === dia);
-            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario);">No hay programas registrados para este día.</div>`;
-            else contC.innerHTML = filtC.map(c => `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })}</div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`).join('');
+            const filtC = clientes.filter(c => {
+                let d = parseFechaLocal(c.fecha_atencion);
+                return getNumeroSemana(d) === sem && (dia === 0 || getDiaSemana(d) === dia);
+            });
+
+            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta vista.</div>`;
+            else contC.innerHTML = filtC.map(c => `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${parseFechaLocal(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })} <br><span style="font-size:0.8rem; font-weight:normal; color:#FFF;">${parseFechaLocal(c.fecha_atencion).toLocaleDateString('es-ES', {weekday:'short'})}</span></div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`).join('');
 
             // Tareas
             const contT = document.getElementById('lista-tareas');
-            const filtT = tareas.filter(t => getNumeroSemana(new Date(t.fecha_limite)) === sem && getDiaSemana(new Date(t.fecha_limite)) === dia);
-            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario);">No hay funciones delegadas para este día.</div>`;
+            const filtT = tareas.filter(t => {
+                let d = parseFechaLocal(t.fecha_limite);
+                return getNumeroSemana(d) === sem && (dia === 0 || getDiaSemana(d) === dia);
+            });
+
+            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas para esta vista.</div>`;
             else {
                 contT.innerHTML = '';
                 filtT.forEach(t => {
                     let infoResp = (t.tipo_tarea === 'vinculada' && t.nombre_cliente) ? `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${t.nombre_cliente}</span>` : t.responsable;
-                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="marcarCompletada(${t.id}, '${t.responsable}')"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-family:monospace; font-size:1.1rem;">${new Date(t.fecha_limite).toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
+                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="marcarCompletada(${t.id}, '${t.responsable}')"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-family:monospace; font-size:1.1rem;">${parseFechaLocal(t.fecha_limite).toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
                 });
             }
         }
@@ -204,7 +218,7 @@
             const ahora = new Date();
             tareas.forEach(t => {
                 if (t.completada || !t.created_at) return; 
-                const limite = new Date(t.fecha_limite); const inicio = new Date(t.created_at); 
+                const limite = parseFechaLocal(t.fecha_limite); const inicio = parseFechaLocal(t.created_at); 
                 const tiempoRestante = limite.getTime() - ahora.getTime();
                 if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
                     hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`); tareasAvisadas.add(t.id);
