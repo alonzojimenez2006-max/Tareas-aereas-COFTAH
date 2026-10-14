@@ -3,257 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Dashboard COFTAH</title>
+    <title>Dashboard COFTAH</title>
     <style>
         :root {
-            --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; 
-            --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D;
-            --borde-input: #234E8A; --btn-borrar: #FF3366; --completado: #2E8B57;
+            --bg-principal: #0A192F; 
+            --bg-paneles: #112240; 
+            --texto-principal: #FFFFFF; 
+            --texto-secundario: #8892B0; 
+            --acento-amarillo: #FFD700; 
+            --urgencia-baja: #64FFDA; 
+            --urgencia-media: #FFD700; 
+            --urgencia-alta: #FF8C00; 
+            --urgencia-critica: #FF3366; 
+            --completado: #2E8B57; 
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-principal); color: var(--texto-principal); min-height: 100vh; padding: 20px; }
-        header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg-paneles); }
-        header img { height: 45px; width: auto; }
-        header h1 { font-size: 1.5rem; font-weight: 600; color: var(--acento-amarillo); }
-        .tabs-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn { background-color: var(--bg-paneles); color: var(--texto-secundario); border: 2px solid transparent; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
-        .tab-btn:hover { color: var(--texto-principal); background-color: rgba(255, 215, 0, 0.1); }
-        .tab-btn.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 2px solid var(--acento-amarillo); }
-        .vista { display: none; background-color: var(--bg-paneles); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); max-width: 900px; margin: 0 auto; }
-        .vista.active { display: block; }
-        .panel-titulo { font-size: 1.3rem; text-transform: uppercase; color: var(--acento-amarillo); margin-bottom: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
-        .form-group { margin-bottom: 20px; }
-        .row-group { display: flex; gap: 15px; margin-bottom: 20px; }
-        .row-group > div { flex: 1; }
-        label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
-        input, select, textarea { width: 100%; padding: 12px; background-color: var(--input-bg); border: 1px solid var(--borde-input); border-radius: 6px; color: var(--texto-principal); font-size: 1rem; outline: none; }
-        input[type="file"] { padding: 9px; cursor: pointer; }
-        input[type="file"]::file-selector-button { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--acento-amarillo); padding: 8px 16px; border-radius: 4px; margin-right: 15px; cursor: pointer; }
-        input:focus, select:focus, textarea:focus { border-color: var(--acento-amarillo); }
-        .radio-group { display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px; }
-        .tabla-gestion { width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
-        .tabla-gestion th, .tabla-gestion td { padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input); }
-        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); text-transform: uppercase; font-size: 0.9rem; }
-        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; }
-        .btn-borrar { background-color: var(--btn-borrar); }
-        .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        .btn-submit:disabled { background-color: #8892B0; cursor: not-allowed; }
-        #grupo-programa-vinculado { display: none; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
+
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand img { height: 45px; width: auto; }
+        .titulos { display: flex; flex-direction: column; justify-content: center; }
+        .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
+        
+        #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
+        .header-derecha { display: flex; align-items: center; gap: 20px; }
+
+        .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
+        #semana-actual { color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; }
+
+        .menu-container { position: relative; }
+        .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; transition: color 0.3s ease; padding: 0 10px; }
+        .btn-hamburguesa:hover, .btn-hamburguesa:focus { color: var(--acento-amarillo); outline: none; }
+
+        .menu-desplegable { display: none; position: absolute; top: 110%; right: 0; background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario); border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px; }
+        .menu-desplegable.show { display: flex; }
+
+        .menu-item { background-color: transparent; color: var(--texto-secundario); border: none; padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; border-radius: 5px; text-transform: uppercase; }
+        .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
+        .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
+
+        .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+        .filtros-semanales label { font-size: 0.85rem; color: var(--texto-secundario); margin-bottom:-4px; }
+        .filtros-semanales select { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; outline: none; cursor: pointer; }
+        .filtros-semanales select:focus { border-color: var(--acento-amarillo); }
+
+        .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
+        .vista.active { display: flex; }
+
+        .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
+        .grid-clientes { grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px; }
+        .grid-tareas { grid-template-columns: 1fr 4fr 150px 150px 120px; }
+
+        .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+        .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
+        .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
+
+        .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; text-align: center; display: inline-block; width: 100%; }
+
+        .estatus-rutina { background-color: var(--urgencia-baja); color: #000; }
+        .estatus-importante { background-color: var(--urgencia-media); color: #000; }
+        .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
+        .estatus-critica { background-color: var(--urgencia-critica); color: #fff; animation: parpadeo 1.5s infinite; }
+        .estatus-programado { background-color: var(--urgencia-baja); color: #000; }
+        .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
+        .estatus-completado { background-color: var(--completado); color: #fff; }
+
+        @keyframes destelloVerde { 0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); } 50% { background-color: var(--completado); transform: scale(1.01); } 100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); } }
+        .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
+        @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-paneles); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--acento-amarillo); }
     </style>
 </head>
 <body>
+
     <header>
-        <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
-        <h1>PANEL DE ADMINISTRACIÓN</h1>
+        <div class="brand">
+            <img src="COFTAH.png.png" alt="Logo de COFTAH" onerror="this.style.display='none'">
+            <div class="titulos">
+                <h1>COFTAH / TABLERO DE OPERACIONES</h1>
+                <div id="subtitulo-vista">CRONOGRAMA DE CLIENTES</div>
+            </div>
+        </div>
+        
+        <div class="header-derecha">
+            <div class="reloj">
+                <span id="semana-actual">SEMANA --</span>
+                <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
+                <span id="reloj-digital">00:00:00</span>
+            </div>
+            
+            <div class="menu-container">
+                <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
+                <div id="menu-desplegable" class="menu-desplegable">
+                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
+                    <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
+                    
+                    <div class="filtros-semanales">
+                        <label>Filtrar por Semana</label>
+                        <select id="filtro-semana" onchange="renderizarVistas()"></select>
+                        <label>Filtrar por Día</label>
+                        <select id="filtro-dia" onchange="renderizarVistas()">
+                            <option value="1">Lunes</option>
+                            <option value="2">Martes</option>
+                            <option value="3">Miércoles</option>
+                            <option value="4">Jueves</option>
+                            <option value="5">Viernes</option>
+                            <option value="6">Sábado</option>
+                            <option value="7">Domingo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
     </header>
 
-    <div class="tabs-container">
-        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Cliente</button>
-        <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
-        <button class="tab-btn" id="btn-personal" onclick="cambiarFormulario('personal')">Registrar Equipo</button>
-        <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
-    </div>
-
     <div class="vista active" id="vista-clientes">
-        <h2 class="panel-titulo">Datos del Cliente</h2>
-        <form id="form-cliente">
-            <div class="row-group">
-                <div><label>Semana</label><select id="semana-cliente" required></select></div>
-                <div><label>Día</label><select id="dia-cliente" required>
-                    <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
-                </select></div>
-                <div><label>Hora</label><input type="time" id="hora-cliente" required></div>
-            </div>
-            <div class="form-group"><label>Logo (Opcional)</label><input type="file" id="logo-cliente" accept="image/png, image/jpeg"></div>
-            <div class="form-group"><label>Nombre del Cliente</label><input type="text" id="nombre-cliente" required></div>
-            <div class="form-group"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
-            <div class="form-group"><label>Curso al detal</label><input type="text" id="curso-cliente" required></div>
-            <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" required><option value="" disabled selected>Cargando personal...</option></select></div>
-            <div class="form-group"><label>Estatus</label><select id="estatus-cliente" required><option value="programado">Programado</option><option value="importante">Aviso Próximo</option><option value="retrasado">Retrasado</option></select></div>
-            <button type="submit" class="btn-submit">Guardar Cliente</button>
-        </form>
+        <div class="fila-header grid-clientes">
+            <div>Fecha/Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Curso al detal</div><div>Facilitador</div><div>Estatus</div>
+        </div>
+        <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
     <div class="vista" id="vista-tareas">
-        <h2 class="panel-titulo">Asignación de Tareas</h2>
-        <form id="form-tarea">
-            <div class="form-group"><label>Tipo de Función</label><div class="radio-group"><label><input type="radio" name="tipo-tarea" value="aislada" checked> Aislada</label><label><input type="radio" name="tipo-tarea" value="vinculada"> Vincular</label></div></div>
-            <div class="form-group" id="grupo-programa-vinculado"><label>Programa Activo</label><select id="programa-vinculado"></select></div>
-            <div class="form-group"><label>Responsable</label><select id="responsable-tarea" required><option value="" disabled selected>Cargando personal...</option></select></div>
-            <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
-            <div class="row-group">
-                <div><label>Semana Límite</label><select id="semana-tarea" required></select></div>
-                <div><label>Día Límite</label><select id="dia-tarea" required>
-                    <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
-                </select></div>
-                <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
-            </div>
-            <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
-            <button type="submit" class="btn-submit">Delegar Función</button>
-        </form>
-    </div>
-
-    <div class="vista" id="vista-personal">
-        <h2 class="panel-titulo">Registrar Miembro del Equipo</h2>
-        <form id="form-personal">
-            <div class="form-group"><label>Nombre (Apodo)</label><input type="text" id="nombre-personal" required></div>
-            <div class="form-group"><label>Rol</label><select id="rol-personal" required><option value="facilitador">Facilitador</option><option value="responsable">Responsable</option></select></div>
-            <button type="submit" class="btn-submit">Añadir al Equipo</button>
-        </form>
-    </div>
-
-    <!-- AQUÍ ESTÁ LA CORRECCIÓN: Tablas de Gestión Completas -->
-    <div class="vista" id="vista-gestion">
-        <h2 class="panel-titulo">Personal del Equipo (Facilitadores/Responsables)</h2>
-        <table class="tabla-gestion">
-            <thead><tr><th>Nombre</th><th>Rol</th><th>Acción</th></tr></thead>
-            <tbody id="tbody-personal"><tr><td colspan="3">Cargando...</td></tr></tbody>
-        </table>
-
-        <h2 class="panel-titulo">Programas Activos (Clientes)</h2>
-        <table class="tabla-gestion">
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Curso</th><th>Acción</th></tr></thead>
-            <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
-        </table>
-
-        <h2 class="panel-titulo">Funciones Delegadas</h2>
-        <table class="tabla-gestion">
-            <thead><tr><th>Responsable</th><th>Descripción</th><th>Estatus</th><th>Acción</th></tr></thead>
-            <tbody id="tbody-tareas"><tr><td colspan="4">Cargando...</td></tr></tbody>
-        </table>
+        <div class="fila-header grid-tareas">
+            <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div>Estatus</div>
+        </div>
+        <div class="contenedor-lista" id="lista-tareas"></div>
     </div>
 
     <script>
-        function cambiarFormulario(vistaId) {
-            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`vista-${vistaId}`).classList.add('active');
-            document.getElementById(`btn-${vistaId}`).classList.add('active');
-        }
+        setInterval(() => {
+            document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true });
+        }, 1000);
 
-        function llenarSemanas() {
-            const selects = [document.getElementById('semana-cliente'), document.getElementById('semana-tarea')];
-            let hoy = new Date(); let diaSemana = hoy.getDay() || 7; 
-            let lunesActual = new Date(hoy); lunesActual.setDate(hoy.getDate() - diaSemana + 1); lunesActual.setHours(0,0,0,0);
-            selects.forEach(select => select.innerHTML = '');
+        function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
+        document.addEventListener('click', function(e) {
+            const menu = document.getElementById('menu-desplegable');
+            if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show');
+        });
+
+        function getNumeroSemana(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+        }
+        function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
+
+        function inicializarFiltrosSemanales() {
+            const selectSemana = document.getElementById('filtro-semana');
+            let hoy = new Date();
+            let numSemanaActual = getNumeroSemana(hoy);
+            document.getElementById('semana-actual').textContent = `SEMANA ${numSemanaActual}`;
+            
+            let lunesActual = new Date(hoy);
+            lunesActual.setDate(hoy.getDate() - getDiaSemana(hoy) + 1);
+            lunesActual.setHours(0,0,0,0);
+
+            selectSemana.innerHTML = '';
             for (let i = 0; i < 12; i++) {
                 let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
-                let d = new Date(Date.UTC(lunesSemana.getFullYear(), lunesSemana.getMonth(), lunesSemana.getDate()));
-                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-                let yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-                let numSemana = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-                let fechaStr = lunesSemana.toISOString().split('T')[0];
+                let numSemana = getNumeroSemana(lunesSemana);
                 let label = `Semana ${numSemana} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
-                selects.forEach(select => select.add(new Option(label, fechaStr)));
+                selectSemana.add(new Option(label, numSemana));
+            }
+            document.getElementById('filtro-dia').value = getDiaSemana(hoy);
+        }
+
+        let clientes = [];
+        let tareas = [];
+        
+        // Memoria para las voces
+        let tareasAvisadas = new Set();
+        let clientesConocidos = new Set();
+        let tareasConocidas = new Set();
+        let esPrimeraCarga = true;
+
+        async function cargarDatos() {
+            try {
+                // El timestamp "?t=" evita que el navegador guarde datos viejos en caché
+                const timestamp = new Date().getTime();
+                
+                const resClientes = await fetch('/api/clientes?t=' + timestamp);
+                clientes = await resClientes.json();
+                
+                const resTareas = await fetch('/api/tareas?t=' + timestamp);
+                tareas = await resTareas.json();
+                
+                // LÓGICA DE VOCES PARA NUEVOS REGISTROS
+                if (esPrimeraCarga) {
+                    clientes.forEach(c => clientesConocidos.add(c.id));
+                    tareas.forEach(t => tareasConocidas.add(t.id));
+                    esPrimeraCarga = false;
+                } else {
+                    clientes.forEach(c => {
+                        if (!clientesConocidos.has(c.id)) {
+                            hablar(`Atención equipo. Nuevo programa registrado: ${c.nombre_cliente}. Curso de ${c.curso}.`);
+                            clientesConocidos.add(c.id);
+                        }
+                    });
+
+                    tareas.forEach(t => {
+                        if (!tareasConocidas.has(t.id)) {
+                            let msjNuevaTarea = t.nombre_cliente 
+                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
+                            hablar(msjNuevaTarea);
+                            tareasConocidas.add(t.id);
+                        }
+                    });
+                }
+                
+                renderizarVistas();
+            } catch (error) {
+                console.error("Error conectando con la base de datos:", error);
             }
         }
 
-        function construirFecha(idSemana, idDia, idHora) {
-            let fechaBase = new Date(document.getElementById(idSemana).value + "T00:00:00"); 
-            fechaBase.setDate(fechaBase.getDate() + parseInt(document.getElementById(idDia).value) - 1);
-            let [hh, mm] = (document.getElementById(idHora).value || "00:00").split(':');
-            fechaBase.setHours(hh, mm, 0, 0);
-            return (new Date(fechaBase - (new Date()).getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        function cambiarVista(vistaId) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
+            document.getElementById(`vista-${vistaId}`).classList.add('active');
+            document.getElementById(`btn-${vistaId}`).classList.add('active');
+            document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
+            document.getElementById('menu-desplegable').classList.remove('show');
+            renderizarVistas();
         }
 
-        async function cargarPersonal() {
-            try {
-                const res = await fetch('/api/personal');
-                if(!res.ok) return;
-                const personal = await res.json();
-                const selFac = document.getElementById('facilitador-cliente');
-                const selResp = document.getElementById('responsable-tarea');
-                selFac.innerHTML = '<option value="" disabled selected>Seleccione facilitador...</option>';
-                selResp.innerHTML = '<option value="" disabled selected>Seleccione responsable...</option>';
-                personal.forEach(p => {
-                    if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-                    if(p.rol === 'responsable') selResp.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-                });
-            } catch (error) { console.error(error); }
+        function renderizarVistas() {
+            renderizarClientes();
+            renderizarTareas();
+            document.getElementById('semana-actual').textContent = `SEMANA ${document.getElementById('filtro-semana').value}`;
         }
 
-        document.getElementById('form-personal').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
-            try {
-                const res = await fetch('/api/personal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-personal').value, rol: document.getElementById('rol-personal').value }) });
-                const data = await res.json();
-                if (res.ok) { alert("Registrado exitosamente."); this.reset(); cargarPersonal(); if(document.getElementById('vista-gestion').classList.contains('active')) cargarDatosGestion(); } 
-                else alert(data.error);
-            } catch (error) { alert("Error de red."); } finally { btn.textContent = "Añadir al Equipo"; btn.disabled = false; }
-        });
+        function renderizarClientes() {
+            const contenedor = document.getElementById('lista-clientes');
+            const sem = parseInt(document.getElementById('filtro-semana').value);
+            const dia = parseInt(document.getElementById('filtro-dia').value);
 
-        document.querySelectorAll('input[name="tipo-tarea"]').forEach(r => r.addEventListener('change', function() {
-            document.getElementById('grupo-programa-vinculado').style.display = this.value === 'vinculada' ? 'block' : 'none';
-            document.getElementById('programa-vinculado').required = this.value === 'vinculada';
-        }));
+            const filtrados = clientes.filter(c => getNumeroSemana(new Date(c.fecha_atencion)) === sem && getDiaSemana(new Date(c.fecha_atencion)) === dia);
 
-        async function cargarProgramasDropdown() {
-            try {
-                const res = await fetch('/api/clientes'); const clientes = await res.json();
-                const sel = document.getElementById('programa-vinculado');
-                sel.innerHTML = '<option value="" disabled selected>Selecciona un programa...</option>';
-                clientes.forEach(c => sel.innerHTML += `<option value="${c.id}">${new Date(c.fecha_atencion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} - ${c.nombre_cliente}</option>`);
-            } catch (error) {}
+            if (filtrados.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario);">No hay programas registrados para este día.</div>`;
+                return;
+            }
+
+            contenedor.innerHTML = filtrados.map(c => `
+                <div class="fila-item grid-clientes">
+                    <div style="font-weight: bold; color: var(--acento-amarillo);">${new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
+                    <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
+                    <div style="font-weight: bold; font-size: 1.1rem;">${c.nombre_cliente}</div>
+                    <div>${c.lugar_atencion}</div>
+                    <div>${c.curso}</div>
+                    <div style="font-weight: bold; color: var(--urgencia-baja);">${c.facilitador}</div>
+                    <div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div>
+                </div>
+            `).join('');
         }
 
-        document.getElementById('form-cliente').addEventListener('submit', async function(e) {
-            e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
-            try {
-                const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    fecha_atencion: construirFecha('semana-cliente', 'dia-cliente', 'hora-cliente'), logo_url: "", nombre_cliente: document.getElementById('nombre-cliente').value, lugar_atencion: document.getElementById('lugar-cliente').value, curso: document.getElementById('curso-cliente').value, facilitador: document.getElementById('facilitador-cliente').value, estatus: document.getElementById('estatus-cliente').value
-                })});
-                const data = await res.json();
-                if (res.ok) { alert("Guardado."); this.reset(); cargarProgramasDropdown(); } else alert(data.error);
-            } catch (error) { alert("Error."); } finally { btn.textContent = "Guardar Cliente"; btn.disabled = false; }
-        });
+        function renderizarTareas(idAnimar = null) {
+            const contenedor = document.getElementById('lista-tareas');
+            const sem = parseInt(document.getElementById('filtro-semana').value);
+            const dia = parseInt(document.getElementById('filtro-dia').value);
 
-        document.getElementById('form-tarea').addEventListener('submit', async function(e) {
-            e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
-            const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
-            try {
-                const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: construirFecha('semana-tarea', 'dia-tarea', 'hora-tarea'), urgencia: document.getElementById('urgencia-tarea').value
-                })});
-                if (res.ok) { alert("Delegado."); this.reset(); } else alert("Error.");
-            } catch (error) { alert("Error."); } finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
-        });
+            const filtradas = tareas.filter(t => getNumeroSemana(new Date(t.fecha_limite)) === sem && getDiaSemana(new Date(t.fecha_limite)) === dia);
+            
+            if (filtradas.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario);">No hay funciones delegadas para este día.</div>`;
+                return;
+            }
 
-        async function cargarDatosGestion() {
-            try {
-                const resP = await fetch('/api/personal'); const tbP = document.getElementById('tbody-personal');
-                if(resP.ok) {
-                    const personal = await resP.json(); tbP.innerHTML = '';
-                    if(personal.length===0) tbP.innerHTML='<tr><td colspan="3">Sin personal</td></tr>';
-                    personal.forEach(p => tbP.innerHTML += `<tr><td>${p.nombre}</td><td>${p.rol}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('personal', ${p.id})">Borrar</button></td></tr>`);
+            contenedor.innerHTML = ''; 
+            filtradas.forEach(t => {
+                let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.urgencia}`;
+                let badgeText = t.completada ? "COMPLETADA" : t.urgencia.toUpperCase();
+                let filaClase = t.id === idAnimar ? "animacion-completado" : "";
+                let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
+                let infoResp = t.tipo_tarea === 'vinculada' && t.nombre_cliente ? `${t.responsable} <br><span style="color: #64FFDA; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: inline-block;">Para: ${t.nombre_cliente}</span>` : t.responsable;
+
+                contenedor.innerHTML += `
+                    <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id}, '${t.responsable}')">
+                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${infoResp}</div>
+                        <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
+                        <div style="font-family: monospace; font-size: 1.1rem;">${new Date(t.fecha_limite).toLocaleString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}</div>
+                        <div>${t.completada ? '--' : 'Pendiente'}</div>
+                        <div><span class="badge ${badgeClass}">${badgeText}</span></div>
+                    </div>
+                `;
+            });
+        }
+
+        function hablar(texto) {
+            if ('speechSynthesis' in window) {
+                const mensaje = new SpeechSynthesisUtterance(texto);
+                mensaje.lang = 'es-ES';
+                window.speechSynthesis.speak(mensaje);
+            }
+        }
+
+        function verificarTiempos() {
+            const ahora = new Date();
+            tareas.forEach(t => {
+                if (t.completada || !t.created_at) return; 
+                const limite = new Date(t.fecha_limite);
+                const inicio = new Date(t.created_at); 
+                const tiempoTotal = limite.getTime() - inicio.getTime();
+                const tiempoRestante = limite.getTime() - ahora.getTime();
+
+                if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30) && !tareasAvisadas.has(t.id)) {
+                    const min = Math.ceil(tiempoRestante / 60000);
+                    let msj = t.nombre_cliente ? `Atención ${t.responsable}. Quedan ${min} minutos para la función del cliente ${t.nombre_cliente}: ${t.descripcion}` : `Atención ${t.responsable}. Quedan ${min} minutos para la función: ${t.descripcion}`;
+                    hablar(msj);
+                    tareasAvisadas.add(t.id);
                 }
-                const resC = await fetch('/api/clientes'); const tbC = document.getElementById('tbody-clientes');
-                if(resC.ok) {
-                    const clientes = await resC.json(); tbC.innerHTML = '';
-                    if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin clientes</td></tr>';
-                    clientes.forEach(c => tbC.innerHTML += `<tr><td>${new Date(c.fecha_atencion).toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.curso}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`);
-                }
-                const resT = await fetch('/api/tareas'); const tbT = document.getElementById('tbody-tareas');
-                if(resT.ok) {
-                    const tareas = await resT.json(); tbT.innerHTML = '';
-                    if(tareas.length===0) tbT.innerHTML='<tr><td colspan="4">Sin tareas</td></tr>';
-                    tareas.forEach(t => tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0,25)}...</td><td>${t.completada?'Sí':'No'}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`);
-                }
-            } catch (error) { console.error(error); }
+            });
         }
 
-        async function borrarRegistro(tipo, id) {
-            if(confirm('¿Eliminar este registro?')) {
+        async function marcarCompletada(id, responsable) {
+            if (!confirm(`¿Confirmas que la función de ${responsable} fue realizada exitosamente?`)) return; 
+            const tareaObj = tareas.find(t => t.id === id);
+            if (tareaObj && !tareaObj.completada) {
                 try {
-                    const res = await fetch(`/api/${tipo}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
-                    const data = await res.json();
-                    if(res.ok) { alert("Eliminado exitosamente."); cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown(); if(tipo==='personal') cargarPersonal(); }
-                    else alert(data.error || "Error al eliminar.");
-                } catch (error) { alert("Error de red."); }
+                    await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                    tareaObj.completada = true;
+                    let msj = tareaObj.nombre_cliente ? `${tareaObj.responsable} completó la tarea para el cliente ${tareaObj.nombre_cliente}.` : `${tareaObj.responsable} completó la tarea.`;
+                    hablar(msj);
+                    renderizarVistas();
+                } catch (error) { console.error("Error:", error); }
             }
         }
 
-        llenarSemanas(); cargarPersonal(); cargarProgramasDropdown();
+        inicializarFiltrosSemanales();
+        cargarDatos();
+        setInterval(cargarDatos, 15000);
+        setInterval(verificarTiempos, 10000);
     </script>
 </body>
 </html>
