@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Dashboard COFTAH</title>
     <style>
-        :root {
-            --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; 
-            --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D;
-            --borde-input: #234E8A; --btn-borrar: #FF3366; --completado: #2E8B57;
-        }
+        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D; --borde-input: #234E8A; --btn-borrar: #FF3366; --btn-restaurar: #2E8B57; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-principal); color: var(--texto-principal); min-height: 100vh; padding: 20px; }
         header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg-paneles); }
@@ -17,7 +13,6 @@
         header h1 { font-size: 1.5rem; font-weight: 600; color: var(--acento-amarillo); }
         .tabs-container { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .tab-btn { background-color: var(--bg-paneles); color: var(--texto-secundario); border: 2px solid transparent; padding: 12px 25px; font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
-        .tab-btn:hover { color: var(--texto-principal); background-color: rgba(255, 215, 0, 0.1); }
         .tab-btn.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 2px solid var(--acento-amarillo); }
         .vista { display: none; background-color: var(--bg-paneles); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); max-width: 900px; margin: 0 auto; }
         .vista.active { display: block; }
@@ -27,18 +22,19 @@
         .row-group > div { flex: 1; }
         label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
         input, select, textarea { width: 100%; padding: 12px; background-color: var(--input-bg); border: 1px solid var(--borde-input); border-radius: 6px; color: var(--texto-principal); font-size: 1rem; outline: none; }
-        input[type="file"] { padding: 9px; cursor: pointer; }
-        input[type="file"]::file-selector-button { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--acento-amarillo); padding: 8px 16px; border-radius: 4px; margin-right: 15px; cursor: pointer; }
-        input:focus, select:focus, textarea:focus { border-color: var(--acento-amarillo); }
         .radio-group { display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px; }
         .tabla-gestion { width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
         .tabla-gestion th, .tabla-gestion td { padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input); }
-        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); text-transform: uppercase; font-size: 0.9rem; }
-        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; }
+        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); font-size: 0.9rem; }
+        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px;}
         .btn-borrar { background-color: var(--btn-borrar); }
-        .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
-        .btn-submit:disabled { background-color: #8892B0; cursor: not-allowed; }
+        .btn-mover { background-color: #d4a017; color: #000; }
+        .btn-restaurar { background-color: var(--btn-restaurar); }
+        .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 30px; }
         #grupo-programa-vinculado { display: none; }
+        .grid-personal { display: flex; gap: 20px; margin-bottom: 30px; }
+        .grid-personal > div { flex: 1; }
+        .papelera-box { border: 2px dashed var(--btn-borrar); padding: 20px; border-radius: 8px; background-color: rgba(255, 51, 102, 0.05); }
     </style>
 </head>
 <body>
@@ -54,17 +50,15 @@
         <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
     </div>
 
+    <!-- VISTA CLIENTES -->
     <div class="vista active" id="vista-clientes">
         <h2 class="panel-titulo">Datos del Cliente</h2>
         <form id="form-cliente">
             <div class="row-group">
                 <div><label>Semana</label><select id="semana-cliente" required></select></div>
-                <div><label>Día</label><select id="dia-cliente" required>
-                    <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
-                </select></div>
+                <div><label>Día</label><select id="dia-cliente" required><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
                 <div><label>Hora</label><input type="time" id="hora-cliente" required></div>
             </div>
-            <div class="form-group"><label>Logo (Opcional)</label><input type="file" id="logo-cliente" accept="image/png, image/jpeg"></div>
             <div class="form-group"><label>Nombre del Cliente</label><input type="text" id="nombre-cliente" required></div>
             <div class="form-group"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
             <div class="form-group"><label>Curso al detal</label><input type="text" id="curso-cliente" required></div>
@@ -74,6 +68,7 @@
         </form>
     </div>
 
+    <!-- VISTA TAREAS -->
     <div class="vista" id="vista-tareas">
         <h2 class="panel-titulo">Asignación de Tareas</h2>
         <form id="form-tarea">
@@ -82,40 +77,56 @@
             <div class="form-group"><label>Responsable</label><select id="responsable-tarea" required><option value="" disabled selected>Cargando personal...</option></select></div>
             <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
             <div class="row-group">
-                <div><label>Semana Límite</label><select id="semana-tarea" required></select></div>
-                <div><label>Día Límite</label><select id="dia-tarea" required>
-                    <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
-                </select></div>
-                <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
+                <div><label>Semana</label><select id="semana-tarea" required></select></div>
+                <div><label>Día</label><select id="dia-tarea" required><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
+                <div><label>Hora</label><input type="time" id="hora-tarea" required></div>
             </div>
             <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
             <button type="submit" class="btn-submit">Delegar Función</button>
         </form>
     </div>
 
+    <!-- VISTA PERSONAL (NUEVO FLUJO DE PAPELERA) -->
     <div class="vista" id="vista-personal">
-        <h2 class="panel-titulo">Registrar Miembro del Equipo</h2>
+        <h2 class="panel-titulo">Añadir Nuevo Miembro</h2>
         <form id="form-personal">
-            <div class="form-group"><label>Nombre (Apodo)</label><input type="text" id="nombre-personal" required></div>
-            <div class="form-group"><label>Rol</label><select id="rol-personal" required><option value="facilitador">Facilitador</option><option value="responsable">Responsable</option></select></div>
+            <div class="row-group">
+                <div><label>Nombre (Apodo)</label><input type="text" id="nombre-personal" required></div>
+                <div><label>Rol</label><select id="rol-personal" required><option value="facilitador">Facilitador</option><option value="responsable">Responsable</option></select></div>
+            </div>
             <button type="submit" class="btn-submit">Añadir al Equipo</button>
         </form>
+
+        <div class="grid-personal">
+            <div>
+                <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Facilitadores</h3>
+                <table class="tabla-gestion">
+                    <tbody id="tbody-facilitadores"><tr><td>Cargando...</td></tr></tbody>
+                </table>
+            </div>
+            <div>
+                <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Responsables</h3>
+                <table class="tabla-gestion">
+                    <tbody id="tbody-responsables"><tr><td>Cargando...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="papelera-box">
+            <h3 style="color: var(--btn-borrar); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">🗑️ Papelera de Reciclaje</h3>
+            <table class="tabla-gestion" style="margin-bottom: 0;">
+                <tbody id="tbody-papelera"><tr><td style="color: var(--texto-secundario);">La papelera está vacía.</td></tr></tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- AQUÍ ESTÁ LA CORRECCIÓN: Tablas de Gestión Completas -->
+    <!-- VISTA GESTIÓN GENERAL -->
     <div class="vista" id="vista-gestion">
-        <h2 class="panel-titulo">Personal del Equipo (Facilitadores/Responsables)</h2>
-        <table class="tabla-gestion">
-            <thead><tr><th>Nombre</th><th>Rol</th><th>Acción</th></tr></thead>
-            <tbody id="tbody-personal"><tr><td colspan="3">Cargando...</td></tr></tbody>
-        </table>
-
         <h2 class="panel-titulo">Programas Activos (Clientes)</h2>
         <table class="tabla-gestion">
             <thead><tr><th>Fecha</th><th>Cliente</th><th>Curso</th><th>Acción</th></tr></thead>
             <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
         </table>
-
         <h2 class="panel-titulo">Funciones Delegadas</h2>
         <table class="tabla-gestion">
             <thead><tr><th>Responsable</th><th>Descripción</th><th>Estatus</th><th>Acción</th></tr></thead>
@@ -131,12 +142,13 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
+        // Semanas
         function llenarSemanas() {
             const selects = [document.getElementById('semana-cliente'), document.getElementById('semana-tarea')];
             let hoy = new Date(); let diaSemana = hoy.getDay() || 7; 
             let lunesActual = new Date(hoy); lunesActual.setDate(hoy.getDate() - diaSemana + 1); lunesActual.setHours(0,0,0,0);
             selects.forEach(select => select.innerHTML = '');
-            for (let i = 0; i < 12; i++) {
+            for (let i = -2; i < 10; i++) {
                 let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
                 let d = new Date(Date.UTC(lunesSemana.getFullYear(), lunesSemana.getMonth(), lunesSemana.getDate()));
                 d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
@@ -156,20 +168,85 @@
             return (new Date(fechaBase - (new Date()).getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
         }
 
+        // LÓGICA DE PERSONAL Y PAPELERA
+        let personalCompleto = [];
+        let enPapelera = new Set(); // Guarda los IDs de quienes están en la papelera temporalmente
+
         async function cargarPersonal() {
             try {
-                const res = await fetch('/api/personal');
-                if(!res.ok) return;
-                const personal = await res.json();
-                const selFac = document.getElementById('facilitador-cliente');
-                const selResp = document.getElementById('responsable-tarea');
-                selFac.innerHTML = '<option value="" disabled selected>Seleccione facilitador...</option>';
-                selResp.innerHTML = '<option value="" disabled selected>Seleccione responsable...</option>';
-                personal.forEach(p => {
+                const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache' } };
+                const res = await fetch('/api/personal?t=' + new Date().getTime(), conf);
+                if(res.ok) {
+                    personalCompleto = await res.json();
+                    renderizarTablasPersonal();
+                    actualizarSelectoresPersonal();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        function renderizarTablasPersonal() {
+            const tbFac = document.getElementById('tbody-facilitadores');
+            const tbResp = document.getElementById('tbody-responsables');
+            const tbPap = document.getElementById('tbody-papelera');
+            
+            tbFac.innerHTML = ''; tbResp.innerHTML = ''; tbPap.innerHTML = '';
+            let contadorPapelera = 0;
+
+            personalCompleto.forEach(p => {
+                if (enPapelera.has(p.id)) {
+                    contadorPapelera++;
+                    tbPap.innerHTML += `<tr>
+                        <td>${p.nombre} <span style="font-size:0.8rem; color:var(--texto-secundario);">(${p.rol})</span></td>
+                        <td style="text-align: right;">
+                            <button class="btn-accion btn-restaurar" onclick="accionPapelera(${p.id}, 'restaurar')">Restaurar</button>
+                            <button class="btn-accion btn-borrar" onclick="accionPapelera(${p.id}, 'eliminar')">Eliminar Definitivo</button>
+                        </td>
+                    </tr>`;
+                } else {
+                    const fila = `<tr><td>${p.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-mover" onclick="accionPapelera(${p.id}, 'mover')">A Papelera</button></td></tr>`;
+                    if (p.rol === 'facilitador') tbFac.innerHTML += fila;
+                    else tbResp.innerHTML += fila;
+                }
+            });
+
+            if(tbFac.innerHTML === '') tbFac.innerHTML = '<tr><td style="color:var(--texto-secundario);">No hay facilitadores</td></tr>';
+            if(tbResp.innerHTML === '') tbResp.innerHTML = '<tr><td style="color:var(--texto-secundario);">No hay responsables</td></tr>';
+            if(contadorPapelera === 0) tbPap.innerHTML = '<tr><td style="color:var(--texto-secundario);">La papelera está vacía.</td></tr>';
+        }
+
+        async function accionPapelera(id, accion) {
+            if (accion === 'mover') {
+                enPapelera.add(id);
+                renderizarTablasPersonal();
+                actualizarSelectoresPersonal();
+            } else if (accion === 'restaurar') {
+                enPapelera.delete(id);
+                renderizarTablasPersonal();
+                actualizarSelectoresPersonal();
+            } else if (accion === 'eliminar') {
+                if(confirm("¿Seguro que deseas eliminar definitivamente a esta persona de la base de datos?")) {
+                    try {
+                        const res = await fetch(`/api/personal`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                        const data = await res.json();
+                        if(res.ok) { enPapelera.delete(id); cargarPersonal(); alert("Eliminado."); }
+                        else alert(data.error);
+                    } catch (error) { alert("Error de conexión."); }
+                }
+            }
+        }
+
+        function actualizarSelectoresPersonal() {
+            const selFac = document.getElementById('facilitador-cliente');
+            const selResp = document.getElementById('responsable-tarea');
+            selFac.innerHTML = '<option value="" disabled selected>Seleccione facilitador...</option>';
+            selResp.innerHTML = '<option value="" disabled selected>Seleccione responsable...</option>';
+            
+            personalCompleto.forEach(p => {
+                if (!enPapelera.has(p.id)) {
                     if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
                     if(p.rol === 'responsable') selResp.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
-                });
-            } catch (error) { console.error(error); }
+                }
+            });
         }
 
         document.getElementById('form-personal').addEventListener('submit', async function(e) {
@@ -178,11 +255,12 @@
             try {
                 const res = await fetch('/api/personal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-personal').value, rol: document.getElementById('rol-personal').value }) });
                 const data = await res.json();
-                if (res.ok) { alert("Registrado exitosamente."); this.reset(); cargarPersonal(); if(document.getElementById('vista-gestion').classList.contains('active')) cargarDatosGestion(); } 
+                if (res.ok) { this.reset(); cargarPersonal(); } 
                 else alert(data.error);
-            } catch (error) { alert("Error de red."); } finally { btn.textContent = "Añadir al Equipo"; btn.disabled = false; }
+            } catch (error) {} finally { btn.textContent = "Añadir al Equipo"; btn.disabled = false; }
         });
 
+        // VINCULACIÓN Y GUARDADO
         document.querySelectorAll('input[name="tipo-tarea"]').forEach(r => r.addEventListener('change', function() {
             document.getElementById('grupo-programa-vinculado').style.display = this.value === 'vinculada' ? 'block' : 'none';
             document.getElementById('programa-vinculado').required = this.value === 'vinculada';
@@ -190,7 +268,8 @@
 
         async function cargarProgramasDropdown() {
             try {
-                const res = await fetch('/api/clientes'); const clientes = await res.json();
+                const conf = { cache: 'no-store' };
+                const res = await fetch('/api/clientes?t='+new Date().getTime(), conf); const clientes = await res.json();
                 const sel = document.getElementById('programa-vinculado');
                 sel.innerHTML = '<option value="" disabled selected>Selecciona un programa...</option>';
                 clientes.forEach(c => sel.innerHTML += `<option value="${c.id}">${new Date(c.fecha_atencion).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} - ${c.nombre_cliente}</option>`);
@@ -203,8 +282,7 @@
                 const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
                     fecha_atencion: construirFecha('semana-cliente', 'dia-cliente', 'hora-cliente'), logo_url: "", nombre_cliente: document.getElementById('nombre-cliente').value, lugar_atencion: document.getElementById('lugar-cliente').value, curso: document.getElementById('curso-cliente').value, facilitador: document.getElementById('facilitador-cliente').value, estatus: document.getElementById('estatus-cliente').value
                 })});
-                const data = await res.json();
-                if (res.ok) { alert("Guardado."); this.reset(); cargarProgramasDropdown(); } else alert(data.error);
+                if (res.ok) { alert("Guardado."); this.reset(); cargarProgramasDropdown(); } else alert("Error al guardar.");
             } catch (error) { alert("Error."); } finally { btn.textContent = "Guardar Cliente"; btn.disabled = false; }
         });
 
@@ -221,35 +299,29 @@
 
         async function cargarDatosGestion() {
             try {
-                const resP = await fetch('/api/personal'); const tbP = document.getElementById('tbody-personal');
-                if(resP.ok) {
-                    const personal = await resP.json(); tbP.innerHTML = '';
-                    if(personal.length===0) tbP.innerHTML='<tr><td colspan="3">Sin personal</td></tr>';
-                    personal.forEach(p => tbP.innerHTML += `<tr><td>${p.nombre}</td><td>${p.rol}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('personal', ${p.id})">Borrar</button></td></tr>`);
-                }
-                const resC = await fetch('/api/clientes'); const tbC = document.getElementById('tbody-clientes');
+                const conf = { cache: 'no-store' };
+                const ts = new Date().getTime();
+                const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
                 if(resC.ok) {
                     const clientes = await resC.json(); tbC.innerHTML = '';
                     if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin clientes</td></tr>';
                     clientes.forEach(c => tbC.innerHTML += `<tr><td>${new Date(c.fecha_atencion).toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.curso}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`);
                 }
-                const resT = await fetch('/api/tareas'); const tbT = document.getElementById('tbody-tareas');
+                const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
                 if(resT.ok) {
                     const tareas = await resT.json(); tbT.innerHTML = '';
                     if(tareas.length===0) tbT.innerHTML='<tr><td colspan="4">Sin tareas</td></tr>';
                     tareas.forEach(t => tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0,25)}...</td><td>${t.completada?'Sí':'No'}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`);
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) {}
         }
 
         async function borrarRegistro(tipo, id) {
             if(confirm('¿Eliminar este registro?')) {
                 try {
                     const res = await fetch(`/api/${tipo}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
-                    const data = await res.json();
-                    if(res.ok) { alert("Eliminado exitosamente."); cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown(); if(tipo==='personal') cargarPersonal(); }
-                    else alert(data.error || "Error al eliminar.");
-                } catch (error) { alert("Error de red."); }
+                    if(res.ok) { alert("Eliminado exitosamente."); cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown(); }
+                } catch (error) {}
             }
         }
 
