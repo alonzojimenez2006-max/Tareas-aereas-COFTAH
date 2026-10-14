@@ -98,9 +98,20 @@
                 <div id="menu-desplegable" class="menu-desplegable">
                     <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
+                    
                     <div class="filtros-semanales">
                         <label>Filtrar por Semana</label>
                         <select id="filtro-semana" onchange="renderizarVistas()"></select>
+                        
+                        <!-- NUEVO: Filtro por Facilitador (Se muestra en Clientes) -->
+                        <div id="contenedor-filtro-facilitador" style="display: block; margin-top: 10px;">
+                            <label>Filtrar por Facilitador</label>
+                            <select id="filtro-facilitador" onchange="renderizarVistas()">
+                                <option value="TODOS">Todos los facilitadores</option>
+                            </select>
+                        </div>
+
+                        <!-- Filtro por Responsable (Se muestra en Tareas) -->
                         <div id="contenedor-filtro-responsable" style="display: none; margin-top: 10px;">
                             <label>Filtrar por Responsable</label>
                             <select id="filtro-responsable" onchange="renderizarVistas()">
@@ -155,7 +166,6 @@
 
         const nombresDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
-        // SE INICIA DIRECTAMENTE EN LA SEMANA ACTUAL
         function inicializarFiltrosSemanales() {
             const selectSemana = document.getElementById('filtro-semana'); 
             let hoy = new Date();
@@ -194,6 +204,15 @@
                 const resTareas = await fetch('/api/tareas?t=' + ts, conf);
                 if(resTareas.ok) tareas = await resTareas.json();
                 
+                // Actualizar menú de Facilitadores dinámicamente
+                const facilitadoresUnicos = [...new Set(clientes.map(c => c.facilitador))].sort();
+                const selectFac = document.getElementById('filtro-facilitador');
+                const valorActualFac = selectFac.value;
+                selectFac.innerHTML = '<option value="TODOS">Todos los facilitadores</option>';
+                facilitadoresUnicos.forEach(f => selectFac.add(new Option(f, f)));
+                if (facilitadoresUnicos.includes(valorActualFac)) selectFac.value = valorActualFac;
+
+                // Actualizar menú de Responsables dinámicamente
                 const responsablesUnicos = [...new Set(tareas.map(t => t.responsable))].sort();
                 const selectResp = document.getElementById('filtro-responsable');
                 const valorActualResp = selectResp.value;
@@ -238,24 +257,37 @@
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
             document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
+            
+            // Alternar visibilidad de los filtros
+            document.getElementById('contenedor-filtro-facilitador').style.display = vistaId === 'clientes' ? 'block' : 'none';
             document.getElementById('contenedor-filtro-responsable').style.display = vistaId === 'tareas' ? 'block' : 'none';
+            
             document.getElementById('menu-desplegable').classList.remove('show');
             renderizarVistas();
         }
 
         function renderizarVistas() {
             const sem = parseInt(document.getElementById('filtro-semana').value);
+            const filtroFac = document.getElementById('filtro-facilitador').value;
             const filtroResp = document.getElementById('filtro-responsable').value;
             document.getElementById('semana-actual').textContent = `SEMANA ${sem}`;
 
+            // Render Clientes (Aplicando el filtro de Facilitador)
             const contC = document.getElementById('lista-clientes');
-            const filtC = clientes.filter(c => getNumeroSemana(parseFechaLocal(c.fecha_atencion)) === sem);
-            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta semana.</div>`;
+            const filtC = clientes.filter(c => {
+                let d = parseFechaLocal(c.fecha_atencion);
+                let esSemana = getNumeroSemana(d) === sem;
+                let esFacilitador = (filtroFac === 'TODOS' || c.facilitador === filtroFac);
+                return esSemana && esFacilitador;
+            });
+
+            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta semana${filtroFac !== 'TODOS' ? ' con ' + filtroFac : ''}.</div>`;
             else contC.innerHTML = filtC.map(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
                 return `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`;
             }).join('');
 
+            // Render Tareas
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
@@ -278,7 +310,7 @@
             }
         }
 
-        // --- VENTANA MODAL (Clickeo de tareas) ---
+        // VENTANA MODAL
         function abrirModal(id) {
             const t = tareas.find(x => x.id === id);
             if(!t) return;
@@ -331,24 +363,17 @@
                     await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
                     tObj.completada = true; 
                     
-                    // Texto dinámico con la descripción de la base de datos
                     let mensajeExito = tObj.nombre_cliente
                         ? `Excelente trabajo ${tObj.responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
                         : `Excelente trabajo ${tObj.responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
                     
-                    // Cerramos la ventana visualmente de inmediato
                     cerrarModal(); 
                     renderizarVistas(); 
 
-                    // BLINDAJE DE VOZ: Limpiamos audios pendientes y le damos 500ms para hablar tranquilo
                     window.speechSynthesis.cancel();
-                    setTimeout(() => {
-                        hablar(mensajeExito);
-                    }, 500);
+                    setTimeout(() => { hablar(mensajeExito); }, 500);
                     
-                } catch (error) {
-                    console.error("Error marcando completada", error);
-                }
+                } catch (error) { console.error("Error marcando completada", error); }
             }
         }
 
