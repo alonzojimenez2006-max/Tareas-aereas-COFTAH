@@ -1,13 +1,19 @@
-const { Pool } = require('pg');
+import pkg from 'pg';
+const { Pool } = pkg;
 
-// Asegúrate de usar la misma configuración de conexión que ya tienes en api/clientes.js
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
 
 export default async function handler(req, res) {
-    // 1. OBTENER EL PERSONAL (Para llenar las listas desplegables del Admin)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') return res.status(200).end();
+
+    // 1. OBTENER EL PERSONAL
     if (req.method === 'GET') {
         try {
             const { rows } = await pool.query('SELECT * FROM personal ORDER BY nombre ASC');
@@ -17,7 +23,7 @@ export default async function handler(req, res) {
         }
     }
 
-    // 2. REGISTRAR NUEVO PERSONAL (Desde el panel Admin)
+    // 2. REGISTRAR NUEVO PERSONAL
     if (req.method === 'POST') {
         const { nombre, rol } = req.body;
 
@@ -32,7 +38,6 @@ export default async function handler(req, res) {
             );
             return res.status(201).json({ mensaje: 'Personal registrado con éxito', personal: rows[0] });
         } catch (error) {
-            // Código 23505 es el error de PostgreSQL para valores únicos duplicados
             if (error.code === '23505') { 
                 return res.status(400).json({ error: 'Error: Esta persona ya está registrada en el sistema.' });
             }
@@ -40,6 +45,20 @@ export default async function handler(req, res) {
         }
     }
 
-    res.setHeader('Allow', ['GET', 'POST']);
-    return res.status(405).end(`Metodo ${req.method} no permitido`);
+    // 3. BORRAR PERSONAL
+    if (req.method === 'DELETE') {
+        const { id } = req.body;
+        try {
+            await pool.query('DELETE FROM personal WHERE id = $1', [id]);
+            return res.status(200).json({ message: 'Personal borrado correctamente' });
+        } catch (error) {
+            // El código 23503 salta si la persona ya está amarrada a un cliente o tarea en la base de datos
+            if (error.code === '23503') {
+                return res.status(400).json({ error: 'No se puede borrar a esta persona porque ya tiene clientes o funciones asignadas en el historial. Borra primero sus tareas.' });
+            }
+            return res.status(500).json({ error: 'Error al intentar borrar: ' + error.message });
+        }
+    }
+
+    return res.status(405).json({ error: 'Método no permitido' });
 }
