@@ -32,220 +32,100 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            padding: 15px; /* Reducido para más espacio */
+            padding: 15px; /* Reducido para ahorrar espacio */
         }
 
+        /* Header Corporativo con Menú Hamburguesa */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px; /* Reducido para más espacio */
+            margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 2px solid var(--bg-paneles);
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand img { height: 45px; width: auto; }
 
-        .brand img {
-            height: 45px;
-            width: auto;
-        }
-
-        .titulos {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .titulos h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 2px;
-        }
-
-        /* NUEVO: Subtítulo dinámico en amarillo */
+        .titulos { display: flex; flex-direction: column; justify-content: center; }
+        .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
+        
         #subtitulo-vista {
-            font-size: 1rem;
-            color: var(--acento-amarillo);
-            font-weight: bold;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
+            font-size: 1rem; color: var(--acento-amarillo); font-weight: bold;
+            letter-spacing: 1.5px; text-transform: uppercase;
         }
 
-        .header-derecha {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
+        .header-derecha { display: flex; align-items: center; gap: 20px; }
 
         .reloj {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: var(--acento-amarillo);
-            font-family: monospace;
+            font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center;
+        }
+        
+        #semana-actual {
+            color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif;
         }
 
         /* NUEVO: Contenedor y Botón Hamburguesa */
-        .menu-container {
-            position: relative;
-        }
-
+        .menu-container { position: relative; }
         .btn-hamburguesa {
-            background: none;
-            border: none;
-            color: var(--texto-principal);
-            font-size: 2.2rem;
-            cursor: pointer;
-            transition: color 0.3s ease;
-            padding: 0 10px;
+            background: none; border: none; color: var(--texto-principal); font-size: 2.2rem;
+            cursor: pointer; transition: color 0.3s ease; padding: 0 10px;
         }
-
-        .btn-hamburguesa:hover, .btn-hamburguesa:focus {
-            color: var(--acento-amarillo);
-            outline: none;
-        }
+        .btn-hamburguesa:hover, .btn-hamburguesa:focus { color: var(--acento-amarillo); outline: none; }
 
         /* NUEVO: Menú desplegable */
         .menu-desplegable {
-            display: none; 
-            position: absolute;
-            top: 110%;
-            right: 0;
-            background-color: var(--bg-paneles);
-            border: 1px solid var(--texto-secundario);
-            border-radius: 8px;
-            padding: 15px;
-            z-index: 1000;
-            min-width: 260px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-            flex-direction: column;
-            gap: 10px;
+            display: none; position: absolute; top: 110%; right: 0;
+            background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario);
+            border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px;
         }
-
-        .menu-desplegable.show {
-            display: flex;
-        }
+        .menu-desplegable.show { display: flex; }
 
         .menu-item {
-            background-color: transparent;
-            color: var(--texto-secundario);
-            border: none;
-            padding: 12px;
-            text-align: left;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-radius: 5px;
-            text-transform: uppercase;
+            background-color: transparent; color: var(--texto-secundario); border: none;
+            padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold;
+            cursor: pointer; transition: all 0.3s ease; border-radius: 5px; text-transform: uppercase;
         }
+        .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
+        .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
 
-        .menu-item:hover {
-            background-color: rgba(255, 215, 0, 0.1);
-            color: var(--texto-principal);
+        .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
+        .filtros-semanales label { font-size: 0.85rem; color: var(--texto-secundario); margin-bottom:-4px; }
+        .filtros-semanales select {
+            width: 100%; background-color: var(--bg-principal); color: var(--texto-principal);
+            border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem;
+            font-weight: bold; border-radius: 5px; outline: none; cursor: pointer;
         }
+        .filtros-semanales select:focus { border-color: var(--acento-amarillo); }
 
-        .menu-item.active {
-            background-color: rgba(255, 215, 0, 0.15);
-            color: var(--acento-amarillo);
-            border-left: 4px solid var(--acento-amarillo);
-        }
-
-        .dropdown-dias {
-            display: none; /* Oculto por defecto, se muestra en JS */
-            width: 100%;
-            background-color: var(--bg-principal);
-            color: var(--texto-principal);
-            border: 1px solid var(--texto-secundario);
-            padding: 10px;
-            font-size: 1rem;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            outline: none;
-            margin-top: 5px;
-        }
-
-        .dropdown-dias:focus {
-            border-color: var(--acento-amarillo);
-        }
-
+        /* Contenedores de Vistas */
         .vista {
-            display: none; 
-            background-color: var(--bg-paneles);
-            flex: 1;
-            border-radius: 12px;
-            padding: 20px;
-            flex-direction: column;
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
-            overflow: hidden;
+            display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px;
+            padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden;
         }
+        .vista.active { display: flex; }
 
-        .vista.active {
-            display: flex; 
-        }
-
-        .fila-header, .fila-item {
-            display: grid;
-            gap: 15px;
-            align-items: center;
-            padding: 12px 15px;
-            border-radius: 8px;
-        }
-
+        /* Grids */
+        .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         .grid-clientes { grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px; }
         .grid-tareas { grid-template-columns: 1fr 4fr 150px 150px 120px; }
 
-        .fila-header {
-            font-size: 0.9rem;
-            color: var(--texto-secundario);
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            margin-bottom: 10px;
-        }
+        .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
+        .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
+        .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
 
-        .fila-item {
-            background-color: rgba(255, 255, 255, 0.03);
-            margin-bottom: 8px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .fila-item:hover {
-            background-color: rgba(255, 255, 255, 0.08);
-            transform: translateY(-2px);
-        }
-
-        .logo-cliente {
-            width: 35px;
-            height: 35px;
-            background-color: white;
-            border-radius: 50%;
-            object-fit: contain;
-        }
-
-        .badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            text-align: center;
-            display: inline-block;
-            width: 100%;
-        }
+        .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; text-align: center; display: inline-block; width: 100%; }
 
         .estatus-rutina { background-color: var(--urgencia-baja); color: #000; }
         .estatus-importante { background-color: var(--urgencia-media); color: #000; }
         .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
         .estatus-critica { background-color: var(--urgencia-critica); color: #fff; animation: parpadeo 1.5s infinite; }
-        .estatus-completado { background-color: var(--completado); color: #fff; }
         .estatus-programado { background-color: var(--urgencia-baja); color: #000; }
         .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
+        .estatus-completado { background-color: var(--completado); color: #fff; }
 
         @keyframes destelloVerde {
             0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); }
@@ -255,23 +135,19 @@
         .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
         @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        .contenedor-lista {
-            flex-grow: 1;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-        
+        .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--acento-amarillo); }
+
     </style>
 </head>
 <body>
 
     <header>
         <div class="brand">
-            <img src="COFTAH.png.png" alt="Logo de COFTAH">
+            <img src="COFTAH.png.png" alt="Logo de COFTAH" onerror="this.style.display='none'">
             <div class="titulos">
                 <h1>COFTAH / TABLERO DE OPERACIONES</h1>
                 <div id="subtitulo-vista">CRONOGRAMA DE CLIENTES</div>
@@ -279,24 +155,36 @@
         </div>
         
         <div class="header-derecha">
-            <div class="reloj" id="reloj-digital">00:00:00</div>
+            <div class="reloj">
+                <span id="semana-actual">SEMANA --</span>
+                <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
+                <span id="reloj-digital">00:00:00</span>
+            </div>
             
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
-                
                 <div id="menu-desplegable" class="menu-desplegable">
                     <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     
-                    <!-- El select de días ahora vive dentro del menú -->
-                    <select id="filtro-dias" class="dropdown-dias" onchange="renderizarTareas()">
-                    </select>
+                    <div class="filtros-semanales">
+                        <label>Filtrar por Semana</label>
+                        <select id="filtro-semana" onchange="renderizarVistas()"></select>
+                        <label>Filtrar por Día</label>
+                        <select id="filtro-dia" onchange="renderizarVistas()">
+                            <option value="1">Lunes</option>
+                            <option value="2">Martes</option>
+                            <option value="3">Miércoles</option>
+                            <option value="4">Jueves</option>
+                            <option value="5">Viernes</option>
+                            <option value="6">Sábado</option>
+                            <option value="7">Domingo</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
-
-    <!-- Se eliminó el div <div class="controles-superiores"> para ahorrar espacio -->
 
     <!-- Vista 1: Clientes -->
     <div class="vista active" id="vista-clientes">
@@ -331,12 +219,10 @@
             document.getElementById('reloj-digital').textContent = ahora.toLocaleTimeString('en-US', { hour12: true });
         }, 1000);
 
-        // Funciones del Menú Hamburguesa
+        // Menú Hamburguesa
         function toggleMenu() {
             document.getElementById('menu-desplegable').classList.toggle('show');
         }
-
-        // Cerrar el menú si se hace clic fuera de él
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('menu-desplegable');
             const boton = document.getElementById('btn-menu');
@@ -345,14 +231,46 @@
             }
         });
 
+        // Funciones para calcular la Semana ISO (Igual que en el Admin)
+        function getNumeroSemana(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+            return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
+        }
+        function getDiaSemana(d) {
+            let dia = d.getDay();
+            return dia === 0 ? 7 : dia; // 1 Lunes a 7 Domingo
+        }
+
+        // Inicializar Filtros Semanales
+        function inicializarFiltrosSemanales() {
+            const selectSemana = document.getElementById('filtro-semana');
+            let hoy = new Date();
+            let numSemanaActual = getNumeroSemana(hoy);
+            let diaSemanaActual = getDiaSemana(hoy);
+            
+            document.getElementById('semana-actual').textContent = `SEMANA ${numSemanaActual}`;
+            
+            let lunesActual = new Date(hoy);
+            lunesActual.setDate(hoy.getDate() - diaSemanaActual + 1);
+            lunesActual.setHours(0,0,0,0);
+
+            selectSemana.innerHTML = '';
+            for (let i = 0; i < 12; i++) {
+                let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
+                let numSemana = getNumeroSemana(lunesSemana);
+                let label = `Semana ${numSemana} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
+                selectSemana.add(new Option(label, numSemana));
+            }
+            
+            // Setear el día actual por defecto
+            document.getElementById('filtro-dia').value = diaSemanaActual;
+        }
+
         let clientes = [];
         let tareas = [];
-        
-        // Memorias para la voz automática (Se mantiene el código intacto)
-        let tareasAvisadas30 = new Set(); 
-        let clientesConocidos = new Set(); 
-        let tareasConocidas = new Set();   
-        let esPrimeraCarga = true;         
+        let tareasAvisadas = new Set();
 
         async function cargarDatos() {
             try {
@@ -360,101 +278,61 @@
                 clientes = await resClientes.json();
                 
                 const resTareas = await fetch('/api/tareas');
-                const tareasDB = await resTareas.json();
+                tareas = await resTareas.json();
                 
-                tareas = tareasDB.map(t => {
-                    const fechaObj = new Date(t.fecha_limite);
-                    return {
-                        ...t,
-                        fechaAsignada: fechaObj.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
-                        horaLimite: fechaObj.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })
-                    };
-                });
-
-                if (esPrimeraCarga) {
-                    clientes.forEach(c => clientesConocidos.add(c.id));
-                    tareas.forEach(t => tareasConocidas.add(t.id));
-                    esPrimeraCarga = false;
-                } else {
-                    clientes.forEach(c => {
-                        if (!clientesConocidos.has(c.id)) {
-                            hablar(`Atención equipo. Nuevo programa registrado: ${c.nombre_cliente}. Curso de ${c.curso}.`);
-                            clientesConocidos.add(c.id);
-                        }
-                    });
-
-                    tareas.forEach(t => {
-                        if (!tareasConocidas.has(t.id)) {
-                            let msjNuevaTarea = t.nombre_cliente 
-                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
-                            hablar(msjNuevaTarea);
-                            tareasConocidas.add(t.id);
-                        }
-                    });
-                }
-
-                inicializarFiltroFechas();
-                renderizarClientes();
-                
-                if(document.getElementById('vista-tareas').classList.contains('active')) {
-                    renderizarTareas();
-                }
+                renderizarVistas();
             } catch (error) {
                 console.error("Error conectando con la base de datos:", error);
             }
         }
 
-        function inicializarFiltroFechas() {
-            const selectDias = document.getElementById('filtro-dias');
-            const valorActual = selectDias.value; 
-            const fechasUnicas = [...new Set(tareas.map(t => t.fechaAsignada))];
-            
-            selectDias.innerHTML = fechasUnicas.map(fecha => 
-                `<option value="${fecha}">${fecha}</option>`
-            ).join('');
-            
-            if(fechasUnicas.includes(valorActual)) selectDias.value = valorActual;
-        }
-
         function cambiarVista(vistaId) {
-            // Quitar clase active de todo
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
             
-            // Activar la vista seleccionada
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
 
-            // Configurar el subtítulo y el selector de fechas
             const subtitulo = document.getElementById('subtitulo-vista');
-            const selectDias = document.getElementById('filtro-dias');
-
-            if (vistaId === 'tareas') {
-                subtitulo.textContent = 'DELEGACIÓN DE FUNCIONES';
-                selectDias.style.display = 'block'; // Muestra el selector dentro del menú
-                renderizarTareas(); 
-            } else {
-                subtitulo.textContent = 'CRONOGRAMA DE CLIENTES';
-                selectDias.style.display = 'none'; // Oculta el selector
-            }
-
-            // Ocultar el menú automáticamente después de elegir
+            subtitulo.textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
+            
             document.getElementById('menu-desplegable').classList.remove('show');
+            renderizarVistas();
+        }
+
+        function renderizarVistas() {
+            renderizarClientes();
+            renderizarTareas();
+            
+            // Actualizar el número de semana en la barra superior basado en el selector
+            document.getElementById('semana-actual').textContent = `SEMANA ${document.getElementById('filtro-semana').value}`;
         }
 
         function renderizarClientes() {
             const contenedor = document.getElementById('lista-clientes');
-            contenedor.innerHTML = clientes.map(c => {
-                const fechaFormat = new Date(c.fecha_atencion).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit', hour12: true });
+            const semSeleccionada = parseInt(document.getElementById('filtro-semana').value);
+            const diaSeleccionado = parseInt(document.getElementById('filtro-dia').value);
+
+            const clientesFiltrados = clientes.filter(c => {
+                let d = new Date(c.fecha_atencion);
+                return getNumeroSemana(d) === semSeleccionada && getDiaSemana(d) === diaSeleccionado;
+            });
+
+            if (clientesFiltrados.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario); font-size: 1.2rem;">No hay programas de clientes registrados para este día.</div>`;
+                return;
+            }
+
+            contenedor.innerHTML = clientesFiltrados.map(c => {
+                const fechaFormat = new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true });
                 return `
                 <div class="fila-item grid-clientes">
-                    <div style="font-weight: bold; color: var(--acento-amarillo);">${fechaFormat}</div>
+                    <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${fechaFormat}</div>
                     <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'" alt="Logo"></div>
-                    <div style="font-weight: bold;">${c.nombre_cliente}</div>
+                    <div style="font-weight: bold; font-size: 1.1rem;">${c.nombre_cliente}</div>
                     <div>${c.lugar_atencion}</div>
                     <div>${c.curso}</div>
-                    <div>${c.facilitador}</div>
+                    <div style="font-weight: bold; color: var(--urgencia-baja);">${c.facilitador}</div>
                     <div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div>
                 </div>
             `}).join('');
@@ -462,17 +340,22 @@
 
         function renderizarTareas(idAnimar = null) {
             const contenedor = document.getElementById('lista-tareas');
-            const fechaSeleccionada = document.getElementById('filtro-dias').value;
-            contenedor.innerHTML = ''; 
+            const semSeleccionada = parseInt(document.getElementById('filtro-semana').value);
+            const diaSeleccionado = parseInt(document.getElementById('filtro-dia').value);
 
-            const tareasDelDia = tareas.filter(t => t.fechaAsignada === fechaSeleccionada);
+            const tareasFiltradas = tareas.filter(t => {
+                let d = new Date(t.fecha_limite);
+                return getNumeroSemana(d) === semSeleccionada && getDiaSemana(d) === diaSeleccionado;
+            });
             
-            if (tareasDelDia.length === 0) {
-                contenedor.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--texto-secundario);">No hay tareas asignadas para este día.</div>`;
+            if (tareasFiltradas.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario); font-size: 1.2rem;">No hay funciones delegadas para este día.</div>`;
                 return;
             }
 
-            tareasDelDia.forEach(t => {
+            contenedor.innerHTML = ''; 
+            tareasFiltradas.forEach(t => {
+                const horaFormat = new Date(t.fecha_limite).toLocaleString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
                 let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.urgencia}`;
                 let badgeText = t.completada ? "COMPLETADA" : t.urgencia.toUpperCase();
                 let filaClase = t.id === idAnimar ? "animacion-completado" : "";
@@ -487,7 +370,7 @@
                     <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id}, '${t.responsable}')">
                         <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${infoResponsable}</div>
                         <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
-                        <div style="font-family: monospace; font-size: 1.1rem;">${t.horaLimite}</div>
+                        <div style="font-family: monospace; font-size: 1.1rem;">${horaFormat}</div>
                         <div>${t.completada ? '--' : 'Pendiente'}</div>
                         <div><span class="badge ${badgeClass}">${badgeText}</span></div>
                     </div>
@@ -495,6 +378,7 @@
             });
         }
 
+        // LÓGICA DE VOZ Y VERIFICACIÓN
         function hablar(texto) {
             if ('speechSynthesis' in window) {
                 const mensaje = new SpeechSynthesisUtterance(texto);
@@ -516,7 +400,7 @@
                 const tiempoRestante = limite.getTime() - ahora.getTime();
 
                 if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30)) {
-                    if (!tareasAvisadas30.has(t.id)) {
+                    if (!tareasAvisadas.has(t.id)) {
                         const minRestantes = Math.ceil(tiempoRestante / 60000);
                         let txtMinutos = minRestantes === 1 ? '1 minuto' : `${minRestantes} minutos`;
                         
@@ -525,7 +409,7 @@
                             : `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función: ${t.descripcion}`;
                         
                         hablar(mensajePresion);
-                        tareasAvisadas30.add(t.id);
+                        tareasAvisadas.add(t.id);
                     }
                 }
             });
@@ -551,16 +435,18 @@
                         : `${tareaObj.responsable} completó la tarea. Tarea finalizada: ${tareaObj.descripcion}.`;
                     
                     hablar(mensajeExito);
-                    renderizarTareas(id); 
+                    renderizarVistas(); // Recargar visual con el flash verde
                 } catch (error) {
                     console.error("Error al completar la tarea:", error);
                 }
             }
         }
 
+        // Arranque Inicial
+        inicializarFiltrosSemanales();
         cargarDatos();
-        setInterval(cargarDatos, 15000);       
-        setInterval(verificarTiempos, 10000);  
+        setInterval(cargarDatos, 15000);
+        setInterval(verificarTiempos, 10000);
         
     </script>
 </body>
