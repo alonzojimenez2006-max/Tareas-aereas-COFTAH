@@ -33,11 +33,15 @@
         .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .filtros-semanales label { font-size: 0.85rem; color: var(--texto-secundario); margin-bottom:-4px; }
         .filtros-semanales select { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; outline: none; cursor: pointer; }
+        
         .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex; }
+        
+        /* NUEVOS GRIDS PARA INCLUIR LA COLUMNA DE DÍA */
         .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
-        .grid-clientes { grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px; }
-        .grid-tareas { grid-template-columns: 1fr 4fr 150px 150px 120px; }
+        .grid-clientes { grid-template-columns: 80px 50px 2fr 1fr 1.5fr 1fr 100px 110px; }
+        .grid-tareas { grid-template-columns: 1fr 3fr 100px 100px 120px 110px; }
+        
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
         .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
         .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
@@ -82,28 +86,34 @@
                     <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     <div class="filtros-semanales">
-                        <label>Filtrar por Semana</label><select id="filtro-semana" onchange="renderizarVistas()"></select>
-                        <label>Filtrar por Día</label>
-                        <select id="filtro-dia" onchange="renderizarVistas()">
-                            <option value="0" style="font-weight:bold; color:var(--acento-amarillo);">Toda la semana</option>
-                            <option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option>
-                        </select>
+                        <label>Filtrar por Semana</label>
+                        <select id="filtro-semana" onchange="renderizarVistas()"></select>
+                        
+                        <!-- NUEVO: Filtro por responsable (Solo se muestra en tareas) -->
+                        <div id="contenedor-filtro-responsable" style="display: none; margin-top: 10px;">
+                            <label>Filtrar por Responsable</label>
+                            <select id="filtro-responsable" onchange="renderizarVistas()">
+                                <option value="TODOS">Todos los responsables</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- Vista 1: Clientes (Nuevas columnas) -->
     <div class="vista active" id="vista-clientes">
         <div class="fila-header grid-clientes">
-            <div>Fecha/Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Curso al detal</div><div>Facilitador</div><div>Estatus</div>
+            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Curso al detal</div><div>Facilitador</div><div>Día</div><div>Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
+    <!-- Vista 2: Tareas (Nuevas columnas) -->
     <div class="vista" id="vista-tareas">
         <div class="fila-header grid-tareas">
-            <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div>Estatus</div>
+            <div>Responsable</div><div>Tarea Asignada</div><div>Día</div><div>Hora Límite</div><div>Tiempo Restante</div><div>Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-tareas"></div>
     </div>
@@ -115,13 +125,14 @@
         
         function getNumeroSemana(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7); }
         function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
-
-        // Función CRÍTICA para evitar que la zona horaria oculte los registros del día correcto
+        
         function parseFechaLocal(fechaStr) {
             if (!fechaStr) return new Date();
             let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
             return new Date(limpia);
         }
+
+        const nombresDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
 
         function inicializarFiltrosSemanales() {
             const selectSemana = document.getElementById('filtro-semana'); let hoy = new Date();
@@ -134,7 +145,6 @@
                 selectSemana.add(new Option(label, getNumeroSemana(lunesSemana)));
             }
             selectSemana.value = getNumeroSemana(hoy);
-            document.getElementById('filtro-dia').value = getDiaSemana(hoy);
         }
 
         let clientes = []; let tareas = [];
@@ -154,13 +164,37 @@
                 const resTareas = await fetch('/api/tareas?t=' + ts, conf);
                 if(resTareas.ok) tareas = await resTareas.json();
                 
+                // Actualizar menú desplegable de responsables dinámicamente
+                const responsablesUnicos = [...new Set(tareas.map(t => t.responsable))].sort();
+                const selectResp = document.getElementById('filtro-responsable');
+                const valorActualResp = selectResp.value;
+                selectResp.innerHTML = '<option value="TODOS">Todos los responsables</option>';
+                responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
+                if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
+
+                // LÓGICA DE VOZ ACTUALIZADA (Ahora indica la semana)
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
                     esPrimeraCarga = false;
                 } else {
-                    clientes.forEach(c => { if (!clientesConocidos.has(c.id)) { hablar(`Atención. Nuevo programa registrado: ${c.nombre_cliente}.`); clientesConocidos.add(c.id); }});
-                    tareas.forEach(t => { if (!tareasConocidas.has(t.id)) { hablar(`Atención. Nueva función delegada a ${t.responsable}.`); tareasConocidas.add(t.id); }});
+                    clientes.forEach(c => { 
+                        if (!clientesConocidos.has(c.id)) { 
+                            let sem = getNumeroSemana(parseFechaLocal(c.fecha_atencion));
+                            hablar(`Atención equipo. Nuevo programa registrado para la semana ${sem}: ${c.nombre_cliente}.`); 
+                            clientesConocidos.add(c.id); 
+                        }
+                    });
+                    tareas.forEach(t => { 
+                        if (!tareasConocidas.has(t.id)) { 
+                            let sem = getNumeroSemana(parseFechaLocal(t.fecha_limite));
+                            let msj = t.nombre_cliente
+                                ? `Atención. Nueva función delegada a ${t.responsable} para la semana ${sem}, cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable} para la semana ${sem}. Tarea: ${t.descripcion}.`;
+                            hablar(msj); 
+                            tareasConocidas.add(t.id); 
+                        }
+                    });
                 }
                 
                 renderizarVistas();
@@ -176,38 +210,45 @@
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
             document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
+            
+            // Mostrar u ocultar el filtro de responsables según la vista
+            document.getElementById('contenedor-filtro-responsable').style.display = vistaId === 'tareas' ? 'block' : 'none';
+            
             document.getElementById('menu-desplegable').classList.remove('show');
             renderizarVistas();
         }
 
         function renderizarVistas() {
             const sem = parseInt(document.getElementById('filtro-semana').value);
-            const dia = parseInt(document.getElementById('filtro-dia').value);
+            const filtroResp = document.getElementById('filtro-responsable').value;
             document.getElementById('semana-actual').textContent = `SEMANA ${sem}`;
 
-            // Clientes
+            // Clientes (Toda la semana)
             const contC = document.getElementById('lista-clientes');
-            const filtC = clientes.filter(c => {
+            const filtC = clientes.filter(c => getNumeroSemana(parseFechaLocal(c.fecha_atencion)) === sem);
+
+            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta semana.</div>`;
+            else contC.innerHTML = filtC.map(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
-                return getNumeroSemana(d) === sem && (dia === 0 || getDiaSemana(d) === dia);
-            });
+                return `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`
+            }).join('');
 
-            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta vista.</div>`;
-            else contC.innerHTML = filtC.map(c => `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${parseFechaLocal(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })} <br><span style="font-size:0.8rem; font-weight:normal; color:#FFF;">${parseFechaLocal(c.fecha_atencion).toLocaleDateString('es-ES', {weekday:'short'})}</span></div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`).join('');
-
-            // Tareas
+            // Tareas (Toda la semana + Filtro por Responsable)
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
-                return getNumeroSemana(d) === sem && (dia === 0 || getDiaSemana(d) === dia);
+                let esSemana = getNumeroSemana(d) === sem;
+                let esResponsable = (filtroResp === 'TODOS' || t.responsable === filtroResp);
+                return esSemana && esResponsable;
             });
 
-            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas para esta vista.</div>`;
+            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas para esta semana${filtroResp !== 'TODOS' ? ' a ' + filtroResp : ''}.</div>`;
             else {
                 contT.innerHTML = '';
                 filtT.forEach(t => {
+                    let d = parseFechaLocal(t.fecha_limite);
                     let infoResp = (t.tipo_tarea === 'vinculada' && t.nombre_cliente) ? `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${t.nombre_cliente}</span>` : t.responsable;
-                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="marcarCompletada(${t.id}, '${t.responsable}')"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-family:monospace; font-size:1.1rem;">${parseFechaLocal(t.fecha_limite).toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
+                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="marcarCompletada(${t.id}, '${t.responsable}')"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div style="font-family:monospace; font-size:1.1rem;">${d.toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
                 });
             }
         }
