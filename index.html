@@ -5,65 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard COFTAH</title>
     <style>
-        :root {
-            --bg-principal: #0A192F; 
-            --bg-paneles: #112240; 
-            --texto-principal: #FFFFFF; 
-            --texto-secundario: #8892B0; 
-            --acento-amarillo: #FFD700; 
-            --urgencia-baja: #64FFDA; 
-            --urgencia-media: #FFD700; 
-            --urgencia-alta: #FF8C00; 
-            --urgencia-critica: #FF3366; 
-            --completado: #2E8B57; 
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-
+        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
-
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 45px; width: auto; }
         .titulos { display: flex; flex-direction: column; justify-content: center; }
         .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
-        
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
         .header-derecha { display: flex; align-items: center; gap: 20px; }
-
         .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
         #semana-actual { color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; }
-
         .menu-container { position: relative; }
         .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; transition: color 0.3s ease; padding: 0 10px; }
-        .btn-hamburguesa:hover, .btn-hamburguesa:focus { color: var(--acento-amarillo); outline: none; }
-
+        .btn-hamburguesa:hover { color: var(--acento-amarillo); }
         .menu-desplegable { display: none; position: absolute; top: 110%; right: 0; background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario); border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px; }
         .menu-desplegable.show { display: flex; }
-
-        .menu-item { background-color: transparent; color: var(--texto-secundario); border: none; padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; border-radius: 5px; text-transform: uppercase; }
+        .menu-item { background-color: transparent; color: var(--texto-secundario); border: none; padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; }
         .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
         .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
-
         .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .filtros-semanales label { font-size: 0.85rem; color: var(--texto-secundario); margin-bottom:-4px; }
         .filtros-semanales select { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; outline: none; cursor: pointer; }
-        .filtros-semanales select:focus { border-color: var(--acento-amarillo); }
-
         .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex; }
-
         .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         .grid-clientes { grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px; }
         .grid-tareas { grid-template-columns: 1fr 4fr 150px 150px 120px; }
-
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
         .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
         .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
-
         .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
         .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; text-align: center; display: inline-block; width: 100%; }
-
         .estatus-rutina { background-color: var(--urgencia-baja); color: #000; }
         .estatus-importante { background-color: var(--urgencia-media); color: #000; }
         .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
@@ -71,55 +45,34 @@
         .estatus-programado { background-color: var(--urgencia-baja); color: #000; }
         .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
-
         @keyframes destelloVerde { 0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); } 50% { background-color: var(--completado); transform: scale(1.01); } 100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); } }
         .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
         @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-
         .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--acento-amarillo); }
     </style>
 </head>
 <body>
-
     <header>
         <div class="brand">
-            <img src="COFTAH.png.png" alt="Logo de COFTAH" onerror="this.style.display='none'">
+            <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
             <div class="titulos">
                 <h1>COFTAH / TABLERO DE OPERACIONES</h1>
                 <div id="subtitulo-vista">CRONOGRAMA DE CLIENTES</div>
             </div>
         </div>
-        
         <div class="header-derecha">
-            <div class="reloj">
-                <span id="semana-actual">SEMANA --</span>
-                <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
-                <span id="reloj-digital">00:00:00</span>
-            </div>
-            
+            <div class="reloj"><span id="semana-actual">SEMANA --</span><span style="color: var(--texto-secundario); margin: 0 10px;">|</span><span id="reloj-digital">00:00:00</span></div>
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
                 <div id="menu-desplegable" class="menu-desplegable">
                     <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
-                    
                     <div class="filtros-semanales">
-                        <label>Filtrar por Semana</label>
-                        <select id="filtro-semana" onchange="renderizarVistas()"></select>
-                        <label>Filtrar por Día</label>
-                        <select id="filtro-dia" onchange="renderizarVistas()">
-                            <option value="1">Lunes</option>
-                            <option value="2">Martes</option>
-                            <option value="3">Miércoles</option>
-                            <option value="4">Jueves</option>
-                            <option value="5">Viernes</option>
-                            <option value="6">Sábado</option>
-                            <option value="7">Domingo</option>
-                        </select>
+                        <label>Filtrar por Semana</label><select id="filtro-semana" onchange="renderizarVistas()"></select>
+                        <label>Filtrar por Día</label><select id="filtro-dia" onchange="renderizarVistas()"><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select>
                     </div>
                 </div>
             </div>
@@ -141,91 +94,51 @@
     </div>
 
     <script>
-        setInterval(() => {
-            document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true });
-        }, 1000);
-
+        setInterval(() => { document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true }); }, 1000);
         function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
-        document.addEventListener('click', function(e) {
-            const menu = document.getElementById('menu-desplegable');
-            if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show');
-        });
-
-        function getNumeroSemana(d) {
-            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-            var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-            return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-        }
+        document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
+        function getNumeroSemana(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7); }
         function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
 
         function inicializarFiltrosSemanales() {
-            const selectSemana = document.getElementById('filtro-semana');
-            let hoy = new Date();
-            let numSemanaActual = getNumeroSemana(hoy);
-            document.getElementById('semana-actual').textContent = `SEMANA ${numSemanaActual}`;
-            
-            let lunesActual = new Date(hoy);
-            lunesActual.setDate(hoy.getDate() - getDiaSemana(hoy) + 1);
-            lunesActual.setHours(0,0,0,0);
-
+            const selectSemana = document.getElementById('filtro-semana'); let hoy = new Date();
+            document.getElementById('semana-actual').textContent = `SEMANA ${getNumeroSemana(hoy)}`;
+            let lunesActual = new Date(hoy); lunesActual.setDate(hoy.getDate() - getDiaSemana(hoy) + 1); lunesActual.setHours(0,0,0,0);
             selectSemana.innerHTML = '';
             for (let i = 0; i < 12; i++) {
                 let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
-                let numSemana = getNumeroSemana(lunesSemana);
-                let label = `Semana ${numSemana} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
-                selectSemana.add(new Option(label, numSemana));
+                let label = `Semana ${getNumeroSemana(lunesSemana)} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
+                selectSemana.add(new Option(label, getNumeroSemana(lunesSemana)));
             }
             document.getElementById('filtro-dia').value = getDiaSemana(hoy);
         }
 
-        let clientes = [];
-        let tareas = [];
-        
-        // Memoria para las voces
-        let tareasAvisadas = new Set();
-        let clientesConocidos = new Set();
-        let tareasConocidas = new Set();
-        let esPrimeraCarga = true;
+        let clientes = []; let tareas = [];
+        let tareasAvisadas = new Set(); let clientesConocidos = new Set(); let tareasConocidas = new Set(); let esPrimeraCarga = true;
 
         async function cargarDatos() {
             try {
-                // El timestamp "?t=" evita que el navegador guarde datos viejos en caché
-                const timestamp = new Date().getTime();
+                const ts = new Date().getTime();
                 
-                const resClientes = await fetch('/api/clientes?t=' + timestamp);
-                clientes = await resClientes.json();
+                // Blindaje 1: Solo intentamos convertir a JSON si Vercel respondió con un código "200 OK"
+                const resClientes = await fetch('/api/clientes?t=' + ts);
+                if(resClientes.ok) clientes = await resClientes.json();
                 
-                const resTareas = await fetch('/api/tareas?t=' + timestamp);
-                tareas = await resTareas.json();
+                const resTareas = await fetch('/api/tareas?t=' + ts);
+                if(resTareas.ok) tareas = await resTareas.json();
                 
-                // LÓGICA DE VOCES PARA NUEVOS REGISTROS
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
                     esPrimeraCarga = false;
                 } else {
-                    clientes.forEach(c => {
-                        if (!clientesConocidos.has(c.id)) {
-                            hablar(`Atención equipo. Nuevo programa registrado: ${c.nombre_cliente}. Curso de ${c.curso}.`);
-                            clientesConocidos.add(c.id);
-                        }
-                    });
-
-                    tareas.forEach(t => {
-                        if (!tareasConocidas.has(t.id)) {
-                            let msjNuevaTarea = t.nombre_cliente 
-                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
-                            hablar(msjNuevaTarea);
-                            tareasConocidas.add(t.id);
-                        }
-                    });
+                    clientes.forEach(c => { if (!clientesConocidos.has(c.id)) { hablar(`Atención. Nuevo programa registrado: ${c.nombre_cliente}.`); clientesConocidos.add(c.id); }});
+                    tareas.forEach(t => { if (!tareasConocidas.has(t.id)) { hablar(`Atención. Nueva función delegada a ${t.responsable}.`); tareasConocidas.add(t.id); }});
                 }
-                
                 renderizarVistas();
             } catch (error) {
-                console.error("Error conectando con la base de datos:", error);
+                // Si la red falla, el script NO colapsa, simplemente intenta de nuevo en 15 segundos
+                console.warn("Retraso en la red, reintentando...", error);
             }
         }
 
@@ -240,112 +153,56 @@
         }
 
         function renderizarVistas() {
-            renderizarClientes();
-            renderizarTareas();
-            document.getElementById('semana-actual').textContent = `SEMANA ${document.getElementById('filtro-semana').value}`;
-        }
-
-        function renderizarClientes() {
-            const contenedor = document.getElementById('lista-clientes');
             const sem = parseInt(document.getElementById('filtro-semana').value);
             const dia = parseInt(document.getElementById('filtro-dia').value);
+            document.getElementById('semana-actual').textContent = `SEMANA ${sem}`;
 
-            const filtrados = clientes.filter(c => getNumeroSemana(new Date(c.fecha_atencion)) === sem && getDiaSemana(new Date(c.fecha_atencion)) === dia);
+            // Clientes
+            const contC = document.getElementById('lista-clientes');
+            const filtC = clientes.filter(c => getNumeroSemana(new Date(c.fecha_atencion)) === sem && getDiaSemana(new Date(c.fecha_atencion)) === dia);
+            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario);">No hay programas registrados para este día.</div>`;
+            else contC.innerHTML = filtC.map(c => `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })}</div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`).join('');
 
-            if (filtrados.length === 0) {
-                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario);">No hay programas registrados para este día.</div>`;
-                return;
-            }
-
-            contenedor.innerHTML = filtrados.map(c => `
-                <div class="fila-item grid-clientes">
-                    <div style="font-weight: bold; color: var(--acento-amarillo);">${new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
-                    <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
-                    <div style="font-weight: bold; font-size: 1.1rem;">${c.nombre_cliente}</div>
-                    <div>${c.lugar_atencion}</div>
-                    <div>${c.curso}</div>
-                    <div style="font-weight: bold; color: var(--urgencia-baja);">${c.facilitador}</div>
-                    <div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div>
-                </div>
-            `).join('');
-        }
-
-        function renderizarTareas(idAnimar = null) {
-            const contenedor = document.getElementById('lista-tareas');
-            const sem = parseInt(document.getElementById('filtro-semana').value);
-            const dia = parseInt(document.getElementById('filtro-dia').value);
-
-            const filtradas = tareas.filter(t => getNumeroSemana(new Date(t.fecha_limite)) === sem && getDiaSemana(new Date(t.fecha_limite)) === dia);
-            
-            if (filtradas.length === 0) {
-                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario);">No hay funciones delegadas para este día.</div>`;
-                return;
-            }
-
-            contenedor.innerHTML = ''; 
-            filtradas.forEach(t => {
-                let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.urgencia}`;
-                let badgeText = t.completada ? "COMPLETADA" : t.urgencia.toUpperCase();
-                let filaClase = t.id === idAnimar ? "animacion-completado" : "";
-                let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
-                let infoResp = t.tipo_tarea === 'vinculada' && t.nombre_cliente ? `${t.responsable} <br><span style="color: #64FFDA; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: inline-block;">Para: ${t.nombre_cliente}</span>` : t.responsable;
-
-                contenedor.innerHTML += `
-                    <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id}, '${t.responsable}')">
-                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${infoResp}</div>
-                        <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
-                        <div style="font-family: monospace; font-size: 1.1rem;">${new Date(t.fecha_limite).toLocaleString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}</div>
-                        <div>${t.completada ? '--' : 'Pendiente'}</div>
-                        <div><span class="badge ${badgeClass}">${badgeText}</span></div>
-                    </div>
-                `;
-            });
-        }
-
-        function hablar(texto) {
-            if ('speechSynthesis' in window) {
-                const mensaje = new SpeechSynthesisUtterance(texto);
-                mensaje.lang = 'es-ES';
-                window.speechSynthesis.speak(mensaje);
+            // Tareas
+            const contT = document.getElementById('lista-tareas');
+            const filtT = tareas.filter(t => getNumeroSemana(new Date(t.fecha_limite)) === sem && getDiaSemana(new Date(t.fecha_limite)) === dia);
+            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario);">No hay funciones delegadas para este día.</div>`;
+            else {
+                contT.innerHTML = '';
+                filtT.forEach(t => {
+                    let infoResp = (t.tipo_tarea === 'vinculada' && t.nombre_cliente) ? `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${t.nombre_cliente}</span>` : t.responsable;
+                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="marcarCompletada(${t.id}, '${t.responsable}')"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-family:monospace; font-size:1.1rem;">${new Date(t.fecha_limite).toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
+                });
             }
         }
+
+        function hablar(texto) { if ('speechSynthesis' in window) { let m = new SpeechSynthesisUtterance(texto); m.lang = 'es-ES'; window.speechSynthesis.speak(m); } }
 
         function verificarTiempos() {
             const ahora = new Date();
             tareas.forEach(t => {
                 if (t.completada || !t.created_at) return; 
-                const limite = new Date(t.fecha_limite);
-                const inicio = new Date(t.created_at); 
-                const tiempoTotal = limite.getTime() - inicio.getTime();
+                const limite = new Date(t.fecha_limite); const inicio = new Date(t.created_at); 
                 const tiempoRestante = limite.getTime() - ahora.getTime();
-
-                if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30) && !tareasAvisadas.has(t.id)) {
-                    const min = Math.ceil(tiempoRestante / 60000);
-                    let msj = t.nombre_cliente ? `Atención ${t.responsable}. Quedan ${min} minutos para la función del cliente ${t.nombre_cliente}: ${t.descripcion}` : `Atención ${t.responsable}. Quedan ${min} minutos para la función: ${t.descripcion}`;
-                    hablar(msj);
-                    tareasAvisadas.add(t.id);
+                if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
+                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`); tareasAvisadas.add(t.id);
                 }
             });
         }
 
         async function marcarCompletada(id, responsable) {
-            if (!confirm(`¿Confirmas que la función de ${responsable} fue realizada exitosamente?`)) return; 
-            const tareaObj = tareas.find(t => t.id === id);
-            if (tareaObj && !tareaObj.completada) {
+            if (!confirm(`¿Confirmas que la función de ${responsable} fue realizada?`)) return; 
+            const tObj = tareas.find(t => t.id === id);
+            if (tObj && !tObj.completada) {
                 try {
                     await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
-                    tareaObj.completada = true;
-                    let msj = tareaObj.nombre_cliente ? `${tareaObj.responsable} completó la tarea para el cliente ${tareaObj.nombre_cliente}.` : `${tareaObj.responsable} completó la tarea.`;
-                    hablar(msj);
-                    renderizarVistas();
-                } catch (error) { console.error("Error:", error); }
+                    tObj.completada = true; hablar(`${tObj.responsable} completó la tarea.`); renderizarVistas();
+                } catch (error) {}
             }
         }
 
-        inicializarFiltrosSemanales();
-        cargarDatos();
-        setInterval(cargarDatos, 15000);
-        setInterval(verificarTiempos, 10000);
+        inicializarFiltrosSemanales(); cargarDatos();
+        setInterval(cargarDatos, 15000); setInterval(verificarTiempos, 10000);
     </script>
 </body>
 </html>
