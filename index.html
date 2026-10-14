@@ -18,96 +18,41 @@
             --completado: #2E8B57; 
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
 
-        body {
-            background-color: var(--bg-principal);
-            color: var(--texto-principal);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            padding: 15px; /* Reducido para ahorrar espacio */
-        }
+        body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
 
-        /* Header Corporativo con Menú Hamburguesa */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--bg-paneles);
-        }
-
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 45px; width: auto; }
-
         .titulos { display: flex; flex-direction: column; justify-content: center; }
         .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
         
-        #subtitulo-vista {
-            font-size: 1rem; color: var(--acento-amarillo); font-weight: bold;
-            letter-spacing: 1.5px; text-transform: uppercase;
-        }
-
+        #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
         .header-derecha { display: flex; align-items: center; gap: 20px; }
 
-        .reloj {
-            font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center;
-        }
-        
-        #semana-actual {
-            color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif;
-        }
+        .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
+        #semana-actual { color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; }
 
-        /* NUEVO: Contenedor y Botón Hamburguesa */
         .menu-container { position: relative; }
-        .btn-hamburguesa {
-            background: none; border: none; color: var(--texto-principal); font-size: 2.2rem;
-            cursor: pointer; transition: color 0.3s ease; padding: 0 10px;
-        }
+        .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; transition: color 0.3s ease; padding: 0 10px; }
         .btn-hamburguesa:hover, .btn-hamburguesa:focus { color: var(--acento-amarillo); outline: none; }
 
-        /* NUEVO: Menú desplegable */
-        .menu-desplegable {
-            display: none; position: absolute; top: 110%; right: 0;
-            background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario);
-            border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px;
-        }
+        .menu-desplegable { display: none; position: absolute; top: 110%; right: 0; background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario); border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px; }
         .menu-desplegable.show { display: flex; }
 
-        .menu-item {
-            background-color: transparent; color: var(--texto-secundario); border: none;
-            padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold;
-            cursor: pointer; transition: all 0.3s ease; border-radius: 5px; text-transform: uppercase;
-        }
+        .menu-item { background-color: transparent; color: var(--texto-secundario); border: none; padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: all 0.3s ease; border-radius: 5px; text-transform: uppercase; }
         .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
         .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
 
         .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .filtros-semanales label { font-size: 0.85rem; color: var(--texto-secundario); margin-bottom:-4px; }
-        .filtros-semanales select {
-            width: 100%; background-color: var(--bg-principal); color: var(--texto-principal);
-            border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem;
-            font-weight: bold; border-radius: 5px; outline: none; cursor: pointer;
-        }
+        .filtros-semanales select { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; outline: none; cursor: pointer; }
         .filtros-semanales select:focus { border-color: var(--acento-amarillo); }
 
-        /* Contenedores de Vistas */
-        .vista {
-            display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px;
-            padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden;
-        }
+        .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex; }
 
-        /* Grids */
         .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         .grid-clientes { grid-template-columns: 140px 50px 2fr 1fr 2fr 1fr 120px; }
         .grid-tareas { grid-template-columns: 1fr 4fr 150px 150px 120px; }
@@ -127,11 +72,7 @@
         .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
 
-        @keyframes destelloVerde {
-            0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); }
-            50% { background-color: var(--completado); transform: scale(1.01); }
-            100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); }
-        }
+        @keyframes destelloVerde { 0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); } 50% { background-color: var(--completado); transform: scale(1.01); } 100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); } }
         .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
         @keyframes parpadeo { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
@@ -140,7 +81,6 @@
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--acento-amarillo); }
-
     </style>
 </head>
 <body>
@@ -186,74 +126,47 @@
         </div>
     </header>
 
-    <!-- Vista 1: Clientes -->
     <div class="vista active" id="vista-clientes">
         <div class="fila-header grid-clientes">
-            <div>Fecha/Hora</div>
-            <div>Logo</div>
-            <div>Cliente</div>
-            <div>Lugar</div>
-            <div>Curso al detal</div>
-            <div>Facilitador</div>
-            <div>Estatus</div>
+            <div>Fecha/Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Curso al detal</div><div>Facilitador</div><div>Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
-    <!-- Vista 2: Tareas -->
     <div class="vista" id="vista-tareas">
         <div class="fila-header grid-tareas">
-            <div>Responsable</div>
-            <div>Tarea Asignada</div>
-            <div>Hora Límite</div>
-            <div>Tiempo Restante</div>
-            <div>Estatus</div>
+            <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div>Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-tareas"></div>
     </div>
 
     <script>
-        // Reloj en tiempo real
         setInterval(() => {
-            const ahora = new Date();
-            document.getElementById('reloj-digital').textContent = ahora.toLocaleTimeString('en-US', { hour12: true });
+            document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true });
         }, 1000);
 
-        // Menú Hamburguesa
-        function toggleMenu() {
-            document.getElementById('menu-desplegable').classList.toggle('show');
-        }
-        document.addEventListener('click', function(event) {
+        function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
+        document.addEventListener('click', function(e) {
             const menu = document.getElementById('menu-desplegable');
-            const boton = document.getElementById('btn-menu');
-            if (!menu.contains(event.target) && event.target !== boton) {
-                menu.classList.remove('show');
-            }
+            if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show');
         });
 
-        // Funciones para calcular la Semana ISO (Igual que en el Admin)
         function getNumeroSemana(d) {
             d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
             d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
             var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
             return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
         }
-        function getDiaSemana(d) {
-            let dia = d.getDay();
-            return dia === 0 ? 7 : dia; // 1 Lunes a 7 Domingo
-        }
+        function getDiaSemana(d) { let dia = d.getDay(); return dia === 0 ? 7 : dia; }
 
-        // Inicializar Filtros Semanales
         function inicializarFiltrosSemanales() {
             const selectSemana = document.getElementById('filtro-semana');
             let hoy = new Date();
             let numSemanaActual = getNumeroSemana(hoy);
-            let diaSemanaActual = getDiaSemana(hoy);
-            
             document.getElementById('semana-actual').textContent = `SEMANA ${numSemanaActual}`;
             
             let lunesActual = new Date(hoy);
-            lunesActual.setDate(hoy.getDate() - diaSemanaActual + 1);
+            lunesActual.setDate(hoy.getDate() - getDiaSemana(hoy) + 1);
             lunesActual.setHours(0,0,0,0);
 
             selectSemana.innerHTML = '';
@@ -263,22 +176,52 @@
                 let label = `Semana ${numSemana} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
                 selectSemana.add(new Option(label, numSemana));
             }
-            
-            // Setear el día actual por defecto
-            document.getElementById('filtro-dia').value = diaSemanaActual;
+            document.getElementById('filtro-dia').value = getDiaSemana(hoy);
         }
 
         let clientes = [];
         let tareas = [];
+        
+        // Memoria para las voces
         let tareasAvisadas = new Set();
+        let clientesConocidos = new Set();
+        let tareasConocidas = new Set();
+        let esPrimeraCarga = true;
 
         async function cargarDatos() {
             try {
-                const resClientes = await fetch('/api/clientes');
+                // El timestamp "?t=" evita que el navegador guarde datos viejos en caché
+                const timestamp = new Date().getTime();
+                
+                const resClientes = await fetch('/api/clientes?t=' + timestamp);
                 clientes = await resClientes.json();
                 
-                const resTareas = await fetch('/api/tareas');
+                const resTareas = await fetch('/api/tareas?t=' + timestamp);
                 tareas = await resTareas.json();
+                
+                // LÓGICA DE VOCES PARA NUEVOS REGISTROS
+                if (esPrimeraCarga) {
+                    clientes.forEach(c => clientesConocidos.add(c.id));
+                    tareas.forEach(t => tareasConocidas.add(t.id));
+                    esPrimeraCarga = false;
+                } else {
+                    clientes.forEach(c => {
+                        if (!clientesConocidos.has(c.id)) {
+                            hablar(`Atención equipo. Nuevo programa registrado: ${c.nombre_cliente}. Curso de ${c.curso}.`);
+                            clientesConocidos.add(c.id);
+                        }
+                    });
+
+                    tareas.forEach(t => {
+                        if (!tareasConocidas.has(t.id)) {
+                            let msjNuevaTarea = t.nombre_cliente 
+                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
+                            hablar(msjNuevaTarea);
+                            tareasConocidas.add(t.id);
+                        }
+                    });
+                }
                 
                 renderizarVistas();
             } catch (error) {
@@ -289,13 +232,9 @@
         function cambiarVista(vistaId) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
-            
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
-
-            const subtitulo = document.getElementById('subtitulo-vista');
-            subtitulo.textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
-            
+            document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
             document.getElementById('menu-desplegable').classList.remove('show');
             renderizarVistas();
         }
@@ -303,74 +242,59 @@
         function renderizarVistas() {
             renderizarClientes();
             renderizarTareas();
-            
-            // Actualizar el número de semana en la barra superior basado en el selector
             document.getElementById('semana-actual').textContent = `SEMANA ${document.getElementById('filtro-semana').value}`;
         }
 
         function renderizarClientes() {
             const contenedor = document.getElementById('lista-clientes');
-            const semSeleccionada = parseInt(document.getElementById('filtro-semana').value);
-            const diaSeleccionado = parseInt(document.getElementById('filtro-dia').value);
+            const sem = parseInt(document.getElementById('filtro-semana').value);
+            const dia = parseInt(document.getElementById('filtro-dia').value);
 
-            const clientesFiltrados = clientes.filter(c => {
-                let d = new Date(c.fecha_atencion);
-                return getNumeroSemana(d) === semSeleccionada && getDiaSemana(d) === diaSeleccionado;
-            });
+            const filtrados = clientes.filter(c => getNumeroSemana(new Date(c.fecha_atencion)) === sem && getDiaSemana(new Date(c.fecha_atencion)) === dia);
 
-            if (clientesFiltrados.length === 0) {
-                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario); font-size: 1.2rem;">No hay programas de clientes registrados para este día.</div>`;
+            if (filtrados.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario);">No hay programas registrados para este día.</div>`;
                 return;
             }
 
-            contenedor.innerHTML = clientesFiltrados.map(c => {
-                const fechaFormat = new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true });
-                return `
+            contenedor.innerHTML = filtrados.map(c => `
                 <div class="fila-item grid-clientes">
-                    <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${fechaFormat}</div>
-                    <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'" alt="Logo"></div>
+                    <div style="font-weight: bold; color: var(--acento-amarillo);">${new Date(c.fecha_atencion).toLocaleString('es-ES', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
+                    <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
                     <div style="font-weight: bold; font-size: 1.1rem;">${c.nombre_cliente}</div>
                     <div>${c.lugar_atencion}</div>
                     <div>${c.curso}</div>
                     <div style="font-weight: bold; color: var(--urgencia-baja);">${c.facilitador}</div>
                     <div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div>
                 </div>
-            `}).join('');
+            `).join('');
         }
 
         function renderizarTareas(idAnimar = null) {
             const contenedor = document.getElementById('lista-tareas');
-            const semSeleccionada = parseInt(document.getElementById('filtro-semana').value);
-            const diaSeleccionado = parseInt(document.getElementById('filtro-dia').value);
+            const sem = parseInt(document.getElementById('filtro-semana').value);
+            const dia = parseInt(document.getElementById('filtro-dia').value);
 
-            const tareasFiltradas = tareas.filter(t => {
-                let d = new Date(t.fecha_limite);
-                return getNumeroSemana(d) === semSeleccionada && getDiaSemana(d) === diaSeleccionado;
-            });
+            const filtradas = tareas.filter(t => getNumeroSemana(new Date(t.fecha_limite)) === sem && getDiaSemana(new Date(t.fecha_limite)) === dia);
             
-            if (tareasFiltradas.length === 0) {
-                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario); font-size: 1.2rem;">No hay funciones delegadas para este día.</div>`;
+            if (filtradas.length === 0) {
+                contenedor.innerHTML = `<div style="text-align: center; padding: 30px; color: var(--texto-secundario);">No hay funciones delegadas para este día.</div>`;
                 return;
             }
 
             contenedor.innerHTML = ''; 
-            tareasFiltradas.forEach(t => {
-                const horaFormat = new Date(t.fecha_limite).toLocaleString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+            filtradas.forEach(t => {
                 let badgeClass = t.completada ? "estatus-completado" : `estatus-${t.urgencia}`;
                 let badgeText = t.completada ? "COMPLETADA" : t.urgencia.toUpperCase();
                 let filaClase = t.id === idAnimar ? "animacion-completado" : "";
                 let estiloFila = t.completada && t.id !== idAnimar ? "background-color: rgba(46, 139, 87, 0.2);" : "";
-
-                let infoResponsable = t.responsable;
-                if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
-                    infoResponsable = `${t.responsable} <br><span style="color: #64FFDA; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: inline-block;">Para: ${t.nombre_cliente}</span>`;
-                }
+                let infoResp = t.tipo_tarea === 'vinculada' && t.nombre_cliente ? `${t.responsable} <br><span style="color: #64FFDA; font-size: 0.85rem; font-weight: normal; margin-top: 5px; display: inline-block;">Para: ${t.nombre_cliente}</span>` : t.responsable;
 
                 contenedor.innerHTML += `
                     <div class="fila-item grid-tareas ${filaClase}" style="${estiloFila}" onclick="marcarCompletada(${t.id}, '${t.responsable}')">
-                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${infoResponsable}</div>
+                        <div style="font-weight: bold; color: var(--acento-amarillo); font-size: 1.1rem;">${infoResp}</div>
                         <div style="line-height: 1.5; padding-right: 20px; font-size: 1.05rem;">${t.descripcion}</div>
-                        <div style="font-family: monospace; font-size: 1.1rem;">${horaFormat}</div>
+                        <div style="font-family: monospace; font-size: 1.1rem;">${new Date(t.fecha_limite).toLocaleString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' })}</div>
                         <div>${t.completada ? '--' : 'Pendiente'}</div>
                         <div><span class="badge ${badgeClass}">${badgeText}</span></div>
                     </div>
@@ -378,7 +302,6 @@
             });
         }
 
-        // LÓGICA DE VOZ Y VERIFICACIÓN
         function hablar(texto) {
             if ('speechSynthesis' in window) {
                 const mensaje = new SpeechSynthesisUtterance(texto);
@@ -389,65 +312,40 @@
 
         function verificarTiempos() {
             const ahora = new Date();
-            
             tareas.forEach(t => {
                 if (t.completada || !t.created_at) return; 
-
                 const limite = new Date(t.fecha_limite);
                 const inicio = new Date(t.created_at); 
-
                 const tiempoTotal = limite.getTime() - inicio.getTime();
                 const tiempoRestante = limite.getTime() - ahora.getTime();
 
-                if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30)) {
-                    if (!tareasAvisadas.has(t.id)) {
-                        const minRestantes = Math.ceil(tiempoRestante / 60000);
-                        let txtMinutos = minRestantes === 1 ? '1 minuto' : `${minRestantes} minutos`;
-                        
-                        let mensajePresion = t.nombre_cliente 
-                            ? `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función del cliente ${t.nombre_cliente}: ${t.descripcion}`
-                            : `Atención ${t.responsable}. El tiempo se agota. Quedan ${txtMinutos} para entregar la función: ${t.descripcion}`;
-                        
-                        hablar(mensajePresion);
-                        tareasAvisadas.add(t.id);
-                    }
+                if (tiempoRestante > 0 && tiempoRestante <= (tiempoTotal * 0.30) && !tareasAvisadas.has(t.id)) {
+                    const min = Math.ceil(tiempoRestante / 60000);
+                    let msj = t.nombre_cliente ? `Atención ${t.responsable}. Quedan ${min} minutos para la función del cliente ${t.nombre_cliente}: ${t.descripcion}` : `Atención ${t.responsable}. Quedan ${min} minutos para la función: ${t.descripcion}`;
+                    hablar(msj);
+                    tareasAvisadas.add(t.id);
                 }
             });
         }
 
         async function marcarCompletada(id, responsable) {
-            const confirmacion = confirm(`¿Confirmas que la función asignada a ${responsable} fue realizada exitosamente?`);
-            if (!confirmacion) return; 
-
+            if (!confirm(`¿Confirmas que la función de ${responsable} fue realizada exitosamente?`)) return; 
             const tareaObj = tareas.find(t => t.id === id);
             if (tareaObj && !tareaObj.completada) {
                 try {
-                    await fetch('/api/tareas', {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ id: id })
-                    });
-                    
+                    await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
                     tareaObj.completada = true;
-                    
-                    let mensajeExito = tareaObj.nombre_cliente
-                        ? `${tareaObj.responsable} completó la tarea para el cliente ${tareaObj.nombre_cliente}. Tarea finalizada: ${tareaObj.descripcion}.`
-                        : `${tareaObj.responsable} completó la tarea. Tarea finalizada: ${tareaObj.descripcion}.`;
-                    
-                    hablar(mensajeExito);
-                    renderizarVistas(); // Recargar visual con el flash verde
-                } catch (error) {
-                    console.error("Error al completar la tarea:", error);
-                }
+                    let msj = tareaObj.nombre_cliente ? `${tareaObj.responsable} completó la tarea para el cliente ${tareaObj.nombre_cliente}.` : `${tareaObj.responsable} completó la tarea.`;
+                    hablar(msj);
+                    renderizarVistas();
+                } catch (error) { console.error("Error:", error); }
             }
         }
 
-        // Arranque Inicial
         inicializarFiltrosSemanales();
         cargarDatos();
         setInterval(cargarDatos, 15000);
         setInterval(verificarTiempos, 10000);
-        
     </script>
 </body>
 </html>
