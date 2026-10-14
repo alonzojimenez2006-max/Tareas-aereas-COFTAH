@@ -144,12 +144,18 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
-        // --- SISTEMA DE FECHAS ESTRICTO ANTICHOQUE DE ZONAS HORARIAS ---
+        // --- SISTEMA DE FECHAS ESTRICTO Y SEMANA ACTUAL ---
         function llenarSemanas() {
             const selects = [document.getElementById('semana-cliente'), document.getElementById('semana-tarea')];
-            let hoy = new Date(); let diaSemana = hoy.getDay() || 7; 
-            let lunesActual = new Date(hoy); lunesActual.setDate(hoy.getDate() - diaSemana + 1); lunesActual.setHours(0,0,0,0);
+            let hoy = new Date(); 
+            let diaSemana = hoy.getDay() === 0 ? 7 : hoy.getDay(); 
+            let lunesActual = new Date(hoy); 
+            lunesActual.setDate(hoy.getDate() - diaSemana + 1); 
+            lunesActual.setHours(0,0,0,0);
+            
             selects.forEach(select => select.innerHTML = '');
+            let valorSemanaActual = ""; 
+
             for (let i = -2; i < 10; i++) {
                 let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
                 let d = new Date(Date.UTC(lunesSemana.getFullYear(), lunesSemana.getMonth(), lunesSemana.getDate()));
@@ -157,18 +163,26 @@
                 let yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
                 let numSemana = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
                 
-                // Guardamos la fecha estricta del Lunes de esa semana (YYYY-MM-DD)
                 let mes = String(lunesSemana.getMonth() + 1).padStart(2, '0');
                 let dia = String(lunesSemana.getDate()).padStart(2, '0');
                 let fechaStr = `${lunesSemana.getFullYear()}-${mes}-${dia}`;
                 
+                if (i === 0) valorSemanaActual = fechaStr; // Identifica cuál es la semana de hoy
+
                 let label = `Semana ${numSemana} (Inicio: ${dia}/${mes})`;
                 selects.forEach(select => select.add(new Option(label, fechaStr)));
             }
+            
+            // SELECCIONA LA SEMANA Y DÍA ACTUAL POR DEFECTO EN LOS FORMULARIOS
+            if (valorSemanaActual) {
+                document.getElementById('semana-cliente').value = valorSemanaActual;
+                document.getElementById('semana-tarea').value = valorSemanaActual;
+            }
+            document.getElementById('dia-cliente').value = diaSemana;
+            document.getElementById('dia-tarea').value = diaSemana;
         }
 
         function construirFecha(idSemana, idDia, idHora) {
-            // Se toma el Lunes de la semana y se le suman los días
             let fechaBase = new Date(document.getElementById(idSemana).value + "T00:00:00"); 
             fechaBase.setDate(fechaBase.getDate() + parseInt(document.getElementById(idDia).value) - 1);
             
@@ -177,7 +191,6 @@
             let dd = String(fechaBase.getDate()).padStart(2, '0');
             let hora = document.getElementById(idHora).value || "00:00";
             
-            // Retorna un string ISO exacto sin la "Z" al final para que la BD no aplique UTC offsets
             return `${yyyy}-${mm}-${dd}T${hora}:00`;
         }
 
