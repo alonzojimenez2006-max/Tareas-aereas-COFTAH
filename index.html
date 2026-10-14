@@ -330,10 +330,17 @@
                 try {
                     await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
                     tObj.completada = true; 
-                    hablar(`Excelente trabajo ${tObj.responsable}. Tarea marcada como completada.`); 
+                    
+                    let mensajeExito = tObj.nombre_cliente
+                        ? `Excelente trabajo ${tObj.responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
+                        : `Excelente trabajo ${tObj.responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
+                    
+                    hablar(mensajeExito); 
                     cerrarModal(); 
                     renderizarVistas(); 
-                } catch (error) {}
+                } catch (error) {
+                    console.error("Error marcando completada", error);
+                }
             }
         }
 
