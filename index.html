@@ -166,30 +166,6 @@
     </div>
 
     <script>
-        // --- 1. CONFIGURACIÓN Y DESBLOQUEO DE VOZ ---
-        // Esto soluciona el problema de Google Chrome bloqueando el audio.
-        document.body.addEventListener('click', function() {
-            if ('speechSynthesis' in window) {
-                let msg = new SpeechSynthesisUtterance("");
-                msg.volume = 0; // Se reproduce en silencio para desbloquear el motor
-                window.speechSynthesis.speak(msg);
-            }
-        }, { once: true });
-
-        // Función de voz blindada (con parámetro para interrumpir a la fuerza si es necesario)
-        function hablar(texto, interrumpir = false) { 
-            if ('speechSynthesis' in window) { 
-                if (interrumpir) {
-                    window.speechSynthesis.cancel(); // Calla cualquier otra voz sonando
-                }
-                let m = new SpeechSynthesisUtterance(texto); 
-                m.lang = 'es-ES'; 
-                m.rate = 1.0; 
-                m.volume = 1.0;
-                window.speechSynthesis.speak(m); 
-            } 
-        }
-
         setInterval(() => { document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true }); }, 1000);
         function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
         document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
@@ -240,7 +216,6 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- EVENTOS DE VOZ PARA DATOS NUEVOS ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -248,18 +223,16 @@
                 } else {
                     clientes.forEach(c => { 
                         if (!clientesConocidos.has(c.id)) { 
-                            // VOZ 1: Nueva Formación
-                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`, false); 
+                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
-                            // VOZ 2: Delegación de nueva función
                             let msj = t.nombre_cliente
-                                ? `Atención. Nueva función delegada a ${t.responsable} para la empresa ${t.nombre_cliente}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}.`;
-                            hablar(msj, false); 
+                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
+                            hablar(msj); 
                             tareasConocidas.add(t.id); 
                         }
                     });
@@ -313,6 +286,7 @@
                     let estatusFinal = esHoy ? 'EN PROCESO' : c.estatus.toUpperCase();
                     let claseEstatus = esHoy ? 'estatus-en-proceso' : `estatus-${c.estatus}`;
                     
+                    // LÓGICA DE FOTOS INTELIGENTES
                     let logoVisual = c.logo_url_final ? c.logo_url_final : 'COFTAH.png.png';
                     let avatarVisual = c.facilitador_foto ? `<img src="${c.facilitador_foto}" class="avatar-mini">` : '';
 
@@ -440,26 +414,27 @@
                     let mensajeVoz = "";
                     if (accion === 'proceso') {
                         tObj.urgencia = 'en_proceso'; 
-                        // VOZ 3: Marcada En Proceso (interrumpe otras voces)
                         mensajeVoz = tObj.nombre_cliente
-                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}.`
-                            : `Atención equipo. ${responsable} ha iniciado la misión.`;
-                        hablar(mensajeVoz, true);
+                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}. Tarea en proceso: ${tObj.descripcion}.`
+                            : `Atención equipo. ${responsable} ha iniciado la misión. Tarea en proceso: ${tObj.descripcion}.`;
                     } else {
                         tObj.completada = true; 
-                        // VOZ 4: Marcada Completada (interrumpe otras voces)
                         mensajeVoz = tObj.nombre_cliente
-                            ? `Excelente trabajo ${responsable}. Misión cumplida para la empresa ${tObj.nombre_cliente}.`
-                            : `Excelente trabajo ${responsable}. Misión cumplida.`;
-                        hablar(mensajeVoz, true);
+                            ? `Excelente trabajo ${responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
+                            : `Excelente trabajo ${responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
                     }
                     
                     cerrarModal(); 
                     renderizarVistas(); 
+
+                    window.speechSynthesis.cancel();
+                    setTimeout(() => { hablar(mensajeVoz); }, 500);
                     
                 } catch (error) { console.error("Error actualizando estatus", error); }
             }
         }
+
+        function hablar(texto) { if ('speechSynthesis' in window) { let m = new SpeechSynthesisUtterance(texto); m.lang = 'es-ES'; window.speechSynthesis.speak(m); } }
 
         function verificarTiempos() {
             const ahora = new Date();
@@ -468,8 +443,7 @@
                 const limite = parseFechaLocal(t.fecha_limite); const inicio = parseFechaLocal(t.created_at); 
                 const tiempoRestante = limite.getTime() - ahora.getTime();
                 if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
-                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`, false); 
-                    tareasAvisadas.add(t.id);
+                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`); tareasAvisadas.add(t.id);
                 }
             });
         }
