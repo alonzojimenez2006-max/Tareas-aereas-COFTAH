@@ -24,38 +24,51 @@ export default async function handler(req, res) {
             return res.status(200).json(result.rows);
         }
         
-        // MÉTODO POST: Registrar nuevo cliente
+        // MÉTODO POST: Registrar nuevo cliente (AHORA MULTI-DÍA)
         if (req.method === 'POST') {
-            // AQUI AGREGAMOS "ciudad" Y CAMBIAMOS "curso" POR "accion_formacion"
-            let { fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus } = req.body;
+            // Recibimos "fechas_atencion" como un arreglo (array) de fechas
+            let { fechas_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus } = req.body;
             
             // Validación 1: Logo Opcional Seguro
             if (!logo_url || logo_url.trim() === '') {
                 logo_url = 'COFTAH.png.png';
             }
 
-            // Validación 2: Prevención de doble turno (Filtramos solo por fecha, ignorando la hora)
-            const validacionTurno = await pool.query(
-                `SELECT id FROM clientes_agenda 
-                 WHERE facilitador = $1 
-                 AND DATE(fecha_atencion) = DATE($2)`,
-                [facilitador, fecha_atencion]
-            );
+            // Validar que se reciba al menos una fecha
+            if (!fechas_atencion || fechas_atencion.length === 0) {
+                return res.status(400).json({ error: 'Se requiere al menos una fecha para la formación.' });
+            }
 
-            if (validacionTurno.rows.length > 0) {
-                return res.status(400).json({ 
-                    error: `No se puede registrar. El facilitador ${facilitador} ya tiene una actividad asignada para este día.` 
-                });
+            // Validación 2: Prevención de doble turno (Revisamos todos los días solicitados)
+            for (let fecha of fechas_atencion) {
+                const validacionTurno = await pool.query(
+                    `SELECT id FROM clientes_agenda 
+                     WHERE facilitador = $1 
+                     AND DATE(fecha_atencion) = DATE($2)`,
+                    [facilitador, fecha]
+                );
+
+                if (validacionTurno.rows.length > 0) {
+                    let fechaCorta = fecha.split('T')[0]; // Extrae solo el año-mes-día para el mensaje
+                    return res.status(400).json({ 
+                        error: `No se puede registrar. El facilitador ${facilitador} ya tiene una actividad asignada para el día ${fechaCorta}.` 
+                    });
+                }
             }
             
-            // Inserción en la base de datos con los nuevos campos
-            const result = await pool.query(
-                `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-                [fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus]
-            );
+            // Inserción en la base de datos (Un registro independiente por cada día)
+            let registrosCreados = [];
+            for (let fecha of fechas_atencion) {
+                const result = await pool.query(
+                    `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+                    [fecha, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus]
+                );
+                registrosCreados.push(result.rows[0]);
+            }
             
-            return res.status(201).json(result.rows[0]);
+            // Devolvemos todos los registros creados
+            return res.status(201).json(registrosCreados);
         }
         
         // MÉTODO DELETE: Borrar cliente
