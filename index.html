@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard COFTAH</title>
     <style>
-        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; }
+        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; --en-proceso: #00BFFF; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
         
@@ -22,7 +22,7 @@
         @keyframes titilar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
         .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
-        #semana-actual { color: var(--texto-principal); font-size: 1.3rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; }
+        #dia-actual-header { color: var(--texto-principal); font-size: 1.2rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; text-transform: uppercase; }
         
         .menu-container { position: relative; }
         .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; padding: 0 10px; }
@@ -32,14 +32,16 @@
         .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
         .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
         .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
-        .filtros-semanales select { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .filtros-semanales select, .filtros-semanales input[type="date"] { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
         .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex; }
         
         .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
-        .grid-clientes { grid-template-columns: 80px 50px 2fr 1fr 1.5fr 1fr 100px 110px; }
-        .grid-tareas { grid-template-columns: 1fr 3fr 100px 100px 120px 110px; }
+        /* Nuevos Grids ajustados (sin Día, con Ciudad y Acción centrada) */
+        .grid-clientes { grid-template-columns: 75px 40px 1.5fr 1fr 1fr 2fr 1fr 110px; }
+        .grid-tareas { grid-template-columns: 1fr 3fr 100px 120px 110px; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
         .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
@@ -52,8 +54,11 @@
         .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
         .estatus-critica, .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
-        .animacion-completado { animation: destelloVerde 1.5s ease-out forwards; }
-        @keyframes destelloVerde { 0% { background-color: rgba(255, 255, 255, 0.03); transform: scale(1); } 50% { background-color: var(--completado); transform: scale(1.01); } 100% { background-color: rgba(46, 139, 87, 0.2); transform: scale(1); } }
+        
+        /* Animación para "En Proceso" */
+        .estatus-en-proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
+        @keyframes pulsoAzul { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+        
         .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
@@ -89,21 +94,20 @@
                 <div class="punto-verde"></div> Conectado
             </div>
             <div class="reloj">
-                <span id="semana-actual">SEMANA --</span>
+                <span id="dia-actual-header">FECHA</span>
                 <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
                 <span id="reloj-digital">00:00:00</span>
             </div>
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
                 <div id="menu-desplegable" class="menu-desplegable">
-                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Clientes</button>
+                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Formación</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     
                     <div class="filtros-semanales">
-                        <label>Filtrar por Semana</label>
-                        <select id="filtro-semana" onchange="renderizarVistas()"></select>
+                        <label>Filtrar por Día</label>
+                        <input type="date" id="filtro-dia" onchange="renderizarVistas()">
                         
-                        <!-- NUEVO: Filtro por Facilitador (Se muestra en Clientes) -->
                         <div id="contenedor-filtro-facilitador" style="display: block; margin-top: 10px;">
                             <label>Filtrar por Facilitador</label>
                             <select id="filtro-facilitador" onchange="renderizarVistas()">
@@ -111,7 +115,6 @@
                             </select>
                         </div>
 
-                        <!-- Filtro por Responsable (Se muestra en Tareas) -->
                         <div id="contenedor-filtro-responsable" style="display: none; margin-top: 10px;">
                             <label>Filtrar por Responsable</label>
                             <select id="filtro-responsable" onchange="renderizarVistas()">
@@ -126,14 +129,14 @@
 
     <div class="vista active" id="vista-clientes">
         <div class="fila-header grid-clientes">
-            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Curso al detal</div><div>Facilitador</div><div>Día</div><div>Estatus</div>
+            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
     <div class="vista" id="vista-tareas">
         <div class="fila-header grid-tareas">
-            <div>Responsable</div><div>Tarea Asignada</div><div>Día</div><div>Hora Límite</div><div>Tiempo Restante</div><div>Estatus</div>
+            <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div style="text-align:center;">Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-tareas"></div>
     </div>
@@ -157,34 +160,20 @@
         function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
         document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
         
-        function getNumeroSemana(d) { d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7)); var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1)); return Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7); }
         function parseFechaLocal(fechaStr) {
             if (!fechaStr) return new Date();
             let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
             return new Date(limpia);
         }
 
-        const nombresDias = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
-
-        function inicializarFiltrosSemanales() {
-            const selectSemana = document.getElementById('filtro-semana'); 
+        // INICIA EN EL DÍA ACTUAL (Calendario)
+        function inicializarFechas() {
             let hoy = new Date();
-            let numSemanaHoy = getNumeroSemana(hoy);
-            document.getElementById('semana-actual').textContent = `SEMANA ${numSemanaHoy}`;
-            
-            let lunesActual = new Date(hoy); 
-            let dia = hoy.getDay() === 0 ? 7 : hoy.getDay();
-            lunesActual.setDate(hoy.getDate() - dia + 1); 
-            lunesActual.setHours(0,0,0,0);
-            
-            selectSemana.innerHTML = '';
-            for (let i = -2; i < 10; i++) { 
-                let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
-                let numSem = getNumeroSemana(lunesSemana);
-                let label = `Semana ${numSem} (Inicio: ${lunesSemana.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})})`;
-                selectSemana.add(new Option(label, numSem));
-            }
-            selectSemana.value = numSemanaHoy.toString();
+            let yyyy = hoy.getFullYear();
+            let mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            let dd = String(hoy.getDate()).padStart(2, '0');
+            document.getElementById('filtro-dia').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('dia-actual-header').textContent = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
         }
 
         let clientes = []; let tareas = [];
@@ -204,7 +193,6 @@
                 const resTareas = await fetch('/api/tareas?t=' + ts, conf);
                 if(resTareas.ok) tareas = await resTareas.json();
                 
-                // Actualizar menú de Facilitadores dinámicamente
                 const facilitadoresUnicos = [...new Set(clientes.map(c => c.facilitador))].sort();
                 const selectFac = document.getElementById('filtro-facilitador');
                 const valorActualFac = selectFac.value;
@@ -212,7 +200,6 @@
                 facilitadoresUnicos.forEach(f => selectFac.add(new Option(f, f)));
                 if (facilitadoresUnicos.includes(valorActualFac)) selectFac.value = valorActualFac;
 
-                // Actualizar menú de Responsables dinámicamente
                 const responsablesUnicos = [...new Set(tareas.map(t => t.responsable))].sort();
                 const selectResp = document.getElementById('filtro-responsable');
                 const valorActualResp = selectResp.value;
@@ -227,17 +214,15 @@
                 } else {
                     clientes.forEach(c => { 
                         if (!clientesConocidos.has(c.id)) { 
-                            let d = new Date(c.fecha_atencion);
-                            hablar(`Atención equipo. Nuevo programa registrado para la semana ${getNumeroSemana(d)}: ${c.nombre_cliente}.`); 
+                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
-                            let d = new Date(t.fecha_limite);
                             let msj = t.nombre_cliente
-                                ? `Atención. Nueva función delegada a ${t.responsable} para la semana ${getNumeroSemana(d)}, cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
-                                : `Atención. Nueva función delegada a ${t.responsable} para la semana ${getNumeroSemana(d)}. Tarea: ${t.descripcion}.`;
+                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
                             hablar(msj); 
                             tareasConocidas.add(t.id); 
                         }
@@ -258,7 +243,6 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
             document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
             
-            // Alternar visibilidad de los filtros
             document.getElementById('contenedor-filtro-facilitador').style.display = vistaId === 'clientes' ? 'block' : 'none';
             document.getElementById('contenedor-filtro-responsable').style.display = vistaId === 'tareas' ? 'block' : 'none';
             
@@ -267,45 +251,76 @@
         }
 
         function renderizarVistas() {
-            const sem = parseInt(document.getElementById('filtro-semana').value);
+            const diaFiltro = document.getElementById('filtro-dia').value; // Formato YYYY-MM-DD
             const filtroFac = document.getElementById('filtro-facilitador').value;
             const filtroResp = document.getElementById('filtro-responsable').value;
-            document.getElementById('semana-actual').textContent = `SEMANA ${sem}`;
+            
+            // Actualizar Cabecera de fecha
+            let fechaCabecera = parseFechaLocal(diaFiltro + "T00:00:00");
+            document.getElementById('dia-actual-header').textContent = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
 
-            // Render Clientes (Aplicando el filtro de Facilitador)
+            // Identificar si el filtro coincide con HOY real para el estatus "EN PROCESO"
+            let hoyReal = new Date();
+            let hoyString = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
+            let esHoy = (diaFiltro === hoyString);
+
+            // Render Clientes (Filtro por Día y Facilitador)
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
-                let esSemana = getNumeroSemana(d) === sem;
-                let esFacilitador = (filtroFac === 'TODOS' || c.facilitador === filtroFac);
-                return esSemana && esFacilitador;
+                let cDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                return cDateStr === diaFiltro && (filtroFac === 'TODOS' || c.facilitador === filtroFac);
             });
 
-            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay programas registrados para esta semana${filtroFac !== 'TODOS' ? ' con ' + filtroFac : ''}.</div>`;
-            else contC.innerHTML = filtC.map(c => {
-                let d = parseFechaLocal(c.fecha_atencion);
-                return `<div class="fila-item grid-clientes"><div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div><div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div><div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div><div>${c.lugar_atencion}</div><div>${c.curso}</div><div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div><span class="badge estatus-${c.estatus}">${c.estatus.toUpperCase()}</span></div></div>`;
-            }).join('');
+            if (filtC.length === 0) {
+                contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones programadas para este día.</div>`;
+            } else {
+                contC.innerHTML = filtC.map(c => {
+                    let d = parseFechaLocal(c.fecha_atencion);
+                    
+                    // INTELIGENCIA AUTOMÁTICA: Si es hoy, dice "EN PROCESO"
+                    let estatusFinal = esHoy ? 'EN PROCESO' : c.estatus.toUpperCase();
+                    let claseEstatus = esHoy ? 'estatus-en-proceso' : `estatus-${c.estatus}`;
 
-            // Render Tareas
+                    return `<div class="fila-item grid-clientes">
+                        <div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
+                        <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
+                        <div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div>
+                        <div>${c.lugar_atencion}</div>
+                        <div>${c.ciudad}</div>
+                        <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--texto-principal);">${c.accion_formacion}</div>
+                        <div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div>
+                        <div style="text-align:center;"><span class="badge ${claseEstatus}">${estatusFinal}</span></div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Render Tareas (Filtro por Día y Responsable)
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
-                return getNumeroSemana(d) === sem && (filtroResp === 'TODOS' || t.responsable === filtroResp);
+                let tDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                return tDateStr === diaFiltro && (filtroResp === 'TODOS' || t.responsable === filtroResp);
             });
 
-            if (filtT.length === 0) contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas en esta vista.</div>`;
-            else {
+            if (filtT.length === 0) {
+                contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas en esta vista.</div>`;
+            } else {
                 contT.innerHTML = '';
                 filtT.forEach(t => {
                     let d = parseFechaLocal(t.fecha_limite);
                     let infoResp = t.responsable;
                     if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
-                        let diaPrg = nombresDias[parseFechaLocal(t.fecha_programa).getDay()];
-                        let etiqueta = `${t.nombre_cliente} | ${t.curso} (${diaPrg})`;
+                        let etiqueta = `${t.nombre_cliente} | ${t.accion_formacion}`;
                         infoResp = `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${etiqueta}</span>`;
                     }
-                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="abrirModal(${t.id})"><div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div><div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div><div style="font-weight:bold; text-transform:uppercase;">${nombresDias[d.getDay()]}</div><div style="font-family:monospace; font-size:1.1rem;">${d.toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div><div>${t.completada ? '--' : 'Pendiente'}</div><div><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div></div>`;
+                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="abrirModal(${t.id})">
+                        <div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div>
+                        <div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div>
+                        <div style="font-family:monospace; font-size:1.1rem;">${d.toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div>
+                        <div>${t.completada ? '--' : 'Pendiente'}</div>
+                        <div style="text-align:center;"><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div>
+                    </div>`;
                 });
             }
         }
@@ -320,11 +335,11 @@
                 let dProg = parseFechaLocal(t.fecha_programa);
                 htmlBody += `
                     <div class="modal-seccion">
-                        <strong>INFORMACIÓN DEL PROGRAMA VINCULADO</strong>
+                        <strong>INFORMACIÓN DE LA FORMACIÓN VINCULADA</strong>
                         <p><b>Cliente / Empresa:</b> ${t.nombre_cliente}</p>
-                        <p><b>Curso a dictar:</b> ${t.curso}</p>
+                        <p><b>Acción de Formación:</b> ${t.accion_formacion}</p>
                         <p><b>Fecha:</b> ${dProg.toLocaleString('es-ES', { weekday:'long', day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</p>
-                        <p><b>Lugar:</b> ${t.lugar_atencion}</p>
+                        <p><b>Lugar y Ciudad:</b> ${t.lugar_atencion} (${t.ciudad})</p>
                         <p><b>Facilitador a cargo:</b> <span style="color: var(--urgencia-baja); font-weight: bold;">${t.facilitador}</span></p>
                     </div>
                 `;
@@ -391,7 +406,7 @@
             });
         }
 
-        inicializarFiltrosSemanales(); cargarDatos();
+        inicializarFechas(); cargarDatos();
         setInterval(cargarDatos, 15000); setInterval(verificarTiempos, 10000);
     </script>
 </body>
