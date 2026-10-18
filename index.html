@@ -38,11 +38,10 @@
         .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex; }
         
-        .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
+        .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
-        /* AQUI ESTÁ LA MAGIA DEL ESPACIO AJUSTADO */
-        /* Redujimos cliente, lugar y ciudad para darle 4fr a Acción de Formación */
-        .grid-clientes { grid-template-columns: 75px 40px 1.2fr 0.7fr 0.7fr 4fr 1fr 110px; }
+        /* COLUMNAS COMPACTAS A LA IZQUIERDA Y CENTRO EXPANDIDO */
+        .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 7fr 1fr 110px; }
         .grid-tareas { grid-template-columns: 1fr 3fr 100px 120px 110px; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
@@ -241,7 +240,7 @@
             document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
-            document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE CLIENTES';
+            document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE FORMACIÓN';
             
             document.getElementById('contenedor-filtro-facilitador').style.display = vistaId === 'clientes' ? 'block' : 'none';
             document.getElementById('contenedor-filtro-responsable').style.display = vistaId === 'tareas' ? 'block' : 'none';
