@@ -18,7 +18,6 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === 'GET') {
-            // AHORA TRAEMOS LA CIUDAD Y LA ACCIÓN DE FORMACIÓN DEL CLIENTE
             const result = await pool.query(`
                 SELECT t.*, 
                        c.nombre_cliente, c.accion_formacion, c.lugar_atencion, c.ciudad, c.fecha_atencion AS fecha_programa, c.facilitador
@@ -40,11 +39,19 @@ export default async function handler(req, res) {
             return res.status(201).json(result.rows[0]);
         }
         
+        // AQUI ESTÁ LA MAGIA DEL NUEVO PATCH CON DOBLE ACCIÓN
         if (req.method === 'PATCH') {
-            const { id } = req.body;
+            const { id, accion } = req.body;
             if (!id) return res.status(400).json({ error: 'Se requiere el ID de la tarea.' });
 
-            const result = await pool.query('UPDATE tareas_delegadas SET completada = TRUE WHERE id = $1 RETURNING *', [id]);
+            let result;
+            if (accion === 'proceso') {
+                // Si recibe la orden de proceso, cambia el estatus de urgencia a "en_proceso"
+                result = await pool.query("UPDATE tareas_delegadas SET urgencia = 'en_proceso' WHERE id = $1 RETURNING *", [id]);
+            } else {
+                // Por defecto, marca la tarea como finalizada
+                result = await pool.query('UPDATE tareas_delegadas SET completada = TRUE WHERE id = $1 RETURNING *', [id]);
+            }
             return res.status(200).json(result.rows[0]);
         }
         
