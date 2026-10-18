@@ -39,8 +39,10 @@
         .vista.active { display: flex; }
         
         .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
-        /* Nuevos Grids ajustados (sin Día, con Ciudad y Acción centrada) */
-        .grid-clientes { grid-template-columns: 75px 40px 1.5fr 1fr 1fr 2fr 1fr 110px; }
+        
+        /* AQUI ESTÁ LA MAGIA DEL ESPACIO AJUSTADO */
+        /* Redujimos cliente, lugar y ciudad para darle 4fr a Acción de Formación */
+        .grid-clientes { grid-template-columns: 75px 40px 1.2fr 0.7fr 0.7fr 4fr 1fr 110px; }
         .grid-tareas { grid-template-columns: 1fr 3fr 100px 120px 110px; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
@@ -55,7 +57,6 @@
         .estatus-critica, .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
         
-        /* Animación para "En Proceso" */
         .estatus-en-proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
         @keyframes pulsoAzul { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
         
@@ -166,7 +167,6 @@
             return new Date(limpia);
         }
 
-        // INICIA EN EL DÍA ACTUAL (Calendario)
         function inicializarFechas() {
             let hoy = new Date();
             let yyyy = hoy.getFullYear();
@@ -251,20 +251,17 @@
         }
 
         function renderizarVistas() {
-            const diaFiltro = document.getElementById('filtro-dia').value; // Formato YYYY-MM-DD
+            const diaFiltro = document.getElementById('filtro-dia').value;
             const filtroFac = document.getElementById('filtro-facilitador').value;
             const filtroResp = document.getElementById('filtro-responsable').value;
             
-            // Actualizar Cabecera de fecha
             let fechaCabecera = parseFechaLocal(diaFiltro + "T00:00:00");
             document.getElementById('dia-actual-header').textContent = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
 
-            // Identificar si el filtro coincide con HOY real para el estatus "EN PROCESO"
             let hoyReal = new Date();
             let hoyString = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
             let esHoy = (diaFiltro === hoyString);
 
-            // Render Clientes (Filtro por Día y Facilitador)
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
@@ -277,8 +274,6 @@
             } else {
                 contC.innerHTML = filtC.map(c => {
                     let d = parseFechaLocal(c.fecha_atencion);
-                    
-                    // INTELIGENCIA AUTOMÁTICA: Si es hoy, dice "EN PROCESO"
                     let estatusFinal = esHoy ? 'EN PROCESO' : c.estatus.toUpperCase();
                     let claseEstatus = esHoy ? 'estatus-en-proceso' : `estatus-${c.estatus}`;
 
@@ -295,7 +290,6 @@
                 }).join('');
             }
 
-            // Render Tareas (Filtro por Día y Responsable)
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
@@ -325,7 +319,6 @@
             }
         }
 
-        // VENTANA MODAL
         function abrirModal(id) {
             const t = tareas.find(x => x.id === id);
             if(!t) return;
