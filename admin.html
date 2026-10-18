@@ -37,8 +37,12 @@
         .papelera-box { border: 2px dashed var(--btn-borrar); padding: 20px; border-radius: 8px; background-color: rgba(255, 51, 102, 0.05); }
         input[type="file"] { padding: 9px; cursor: pointer; }
         input[type="file"]::file-selector-button { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--acento-amarillo); padding: 8px 16px; border-radius: 4px; margin-right: 15px; cursor: pointer; }
-        /* Ajuste para iconos de calendario en inputs date */
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
+        
+        /* Estilo para el buscador general */
+        .buscador-contenedor { background-color: rgba(255, 215, 0, 0.1); border: 1px solid var(--acento-amarillo); padding: 15px; border-radius: 8px; margin-bottom: 25px; }
+        .buscador-contenedor input { background-color: transparent; border: none; color: white; font-size: 1.1rem; width: 100%; }
+        .buscador-contenedor input::placeholder { color: var(--texto-secundario); }
     </style>
 </head>
 <body>
@@ -54,13 +58,24 @@
         <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
     </div>
 
-    <!-- VISTA CLIENTES -->
+    <!-- VISTA CLIENTES (Con lógica Multidía) -->
     <div class="vista active" id="vista-clientes">
-        <h2 class="panel-titulo">Datos del Cliente</h2>
+        <h2 class="panel-titulo">Datos de la Formación</h2>
         <form id="form-cliente">
             <div class="row-group">
-                <div><label>Fecha de Ejecución</label><input type="date" id="fecha-cliente" required></div>
-                <div><label>Hora</label><input type="time" id="hora-cliente" required></div>
+                <div>
+                    <label>Días de duración</label>
+                    <input type="number" id="dias-formacion" min="1" max="10" value="1" onchange="generarCamposFechas()" required>
+                </div>
+                <div>
+                    <label>Hora de inicio</label>
+                    <input type="time" id="hora-cliente" required>
+                </div>
+            </div>
+            
+            <!-- Contenedor dinámico de fechas -->
+            <div id="contenedor-fechas" style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <!-- Se llena con JS -->
             </div>
             
             <div class="form-group">
@@ -129,6 +144,12 @@
 
     <!-- VISTA GESTIÓN GENERAL -->
     <div class="vista" id="vista-gestion">
+        
+        <!-- BUSCADOR EN TIEMPO REAL -->
+        <div class="buscador-contenedor">
+            <input type="text" id="buscador-general" placeholder="🔍 Buscar por fecha (ej: 15/10), nombre, acción, estatus..." onkeyup="filtrarGestion()">
+        </div>
+
         <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
         <table class="tabla-gestion">
             <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción</th><th>Acción</th></tr></thead>
@@ -149,21 +170,56 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
-        // --- SISTEMA DE FECHAS NATIVO (CALENDARIO) ---
+        // --- SISTEMA DE FECHAS MULTIPLES Y NATIVO ---
         function inicializarFechas() {
             let hoy = new Date();
-            // Formatear hoy como YYYY-MM-DD para el input type="date"
             let yyyy = hoy.getFullYear();
             let mm = String(hoy.getMonth() + 1).padStart(2, '0');
             let dd = String(hoy.getDate()).padStart(2, '0');
             let fechaString = `${yyyy}-${mm}-${dd}`;
 
-            document.getElementById('fecha-cliente').value = fechaString;
+            // Resetear Tarea
             document.getElementById('fecha-tarea').value = fechaString;
-            
-            // Horas por defecto
-            document.getElementById('hora-cliente').value = "08:00";
             document.getElementById('hora-tarea').value = "17:00";
+
+            // Resetear Cliente y generar el día 1
+            document.getElementById('dias-formacion').value = 1;
+            document.getElementById('hora-cliente').value = "08:00";
+            generarCamposFechas(fechaString);
+        }
+
+        function generarCamposFechas(fechaBaseDefecto = null) {
+            const cant = parseInt(document.getElementById('dias-formacion').value) || 1;
+            const contenedor = document.getElementById('contenedor-fechas');
+            
+            // Si el contenedor ya tiene datos, guardamos el primer valor para replicarlo
+            let valorActual = document.querySelector('.fecha-multi') ? document.querySelector('.fecha-multi').value : '';
+            if (fechaBaseDefecto) valorActual = fechaBaseDefecto;
+
+            contenedor.innerHTML = '';
+            for (let i = 1; i <= cant; i++) {
+                contenedor.innerHTML += `
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="color: var(--acento-amarillo);">Fecha de Ejecución (Día ${i})</label>
+                        <input type="date" class="fecha-multi" value="${valorActual}" required>
+                    </div>
+                `;
+            }
+        }
+
+        // --- BUSCADOR EN TIEMPO REAL ---
+        function filtrarGestion() {
+            let filtro = document.getElementById('buscador-general').value.toLowerCase();
+            let tablas = ['tbody-clientes', 'tbody-tareas'];
+            
+            tablas.forEach(tb => {
+                let filas = document.getElementById(tb).getElementsByTagName('tr');
+                for (let i = 0; i < filas.length; i++) {
+                    let textoFila = filas[i].textContent.toLowerCase();
+                    // Si el texto incluye el filtro, mostramos la fila, sino la ocultamos
+                    filas[i].style.display = textoFila.includes(filtro) ? '' : 'none';
+                }
+            });
         }
 
         // --- SISTEMA DE PERSONAL Y PAPELERA ---
@@ -260,18 +316,25 @@
             } catch (error) {}
         }
 
-        // GUARDAR CLIENTE (Con nuevos campos Ciudad y Acción)
+        // GUARDAR CLIENTE (MULTI-DÍA)
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
             const fileInput = document.getElementById('logo-cliente');
 
+            // Extraemos TODAS las fechas creadas y les unimos la misma hora
+            let inputsFechas = document.querySelectorAll('.fecha-multi');
+            let arregloFechas = [];
+            let hora = document.getElementById('hora-cliente').value;
+
+            inputsFechas.forEach(input => {
+                arregloFechas.push(input.value + "T" + hora + ":00");
+            });
+
             const procesarEnvio = async (logoStr) => {
-                let fechaFormateada = document.getElementById('fecha-cliente').value + "T" + document.getElementById('hora-cliente').value + ":00";
-                
                 try {
                     const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                        fecha_atencion: fechaFormateada, 
+                        fechas_atencion: arregloFechas,  // Enviamos el arreglo
                         logo_url: logoStr, 
                         nombre_cliente: document.getElementById('nombre-cliente').value, 
                         lugar_atencion: document.getElementById('lugar-cliente').value, 
@@ -292,7 +355,7 @@
             } else { procesarEnvio(""); }
         });
 
-        // GUARDAR TAREA (Adaptado al input date)
+        // GUARDAR TAREA 
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
             const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
@@ -327,8 +390,13 @@
                 if(resT.ok) {
                     const tareas = await resT.json(); tbT.innerHTML = '';
                     if(tareas.length===0) tbT.innerHTML='<tr><td colspan="4">Sin tareas</td></tr>';
-                    tareas.forEach(t => tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0,25)}...</td><td>${t.completada?'Sí':'No'}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`);
+                    tareas.forEach(t => tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0,25)}...</td><td>${t.urgencia.toUpperCase()}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`);
                 }
+                
+                // Reiniciar el buscador cuando se cargan datos nuevos
+                document.getElementById('buscador-general').value = '';
+                filtrarGestion();
+                
             } catch (error) {}
         }
 
