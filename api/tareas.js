@@ -18,10 +18,10 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === 'GET') {
-            // AHORA TRAEMOS TODOS LOS DETALLES DEL CLIENTE VINCULADO
+            // AHORA TRAEMOS LA CIUDAD Y LA ACCIÓN DE FORMACIÓN DEL CLIENTE
             const result = await pool.query(`
                 SELECT t.*, 
-                       c.nombre_cliente, c.curso, c.lugar_atencion, c.fecha_atencion AS fecha_programa, c.facilitador
+                       c.nombre_cliente, c.accion_formacion, c.lugar_atencion, c.ciudad, c.fecha_atencion AS fecha_programa, c.facilitador
                 FROM tareas_delegadas t 
                 LEFT JOIN clientes_agenda c ON t.programa_id = c.id 
                 ORDER BY t.completada ASC, t.fecha_limite ASC
