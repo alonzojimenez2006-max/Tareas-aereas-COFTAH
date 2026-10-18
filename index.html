@@ -3,444 +3,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard COFTAH</title>
+    <title>Admin - Dashboard COFTAH</title>
     <style>
-        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; --en-proceso: #00BFFF; }
+        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D; --borde-input: #234E8A; --btn-borrar: #FF3366; --btn-restaurar: #2E8B57; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
-        .brand { display: flex; align-items: center; gap: 15px; }
-        .brand img { height: 45px; width: auto; }
-        .titulos { display: flex; flex-direction: column; justify-content: center; }
-        .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
-        #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
-        .header-derecha { display: flex; align-items: center; gap: 20px; }
-        
-        .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 10px; }
-        .punto-verde { width: 10px; height: 10px; background-color: var(--urgencia-baja); border-radius: 50%; box-shadow: 0 0 8px var(--urgencia-baja); animation: titilar 2s infinite; }
-        @keyframes titilar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-
-        .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
-        #dia-actual-header { color: var(--texto-principal); font-size: 1.2rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; text-transform: uppercase; }
-        
-        .menu-container { position: relative; }
-        .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; padding: 0 10px; }
-        .menu-desplegable { display: none; position: absolute; top: 110%; right: 0; background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario); border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px; }
-        .menu-desplegable.show { display: flex; }
-        .menu-item { background-color: transparent; color: var(--texto-secundario); border: none; padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; }
-        .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
-        .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
-        .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
-        .filtros-semanales select, .filtros-semanales input[type="date"] { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        body { background-color: var(--bg-principal); color: var(--texto-principal); min-height: 100vh; padding: 20px; }
+        header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg-paneles); }
+        header img { height: 45px; width: auto; }
+        header h1 { font-size: 1.5rem; font-weight: 600; color: var(--acento-amarillo); }
+        .tabs-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .tab-btn { background-color: var(--bg-paneles); color: var(--texto-secundario); border: 2px solid transparent; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
+        .tab-btn.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 2px solid var(--acento-amarillo); }
+        .vista { display: none; background-color: var(--bg-paneles); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); max-width: 900px; margin: 0 auto; }
+        .vista.active { display: block; }
+        .panel-titulo { font-size: 1.3rem; text-transform: uppercase; color: var(--acento-amarillo); margin-bottom: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        .row-group { display: flex; gap: 15px; margin-bottom: 20px; }
+        .row-group > div { flex: 1; }
+        label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 12px; background-color: var(--input-bg); border: 1px solid var(--borde-input); border-radius: 6px; color: var(--texto-principal); font-size: 1rem; outline: none; }
+        .radio-group { display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px; }
+        .tabla-gestion { width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
+        .tabla-gestion th, .tabla-gestion td { padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input); vertical-align: middle; }
+        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); font-size: 0.9rem; }
+        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px;}
+        .btn-borrar { background-color: var(--btn-borrar); }
+        .btn-mover { background-color: #d4a017; color: #000; }
+        .btn-restaurar { background-color: var(--btn-restaurar); }
+        .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 30px; }
+        #grupo-programa-vinculado { display: none; }
+        .grid-personal { display: flex; gap: 20px; margin-bottom: 30px; }
+        .grid-personal > div { flex: 1; }
+        .papelera-box { border: 2px dashed var(--btn-borrar); padding: 20px; border-radius: 8px; background-color: rgba(255, 51, 102, 0.05); }
+        input[type="file"] { padding: 9px; cursor: pointer; }
+        input[type="file"]::file-selector-button { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--acento-amarillo); padding: 8px 16px; border-radius: 4px; margin-right: 15px; cursor: pointer; }
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
-        .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
-        .vista.active { display: flex; }
-        
-        .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
-        
-        /* COLUMNAS COMPACTAS A LA IZQUIERDA Y CENTRO EXPANDIDO */
-        .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 7fr 1fr 110px; }
-        .grid-tareas { grid-template-columns: 1fr 3fr 100px 120px 110px; }
-        
-        .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
-        .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
-        .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
-        .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; text-align: center; display: inline-block; width: 100%; }
-        
-        .estatus-rutina, .estatus-programado { background-color: var(--urgencia-baja); color: #000; }
-        .estatus-importante { background-color: var(--urgencia-media); color: #000; }
-        .estatus-urgente { background-color: var(--urgencia-alta); color: #fff; }
-        .estatus-critica, .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
-        .estatus-completado { background-color: var(--completado); color: #fff; }
-        
-        /* Animaciones EN PROCESO (Sirve para clientes y tareas) */
-        .estatus-en-proceso, .estatus-en_proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
-        @keyframes pulsoAzul { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
-        
-        .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-paneles); }
-        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        .buscador-contenedor { background-color: rgba(255, 215, 0, 0.1); border: 1px solid var(--acento-amarillo); padding: 15px; border-radius: 8px; margin-bottom: 25px; }
+        .buscador-contenedor input { background-color: transparent; border: none; color: white; font-size: 1.1rem; width: 100%; }
+        .buscador-contenedor input::placeholder { color: var(--texto-secundario); }
 
-        /* VENTANA MODAL */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-overlay.active { display: flex; }
-        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
-        .modal-header { background-color: rgba(255, 215, 0, 0.1); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.5rem; margin: 0; text-transform: uppercase; }
-        .modal-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
-        .modal-body { padding: 25px; font-size: 1.1rem; line-height: 1.6; color: var(--texto-principal); }
-        .modal-seccion { background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--urgencia-baja); }
-        .modal-seccion strong { color: var(--texto-secundario); display: block; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 5px; }
-        
-        /* FOOTER DE BOTONES */
-        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
-        .btn-modal { padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
-        .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
-        .btn-modal-proceso { background-color: var(--en-proceso); color: #000; }
-        .btn-modal-completar { background-color: var(--completado); color: white; }
+        .avatar-mini { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); margin-right: 10px; display: inline-block; vertical-align: middle; background-color: white;}
     </style>
 </head>
 <body>
     <header>
-        <div class="brand">
-            <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
-            <div class="titulos">
-                <h1>COFTAH / TABLERO DE OPERACIONES</h1>
-                <div id="subtitulo-vista">CRONOGRAMA DE CLIENTES</div>
-            </div>
-        </div>
-        <div class="header-derecha">
-            <div class="estado-conexion" id="estado-conexion">
-                <div class="punto-verde"></div> Conectado
-            </div>
-            <div class="reloj">
-                <span id="dia-actual-header">FECHA</span>
-                <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
-                <span id="reloj-digital">00:00:00</span>
-            </div>
-            <div class="menu-container">
-                <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
-                <div id="menu-desplegable" class="menu-desplegable">
-                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Formación</button>
-                    <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
-                    
-                    <div class="filtros-semanales">
-                        <label>Filtrar por Día</label>
-                        <input type="date" id="filtro-dia" onchange="renderizarVistas()">
-                        
-                        <div id="contenedor-filtro-facilitador" style="display: block; margin-top: 10px;">
-                            <label>Filtrar por Facilitador</label>
-                            <select id="filtro-facilitador" onchange="renderizarVistas()">
-                                <option value="TODOS">Todos los facilitadores</option>
-                            </select>
-                        </div>
-
-                        <div id="contenedor-filtro-responsable" style="display: none; margin-top: 10px;">
-                            <label>Filtrar por Responsable</label>
-                            <select id="filtro-responsable" onchange="renderizarVistas()">
-                                <option value="TODOS">Todos los responsables</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
+        <h1>PANEL DE ADMINISTRACIÓN</h1>
     </header>
 
+    <div class="tabs-container">
+        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Formación</button>
+        <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
+        <button class="tab-btn" id="btn-directorio" onclick="cambiarFormulario('directorio'); cargarDirectorio();">Directorio Empresas</button>
+        <button class="tab-btn" id="btn-personal" onclick="cambiarFormulario('personal')">Equipo de Trabajo</button>
+        <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
+    </div>
+
+    <!-- VISTA CLIENTES (Ahora usa el directorio y no pide logo manual) -->
     <div class="vista active" id="vista-clientes">
-        <div class="fila-header grid-clientes">
-            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
-        </div>
-        <div class="contenedor-lista" id="lista-clientes"></div>
+        <h2 class="panel-titulo">Datos de la Formación</h2>
+        <form id="form-cliente">
+            <div class="row-group">
+                <div>
+                    <label>Días de duración</label>
+                    <input type="number" id="dias-formacion" min="1" max="10" value="1" onchange="generarCamposFechas()" required>
+                </div>
+                <div>
+                    <label>Hora de inicio</label>
+                    <input type="time" id="hora-cliente" required>
+                </div>
+            </div>
+            
+            <div id="contenedor-fechas" style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <!-- Se llena con JS -->
+            </div>
+            
+            <div class="form-group">
+                <label>Cliente / Empresa</label>
+                <select id="cliente-directorio" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
+            </div>
+            
+            <div class="row-group">
+                <div><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
+                <div><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
+            </div>
+
+            <div class="form-group"><label>Acción de Formación</label><input type="text" id="accion-formacion-cliente" required></div>
+            <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" required><option value="" disabled selected>Cargando personal...</option></select></div>
+            <div class="form-group"><label>Estatus inicial</label><select id="estatus-cliente" required><option value="programado">Programado</option><option value="importante">Aviso Próximo</option><option value="retrasado">Retrasado</option></select></div>
+            <button type="submit" class="btn-submit">Guardar Formación</button>
+        </form>
     </div>
 
+    <!-- VISTA TAREAS -->
     <div class="vista" id="vista-tareas">
-        <div class="fila-header grid-tareas">
-            <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div style="text-align:center;">Estatus</div>
-        </div>
-        <div class="contenedor-lista" id="lista-tareas"></div>
+        <h2 class="panel-titulo">Asignación de Tareas</h2>
+        <form id="form-tarea">
+            <div class="form-group"><label>Tipo de Función</label><div class="radio-group"><label><input type="radio" name="tipo-tarea" value="aislada" checked> Aislada</label><label><input type="radio" name="tipo-tarea" value="vinculada"> Vincular</label></div></div>
+            <div class="form-group" id="grupo-programa-vinculado"><label>Programa Activo</label><select id="programa-vinculado"></select></div>
+            <div class="form-group"><label>Responsable</label><select id="responsable-tarea" required><option value="" disabled selected>Cargando personal...</option></select></div>
+            <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
+            <div class="row-group">
+                <div><label>Fecha Límite</label><input type="date" id="fecha-tarea" required></div>
+                <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
+            </div>
+            <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
+            <button type="submit" class="btn-submit">Delegar Función</button>
+        </form>
     </div>
 
-    <div class="modal-overlay" id="modal-tarea">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-titulo">Detalles de la Misión</h2>
-                <button class="modal-close" onclick="cerrarModal()">×</button>
+    <!-- NUEVA VISTA: DIRECTORIO EMPRESAS -->
+    <div class="vista" id="vista-directorio">
+        <h2 class="panel-titulo">Añadir Empresa al Directorio</h2>
+        <form id="form-directorio">
+            <div class="form-group"><label>Nombre de la Empresa (Ej: SLB)</label><input type="text" id="nombre-empresa" required></div>
+            <div class="form-group"><label>Logo Oficial</label><input type="file" id="logo-empresa" accept="image/png, image/jpeg, image/webp" required></div>
+            <button type="submit" class="btn-submit">Guardar en Directorio Permanente</button>
+        </form>
+
+        <h3 style="color: var(--acento-amarillo); margin-bottom: 10px; margin-top: 30px;">📋 Empresas Registradas</h3>
+        <table class="tabla-gestion"><tbody id="tbody-empresas"><tr><td>Cargando...</td></tr></tbody></table>
+    </div>
+
+    <!-- VISTA PERSONAL (Añadido Foto de Perfil) -->
+    <div class="vista" id="vista-personal">
+        <h2 class="panel-titulo">Añadir Nuevo Miembro</h2>
+        <form id="form-personal">
+            <div class="row-group">
+                <div><label>Nombre (Apodo)</label><input type="text" id="nombre-personal" required></div>
+                <div><label>Rol</label><select id="rol-personal" required><option value="facilitador">Facilitador</option><option value="responsable">Responsable</option></select></div>
             </div>
-            <div class="modal-body" id="modal-body"></div>
-            <!-- SECCIÓN DE 3 BOTONES -->
-            <div class="modal-footer" id="modal-footer">
-                <button class="btn-modal btn-modal-cancelar" onclick="cerrarModal()">Volver</button>
-                <button class="btn-modal btn-modal-proceso" id="btn-proceso-modal">Realizando</button>
-                <button class="btn-modal btn-modal-completar" id="btn-completar-modal">Marcar como Hecho</button>
+            <div class="form-group">
+                <label>Foto de Perfil (Opcional)</label>
+                <input type="file" id="foto-personal" accept="image/png, image/jpeg, image/webp">
+            </div>
+            <button type="submit" class="btn-submit">Añadir al Equipo</button>
+        </form>
+
+        <div class="grid-personal">
+            <div>
+                <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Facilitadores</h3>
+                <table class="tabla-gestion"><tbody id="tbody-facilitadores"><tr><td>Cargando...</td></tr></tbody></table>
+            </div>
+            <div>
+                <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Responsables</h3>
+                <table class="tabla-gestion"><tbody id="tbody-responsables"><tr><td>Cargando...</td></tr></tbody></table>
             </div>
         </div>
+
+        <div class="papelera-box">
+            <h3 style="color: var(--btn-borrar); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">🗑️ Papelera de Reciclaje</h3>
+            <table class="tabla-gestion" style="margin-bottom: 0;"><tbody id="tbody-papelera"><tr><td style="color: var(--texto-secundario);">La papelera está vacía.</td></tr></tbody></table>
+        </div>
+    </div>
+
+    <!-- VISTA GESTIÓN GENERAL -->
+    <div class="vista" id="vista-gestion">
+        <div class="buscador-contenedor">
+            <input type="text" id="buscador-general" placeholder="🔍 Buscar por fecha (ej: 15/10), nombre, acción, estatus..." onkeyup="filtrarGestion()">
+        </div>
+        <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
+        <table class="tabla-gestion">
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción</th><th>Acción</th></tr></thead>
+            <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
+        </table>
+        <h2 class="panel-titulo">Funciones Delegadas</h2>
+        <table class="tabla-gestion">
+            <thead><tr><th>Responsable</th><th>Descripción</th><th>Estatus</th><th>Acción</th></tr></thead>
+            <tbody id="tbody-tareas"><tr><td colspan="4">Cargando...</td></tr></tbody>
+        </table>
     </div>
 
     <script>
-        setInterval(() => { document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true }); }, 1000);
-        function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
-        document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
-        
-        function parseFechaLocal(fechaStr) {
-            if (!fechaStr) return new Date();
-            let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
-            return new Date(limpia);
+        function cambiarFormulario(vistaId) {
+            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`vista-${vistaId}`).classList.add('active');
+            document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
+        // --- SISTEMA DE FECHAS ---
         function inicializarFechas() {
             let hoy = new Date();
             let yyyy = hoy.getFullYear();
             let mm = String(hoy.getMonth() + 1).padStart(2, '0');
             let dd = String(hoy.getDate()).padStart(2, '0');
-            document.getElementById('filtro-dia').value = `${yyyy}-${mm}-${dd}`;
-            document.getElementById('dia-actual-header').textContent = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+            let fechaString = `${yyyy}-${mm}-${dd}`;
+
+            document.getElementById('fecha-tarea').value = fechaString;
+            document.getElementById('hora-tarea').value = "17:00";
+            document.getElementById('dias-formacion').value = 1;
+            document.getElementById('hora-cliente').value = "08:00";
+            generarCamposFechas(fechaString);
         }
 
-        let clientes = []; let tareas = [];
-        let tareasAvisadas = new Set(); let clientesConocidos = new Set(); let tareasConocidas = new Set(); let esPrimeraCarga = true;
+        function generarCamposFechas(fechaBaseDefecto = null) {
+            const cant = parseInt(document.getElementById('dias-formacion').value) || 1;
+            const contenedor = document.getElementById('contenedor-fechas');
+            let valorActual = document.querySelector('.fecha-multi') ? document.querySelector('.fecha-multi').value : '';
+            if (fechaBaseDefecto) valorActual = fechaBaseDefecto;
 
-        async function cargarDatos() {
-            const ind = document.getElementById('estado-conexion');
-            ind.innerHTML = `<div class="punto-verde" style="background-color: var(--acento-amarillo); box-shadow: 0 0 8px var(--acento-amarillo);"></div> Actualizando...`;
+            contenedor.innerHTML = '';
+            for (let i = 1; i <= cant; i++) {
+                contenedor.innerHTML += `<div class="form-group" style="margin-bottom: 10px;"><label style="color: var(--acento-amarillo);">Fecha de Ejecución (Día ${i})</label><input type="date" class="fecha-multi" value="${valorActual}" required></div>`;
+            }
+        }
+
+        // --- BUSCADOR ---
+        function filtrarGestion() {
+            let filtro = document.getElementById('buscador-general').value.toLowerCase();
+            let tablas = ['tbody-clientes', 'tbody-tareas'];
+            tablas.forEach(tb => {
+                let filas = document.getElementById(tb).getElementsByTagName('tr');
+                for (let i = 0; i < filas.length; i++) {
+                    let textoFila = filas[i].textContent.toLowerCase();
+                    filas[i].style.display = textoFila.includes(filtro) ? '' : 'none';
+                }
+            });
+        }
+
+        // --- DIRECTORIO DE EMPRESAS ---
+        async function cargarDirectorio() {
+            try {
+                const res = await fetch('/api/directorio?t=' + new Date().getTime(), { cache: 'no-store' });
+                if(res.ok) {
+                    const empresas = await res.json();
+                    const sel = document.getElementById('cliente-directorio');
+                    const tb = document.getElementById('tbody-empresas');
+                    
+                    sel.innerHTML = '<option value="" disabled selected>Seleccione empresa del directorio...</option>';
+                    tb.innerHTML = '';
+                    
+                    if(empresas.length === 0) tb.innerHTML = '<tr><td style="color:var(--texto-secundario);">No hay empresas registradas</td></tr>';
+                    
+                    empresas.forEach(e => {
+                        sel.innerHTML += `<option value="${e.nombre}">${e.nombre}</option>`;
+                        tb.innerHTML += `<tr><td><img src="${e.logo_url}" class="avatar-mini">${e.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-borrar" onclick="borrarEmpresa(${e.id})">Eliminar</button></td></tr>`;
+                    });
+                }
+            } catch (error) {}
+        }
+
+        document.getElementById('form-directorio').addEventListener('submit', async function(e) {
+            e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
+            const fileInput = document.getElementById('logo-empresa');
+            
+            const procesarDirectorio = async (logoStr) => {
+                try {
+                    const res = await fetch('/api/directorio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-empresa').value, logo_url: logoStr }) });
+                    if (res.ok) { alert("Empresa registrada en el directorio."); document.getElementById('form-directorio').reset(); cargarDirectorio(); } else alert("Error al guardar.");
+                } catch (error) {} finally { btn.textContent = "Guardar en Directorio Permanente"; btn.disabled = false; }
+            };
+
+            const reader = new FileReader();
+            reader.onload = function(evt) { procesarDirectorio(evt.target.result); };
+            reader.readAsDataURL(fileInput.files[0]);
+        });
+
+        async function borrarEmpresa(id) {
+            if(confirm("¿Seguro que deseas eliminar esta empresa del directorio?")) {
+                await fetch(`/api/directorio`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                cargarDirectorio();
+            }
+        }
+
+        // --- SISTEMA DE PERSONAL ---
+        let personalCompleto = []; let enPapelera = new Set(); 
+        async function cargarPersonal() {
+            try {
+                const res = await fetch('/api/personal?t=' + new Date().getTime(), { cache: 'no-store' });
+                if(res.ok) { personalCompleto = await res.json(); renderizarTablasPersonal(); actualizarSelectoresPersonal(); }
+            } catch (error) {}
+        }
+
+        function renderizarTablasPersonal() {
+            const tbFac = document.getElementById('tbody-facilitadores'); const tbResp = document.getElementById('tbody-responsables'); const tbPap = document.getElementById('tbody-papelera');
+            tbFac.innerHTML = ''; tbResp.innerHTML = ''; tbPap.innerHTML = ''; let contadorPapelera = 0;
+
+            personalCompleto.forEach(p => {
+                let imgHtml = p.foto_url ? `<img src="${p.foto_url}" class="avatar-mini">` : `<div class="avatar-mini" style="background-color: var(--texto-secundario);"></div>`;
+                if (enPapelera.has(p.id)) {
+                    contadorPapelera++;
+                    tbPap.innerHTML += `<tr><td>${imgHtml}${p.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-restaurar" onclick="accionPapelera(${p.id}, 'restaurar')">Restaurar</button><button class="btn-accion btn-borrar" onclick="accionPapelera(${p.id}, 'eliminar')">Borrar</button></td></tr>`;
+                } else {
+                    const fila = `<tr><td>${imgHtml}${p.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-mover" onclick="accionPapelera(${p.id}, 'mover')">Papelera</button></td></tr>`;
+                    if (p.rol === 'facilitador') tbFac.innerHTML += fila; else tbResp.innerHTML += fila;
+                }
+            });
+            if(tbFac.innerHTML === '') tbFac.innerHTML = '<tr><td>No hay facilitadores</td></tr>';
+            if(tbResp.innerHTML === '') tbResp.innerHTML = '<tr><td>No hay responsables</td></tr>';
+        }
+
+        async function accionPapelera(id, accion) {
+            if (accion === 'mover') { enPapelera.add(id); renderizarTablasPersonal(); actualizarSelectoresPersonal(); } 
+            else if (accion === 'restaurar') { enPapelera.delete(id); renderizarTablasPersonal(); actualizarSelectoresPersonal(); } 
+            else if (accion === 'eliminar') {
+                if(confirm("¿Eliminar definitivamente?")) { await fetch(`/api/personal`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) }); enPapelera.delete(id); cargarPersonal(); }
+            }
+        }
+
+        function actualizarSelectoresPersonal() {
+            const selFac = document.getElementById('facilitador-cliente'); const selResp = document.getElementById('responsable-tarea');
+            selFac.innerHTML = '<option value="" disabled selected>Seleccione facilitador...</option>'; selResp.innerHTML = '<option value="" disabled selected>Seleccione responsable...</option>';
+            
+            personalCompleto.forEach(p => {
+                if (!enPapelera.has(p.id)) {
+                    if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.id}" data-nombre="${p.nombre}">${p.nombre}</option>`; // IMPORTANTE: Guarda el ID para el backend
+                    if(p.rol === 'responsable') selResp.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
+                }
+            });
+        }
+
+        document.getElementById('form-personal').addEventListener('submit', async function(e) {
+            e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
+            const fileInput = document.getElementById('foto-personal');
+
+            const procesarPersonal = async (fotoStr) => {
+                try {
+                    await fetch('/api/personal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-personal').value, rol: document.getElementById('rol-personal').value, foto_url: fotoStr }) });
+                    document.getElementById('form-personal').reset(); cargarPersonal();
+                } catch (error) {} finally { btn.textContent = "Añadir al Equipo"; btn.disabled = false; }
+            };
+
+            if (fileInput.files.length > 0) { const reader = new FileReader(); reader.onload = function(evt) { procesarPersonal(evt.target.result); }; reader.readAsDataURL(fileInput.files[0]); } else { procesarPersonal(""); }
+        });
+
+        // --- VINCULACIÓN Y DROPDOWNS ---
+        document.querySelectorAll('input[name="tipo-tarea"]').forEach(r => r.addEventListener('change', function() {
+            document.getElementById('grupo-programa-vinculado').style.display = this.value === 'vinculada' ? 'block' : 'none';
+            document.getElementById('programa-vinculado').required = this.value === 'vinculada';
+        }));
+
+        async function cargarProgramasDropdown() {
+            try {
+                const res = await fetch('/api/clientes?t='+new Date().getTime(), { cache: 'no-store' }); const clientes = await res.json();
+                const sel = document.getElementById('programa-vinculado');
+                sel.innerHTML = '<option value="" disabled selected>Selecciona una formación...</option>';
+                clientes.forEach(c => {
+                    let d = new Date(c.fecha_atencion);
+                    sel.innerHTML += `<option value="${c.id}">${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} - ${c.nombre_cliente} (${c.accion_formacion})</option>`
+                });
+            } catch (error) {}
+        }
+
+        // --- GUARDAR FORMACIÓN (USANDO DIRECTORIO E ID DE FACILITADOR) ---
+        document.getElementById('form-cliente').addEventListener('submit', async function(e) {
+            e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
+
+            let inputsFechas = document.querySelectorAll('.fecha-multi');
+            let arregloFechas = [];
+            let hora = document.getElementById('hora-cliente').value;
+            inputsFechas.forEach(input => { arregloFechas.push(input.value + "T" + hora + ":00"); });
+
+            // Capturamos el ID y el Nombre del facilitador del select
+            let selectFac = document.getElementById('facilitador-cliente');
+            let facId = selectFac.value;
+            let facNombre = selectFac.options[selectFac.selectedIndex].getAttribute('data-nombre');
+
+            try {
+                const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+                    fechas_atencion: arregloFechas,  
+                    nombre_cliente: document.getElementById('cliente-directorio').value, // Solo mandamos el nombre, el backend busca el logo
+                    lugar_atencion: document.getElementById('lugar-cliente').value, 
+                    ciudad: document.getElementById('ciudad-cliente').value,
+                    accion_formacion: document.getElementById('accion-formacion-cliente').value, 
+                    facilitador: facNombre, 
+                    facilitador_id: facId,
+                    estatus: document.getElementById('estatus-cliente').value
+                })});
+                if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); inicializarFechas(); cargarProgramasDropdown(); } 
+                else { const data = await res.json(); alert(data.error || "Error al guardar."); }
+            } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
+        });
+
+        // --- GUARDAR TAREA ---
+        document.getElementById('form-tarea').addEventListener('submit', async function(e) {
+            e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
+            const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
+            let fechaFormateada = document.getElementById('fecha-tarea').value + "T" + document.getElementById('hora-tarea').value + ":00";
             
             try {
-                const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' } };
-                const ts = new Date().getTime();
-                
-                const resClientes = await fetch('/api/clientes?t=' + ts, conf);
-                if(resClientes.ok) clientes = await resClientes.json();
-                
-                const resTareas = await fetch('/api/tareas?t=' + ts, conf);
-                if(resTareas.ok) tareas = await resTareas.json();
-                
-                const facilitadoresUnicos = [...new Set(clientes.map(c => c.facilitador))].sort();
-                const selectFac = document.getElementById('filtro-facilitador');
-                const valorActualFac = selectFac.value;
-                selectFac.innerHTML = '<option value="TODOS">Todos los facilitadores</option>';
-                facilitadoresUnicos.forEach(f => selectFac.add(new Option(f, f)));
-                if (facilitadoresUnicos.includes(valorActualFac)) selectFac.value = valorActualFac;
+                const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: fechaFormateada, urgencia: document.getElementById('urgencia-tarea').value })});
+                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); } else alert("Error al delegar función.");
+            } catch (error) {} finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
+        });
 
-                const responsablesUnicos = [...new Set(tareas.map(t => t.responsable))].sort();
-                const selectResp = document.getElementById('filtro-responsable');
-                const valorActualResp = selectResp.value;
-                selectResp.innerHTML = '<option value="TODOS">Todos los responsables</option>';
-                responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
-                if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
-
-                if (esPrimeraCarga) {
-                    clientes.forEach(c => clientesConocidos.add(c.id));
-                    tareas.forEach(t => tareasConocidas.add(t.id));
-                    esPrimeraCarga = false;
-                } else {
-                    clientes.forEach(c => { 
-                        if (!clientesConocidos.has(c.id)) { 
-                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`); 
-                            clientesConocidos.add(c.id); 
-                        }
-                    });
-                    tareas.forEach(t => { 
-                        if (!tareasConocidas.has(t.id)) { 
-                            let msj = t.nombre_cliente
-                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
-                            hablar(msj); 
-                            tareasConocidas.add(t.id); 
-                        }
-                    });
+        async function cargarDatosGestion() {
+            try {
+                const ts = new Date().getTime(); const conf = { cache: 'no-store' };
+                const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
+                if(resC.ok) {
+                    const clientes = await resC.json(); tbC.innerHTML = '';
+                    if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
+                    clientes.forEach(c => { let d = new Date(c.fecha_atencion); tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`; });
                 }
-                
-                renderizarVistas();
-                setTimeout(() => { ind.innerHTML = `<div class="punto-verde"></div> Conectado`; }, 1000);
-            } catch (error) {
-                ind.innerHTML = `<div class="punto-verde" style="background-color: var(--urgencia-critica); box-shadow: 0 0 8px var(--urgencia-critica);"></div> Desconectado`;
-            }
-        }
-
-        function cambiarVista(vistaId) {
-            document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
-            document.getElementById(`vista-${vistaId}`).classList.add('active');
-            document.getElementById(`btn-${vistaId}`).classList.add('active');
-            document.getElementById('subtitulo-vista').textContent = vistaId === 'tareas' ? 'DELEGACIÓN DE FUNCIONES' : 'CRONOGRAMA DE FORMACIÓN';
-            
-            document.getElementById('contenedor-filtro-facilitador').style.display = vistaId === 'clientes' ? 'block' : 'none';
-            document.getElementById('contenedor-filtro-responsable').style.display = vistaId === 'tareas' ? 'block' : 'none';
-            
-            document.getElementById('menu-desplegable').classList.remove('show');
-            renderizarVistas();
-        }
-
-        function renderizarVistas() {
-            const diaFiltro = document.getElementById('filtro-dia').value;
-            const filtroFac = document.getElementById('filtro-facilitador').value;
-            const filtroResp = document.getElementById('filtro-responsable').value;
-            
-            let fechaCabecera = parseFechaLocal(diaFiltro + "T00:00:00");
-            document.getElementById('dia-actual-header').textContent = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
-
-            let hoyReal = new Date();
-            let hoyString = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
-            let esHoy = (diaFiltro === hoyString);
-
-            const contC = document.getElementById('lista-clientes');
-            const filtC = clientes.filter(c => {
-                let d = parseFechaLocal(c.fecha_atencion);
-                let cDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                return cDateStr === diaFiltro && (filtroFac === 'TODOS' || c.facilitador === filtroFac);
-            });
-
-            if (filtC.length === 0) {
-                contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones programadas para este día.</div>`;
-            } else {
-                contC.innerHTML = filtC.map(c => {
-                    let d = parseFechaLocal(c.fecha_atencion);
-                    let estatusFinal = esHoy ? 'EN PROCESO' : c.estatus.toUpperCase();
-                    let claseEstatus = esHoy ? 'estatus-en-proceso' : `estatus-${c.estatus}`;
-
-                    return `<div class="fila-item grid-clientes">
-                        <div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
-                        <div><img src="${c.logo_url}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
-                        <div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div>
-                        <div>${c.lugar_atencion}</div>
-                        <div>${c.ciudad}</div>
-                        <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--texto-principal);">${c.accion_formacion}</div>
-                        <div style="font-weight:bold; color:var(--urgencia-baja);">${c.facilitador}</div>
-                        <div style="text-align:center;"><span class="badge ${claseEstatus}">${estatusFinal}</span></div>
-                    </div>`;
-                }).join('');
-            }
-
-            const contT = document.getElementById('lista-tareas');
-            const filtT = tareas.filter(t => {
-                let d = parseFechaLocal(t.fecha_limite);
-                let tDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                return tDateStr === diaFiltro && (filtroResp === 'TODOS' || t.responsable === filtroResp);
-            });
-
-            if (filtT.length === 0) {
-                contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas en esta vista.</div>`;
-            } else {
-                contT.innerHTML = '';
-                filtT.forEach(t => {
-                    let d = parseFechaLocal(t.fecha_limite);
-                    let infoResp = t.responsable;
-                    if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
-                        let etiqueta = `${t.nombre_cliente} | ${t.accion_formacion}`;
-                        infoResp = `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${etiqueta}</span>`;
-                    }
-                    
-                    // Formatear texto de urgencia (quitar guion bajo)
-                    let textoUrgencia = t.urgencia.replace('_', ' ').toUpperCase();
-                    
-                    contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="abrirModal(${t.id})">
-                        <div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div>
-                        <div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div>
-                        <div style="font-family:monospace; font-size:1.1rem;">${d.toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div>
-                        <div>${t.completada ? '--' : 'Pendiente'}</div>
-                        <div style="text-align:center;"><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : textoUrgencia}</span></div>
-                    </div>`;
-                });
-            }
-        }
-
-        function abrirModal(id) {
-            const t = tareas.find(x => x.id === id);
-            if(!t) return;
-            let htmlBody = '';
-
-            if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
-                let dProg = parseFechaLocal(t.fecha_programa);
-                htmlBody += `
-                    <div class="modal-seccion">
-                        <strong>INFORMACIÓN DE LA FORMACIÓN VINCULADA</strong>
-                        <p><b>Cliente / Empresa:</b> ${t.nombre_cliente}</p>
-                        <p><b>Acción de Formación:</b> ${t.accion_formacion}</p>
-                        <p><b>Fecha:</b> ${dProg.toLocaleString('es-ES', { weekday:'long', day:'2-digit', month:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</p>
-                        <p><b>Lugar y Ciudad:</b> ${t.lugar_atencion} (${t.ciudad})</p>
-                        <p><b>Facilitador a cargo:</b> <span style="color: var(--urgencia-baja); font-weight: bold;">${t.facilitador}</span></p>
-                    </div>
-                `;
-            }
-
-            let textoUrgenciaModal = t.urgencia.replace('_', ' ').toUpperCase();
-
-            htmlBody += `
-                <div class="modal-seccion" style="border-left-color: var(--acento-amarillo);">
-                    <strong>MISIÓN ASIGNADA A ${t.responsable.toUpperCase()}</strong>
-                    <p style="font-size: 1.25rem; font-weight: 500; margin-top: 10px; color: white;">${t.descripcion}</p>
-                </div>
-                <div style="display: flex; justify-content: space-between; color: var(--texto-secundario); font-size: 0.95rem;">
-                    <span><b>Límite de Entrega:</b> ${parseFechaLocal(t.fecha_limite).toLocaleString('es-ES', { weekday:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</span>
-                    <span><b>Nivel de Urgencia:</b> <span style="font-weight: bold; color: ${t.urgencia === 'en_proceso' ? 'var(--en-proceso)' : 'inherit'}">${textoUrgenciaModal}</span></span>
-                </div>
-            `;
-
-            document.getElementById('modal-body').innerHTML = htmlBody;
-
-            const btnCompletar = document.getElementById('btn-completar-modal');
-            const btnProceso = document.getElementById('btn-proceso-modal');
-
-            // Lógica de visualización de botones
-            if(t.completada) {
-                btnCompletar.style.display = 'none';
-                btnProceso.style.display = 'none';
-            } else {
-                btnCompletar.style.display = 'block';
-                btnCompletar.onclick = () => actualizarEstatusTarea(t.id, t.responsable, 'completar');
-                
-                if (t.urgencia === 'en_proceso') {
-                    btnProceso.style.display = 'none'; // Si ya está en proceso, ocultamos este botón
-                } else {
-                    btnProceso.style.display = 'block';
-                    btnProceso.onclick = () => actualizarEstatusTarea(t.id, t.responsable, 'proceso');
+                const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
+                if(resT.ok) {
+                    const tareas = await resT.json(); tbT.innerHTML = '';
+                    if(tareas.length===0) tbT.innerHTML='<tr><td colspan="4">Sin tareas</td></tr>';
+                    tareas.forEach(t => tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0,25)}...</td><td>${t.urgencia.toUpperCase()}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`);
                 }
-            }
-            document.getElementById('modal-tarea').classList.add('active');
+                document.getElementById('buscador-general').value = ''; filtrarGestion();
+            } catch (error) {}
         }
 
-        function cerrarModal() { document.getElementById('modal-tarea').classList.remove('active'); }
-
-        // NUEVA FUNCIÓN PARA PROCESAR Y COMPLETAR
-        async function actualizarEstatusTarea(id, responsable, accion) {
-            const msjConfirmacion = accion === 'proceso' 
-                ? `¿Confirmas que vas a empezar a realizar esta tarea, ${responsable}?`
-                : `¿Confirmas que terminaste la tarea, ${responsable}?`;
-
-            if (!confirm(msjConfirmacion)) return;
-            
-            const tObj = tareas.find(t => t.id === id);
-            if (tObj && !tObj.completada) {
-                try {
-                    await fetch('/api/tareas', { 
-                        method: 'PATCH', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify({ id: id, accion: accion }) 
-                    });
-                    
-                    let mensajeVoz = "";
-                    if (accion === 'proceso') {
-                        tObj.urgencia = 'en_proceso'; // Actualizamos localmente para no esperar a la base de datos
-                        mensajeVoz = tObj.nombre_cliente
-                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}. Tarea en proceso: ${tObj.descripcion}.`
-                            : `Atención equipo. ${responsable} ha iniciado la misión. Tarea en proceso: ${tObj.descripcion}.`;
-                    } else {
-                        tObj.completada = true; 
-                        mensajeVoz = tObj.nombre_cliente
-                            ? `Excelente trabajo ${responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
-                            : `Excelente trabajo ${responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
-                    }
-                    
-                    cerrarModal(); 
-                    renderizarVistas(); 
-
-                    window.speechSynthesis.cancel();
-                    setTimeout(() => { hablar(mensajeVoz); }, 500);
-                    
-                } catch (error) { console.error("Error actualizando estatus", error); }
+        async function borrarRegistro(tipo, id) {
+            if(confirm('¿Eliminar este registro de forma definitiva?')) {
+                await fetch(`/api/${tipo}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown();
             }
         }
 
-        function hablar(texto) { if ('speechSynthesis' in window) { let m = new SpeechSynthesisUtterance(texto); m.lang = 'es-ES'; window.speechSynthesis.speak(m); } }
-
-        function verificarTiempos() {
-            const ahora = new Date();
-            tareas.forEach(t => {
-                if (t.completada || !t.created_at) return; 
-                const limite = parseFechaLocal(t.fecha_limite); const inicio = parseFechaLocal(t.created_at); 
-                const tiempoRestante = limite.getTime() - ahora.getTime();
-                if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
-                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`); tareasAvisadas.add(t.id);
-                }
-            });
-        }
-
-        inicializarFechas(); cargarDatos();
-        setInterval(cargarDatos, 15000); setInterval(verificarTiempos, 10000);
+        inicializarFechas(); cargarPersonal(); cargarDirectorio(); cargarProgramasDropdown();
     </script>
 </body>
 </html>
