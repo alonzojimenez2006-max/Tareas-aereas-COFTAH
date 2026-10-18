@@ -56,7 +56,8 @@
         .estatus-critica, .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
         
-        .estatus-en-proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
+        /* Animaciones EN PROCESO (Sirve para clientes y tareas) */
+        .estatus-en-proceso, .estatus-en_proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
         @keyframes pulsoAzul { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
         
         .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
@@ -74,9 +75,12 @@
         .modal-body { padding: 25px; font-size: 1.1rem; line-height: 1.6; color: var(--texto-principal); }
         .modal-seccion { background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--urgencia-baja); }
         .modal-seccion strong { color: var(--texto-secundario); display: block; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 5px; }
-        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); }
+        
+        /* FOOTER DE BOTONES */
+        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
         .btn-modal { padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
         .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
+        .btn-modal-proceso { background-color: var(--en-proceso); color: #000; }
         .btn-modal-completar { background-color: var(--completado); color: white; }
     </style>
 </head>
@@ -148,8 +152,10 @@
                 <button class="modal-close" onclick="cerrarModal()">×</button>
             </div>
             <div class="modal-body" id="modal-body"></div>
+            <!-- SECCIÓN DE 3 BOTONES -->
             <div class="modal-footer" id="modal-footer">
                 <button class="btn-modal btn-modal-cancelar" onclick="cerrarModal()">Volver</button>
+                <button class="btn-modal btn-modal-proceso" id="btn-proceso-modal">Realizando</button>
                 <button class="btn-modal btn-modal-completar" id="btn-completar-modal">Marcar como Hecho</button>
             </div>
         </div>
@@ -307,12 +313,16 @@
                         let etiqueta = `${t.nombre_cliente} | ${t.accion_formacion}`;
                         infoResp = `${t.responsable} <br><span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:5px; display:inline-block;">Para: ${etiqueta}</span>`;
                     }
+                    
+                    // Formatear texto de urgencia (quitar guion bajo)
+                    let textoUrgencia = t.urgencia.replace('_', ' ').toUpperCase();
+                    
                     contT.innerHTML += `<div class="fila-item grid-tareas ${t.completada ? '' : ''}" style="${t.completada ? 'background-color: rgba(46, 139, 87, 0.2);' : ''}" onclick="abrirModal(${t.id})">
                         <div style="font-weight:bold; color:var(--acento-amarillo); font-size:1.1rem;">${infoResp}</div>
                         <div style="line-height:1.5; padding-right:20px; font-size:1.05rem;">${t.descripcion}</div>
                         <div style="font-family:monospace; font-size:1.1rem;">${d.toLocaleString('en-US', { hour12:true, hour:'2-digit', minute:'2-digit' })}</div>
                         <div>${t.completada ? '--' : 'Pendiente'}</div>
-                        <div style="text-align:center;"><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : t.urgencia.toUpperCase()}</span></div>
+                        <div style="text-align:center;"><span class="badge ${t.completada ? 'estatus-completado' : 'estatus-'+t.urgencia}">${t.completada ? 'COMPLETADA' : textoUrgencia}</span></div>
                     </div>`;
                 });
             }
@@ -337,6 +347,8 @@
                 `;
             }
 
+            let textoUrgenciaModal = t.urgencia.replace('_', ' ').toUpperCase();
+
             htmlBody += `
                 <div class="modal-seccion" style="border-left-color: var(--acento-amarillo);">
                     <strong>MISIÓN ASIGNADA A ${t.responsable.toUpperCase()}</strong>
@@ -344,43 +356,72 @@
                 </div>
                 <div style="display: flex; justify-content: space-between; color: var(--texto-secundario); font-size: 0.95rem;">
                     <span><b>Límite de Entrega:</b> ${parseFechaLocal(t.fecha_limite).toLocaleString('es-ES', { weekday:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</span>
-                    <span><b>Nivel de Urgencia:</b> <span style="font-weight: bold;">${t.urgencia.toUpperCase()}</span></span>
+                    <span><b>Nivel de Urgencia:</b> <span style="font-weight: bold; color: ${t.urgencia === 'en_proceso' ? 'var(--en-proceso)' : 'inherit'}">${textoUrgenciaModal}</span></span>
                 </div>
             `;
 
             document.getElementById('modal-body').innerHTML = htmlBody;
 
-            const btn = document.getElementById('btn-completar-modal');
+            const btnCompletar = document.getElementById('btn-completar-modal');
+            const btnProceso = document.getElementById('btn-proceso-modal');
+
+            // Lógica de visualización de botones
             if(t.completada) {
-                btn.style.display = 'none';
+                btnCompletar.style.display = 'none';
+                btnProceso.style.display = 'none';
             } else {
-                btn.style.display = 'block';
-                btn.onclick = () => marcarCompletadaDesdeModal(t.id, t.responsable);
+                btnCompletar.style.display = 'block';
+                btnCompletar.onclick = () => actualizarEstatusTarea(t.id, t.responsable, 'completar');
+                
+                if (t.urgencia === 'en_proceso') {
+                    btnProceso.style.display = 'none'; // Si ya está en proceso, ocultamos este botón
+                } else {
+                    btnProceso.style.display = 'block';
+                    btnProceso.onclick = () => actualizarEstatusTarea(t.id, t.responsable, 'proceso');
+                }
             }
             document.getElementById('modal-tarea').classList.add('active');
         }
 
         function cerrarModal() { document.getElementById('modal-tarea').classList.remove('active'); }
 
-        async function marcarCompletadaDesdeModal(id, responsable) {
-            if (!confirm(`¿Confirmas que terminaste la tarea, ${responsable}?`)) return;
+        // NUEVA FUNCIÓN PARA PROCESAR Y COMPLETAR
+        async function actualizarEstatusTarea(id, responsable, accion) {
+            const msjConfirmacion = accion === 'proceso' 
+                ? `¿Confirmas que vas a empezar a realizar esta tarea, ${responsable}?`
+                : `¿Confirmas que terminaste la tarea, ${responsable}?`;
+
+            if (!confirm(msjConfirmacion)) return;
+            
             const tObj = tareas.find(t => t.id === id);
             if (tObj && !tObj.completada) {
                 try {
-                    await fetch('/api/tareas', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
-                    tObj.completada = true; 
+                    await fetch('/api/tareas', { 
+                        method: 'PATCH', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ id: id, accion: accion }) 
+                    });
                     
-                    let mensajeExito = tObj.nombre_cliente
-                        ? `Excelente trabajo ${tObj.responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
-                        : `Excelente trabajo ${tObj.responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
+                    let mensajeVoz = "";
+                    if (accion === 'proceso') {
+                        tObj.urgencia = 'en_proceso'; // Actualizamos localmente para no esperar a la base de datos
+                        mensajeVoz = tObj.nombre_cliente
+                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}. Tarea en proceso: ${tObj.descripcion}.`
+                            : `Atención equipo. ${responsable} ha iniciado la misión. Tarea en proceso: ${tObj.descripcion}.`;
+                    } else {
+                        tObj.completada = true; 
+                        mensajeVoz = tObj.nombre_cliente
+                            ? `Excelente trabajo ${responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
+                            : `Excelente trabajo ${responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
+                    }
                     
                     cerrarModal(); 
                     renderizarVistas(); 
 
                     window.speechSynthesis.cancel();
-                    setTimeout(() => { hablar(mensajeExito); }, 500);
+                    setTimeout(() => { hablar(mensajeVoz); }, 500);
                     
-                } catch (error) { console.error("Error marcando completada", error); }
+                } catch (error) { console.error("Error actualizando estatus", error); }
             }
         }
 
