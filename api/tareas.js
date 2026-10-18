@@ -18,11 +18,18 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === 'GET') {
+            // MAGIA RELACIONAL: Traemos foto del responsable, foto del facilitador y logo del cliente
             const result = await pool.query(`
                 SELECT t.*, 
-                       c.nombre_cliente, c.accion_formacion, c.lugar_atencion, c.ciudad, c.fecha_atencion AS fecha_programa, c.facilitador
+                       c.nombre_cliente, c.accion_formacion, c.lugar_atencion, c.ciudad, c.fecha_atencion AS fecha_programa, c.facilitador,
+                       COALESCE(d.logo_url, c.logo_url, 'COFTAH.png.png') AS logo_cliente,
+                       p1.foto_url AS responsable_foto,
+                       p2.foto_url AS facilitador_foto
                 FROM tareas_delegadas t 
                 LEFT JOIN clientes_agenda c ON t.programa_id = c.id 
+                LEFT JOIN directorio_clientes d ON c.nombre_cliente = d.nombre
+                LEFT JOIN personal p1 ON t.responsable = p1.nombre
+                LEFT JOIN personal p2 ON c.facilitador_id = p2.id
                 ORDER BY t.completada ASC, t.fecha_limite ASC
             `);
             return res.status(200).json(result.rows);
@@ -39,17 +46,12 @@ export default async function handler(req, res) {
             return res.status(201).json(result.rows[0]);
         }
         
-        // AQUI ESTÁ LA MAGIA DEL NUEVO PATCH CON DOBLE ACCIÓN
         if (req.method === 'PATCH') {
             const { id, accion } = req.body;
-            if (!id) return res.status(400).json({ error: 'Se requiere el ID de la tarea.' });
-
             let result;
             if (accion === 'proceso') {
-                // Si recibe la orden de proceso, cambia el estatus de urgencia a "en_proceso"
                 result = await pool.query("UPDATE tareas_delegadas SET urgencia = 'en_proceso' WHERE id = $1 RETURNING *", [id]);
             } else {
-                // Por defecto, marca la tarea como finalizada
                 result = await pool.query('UPDATE tareas_delegadas SET completada = TRUE WHERE id = $1 RETURNING *', [id]);
             }
             return res.status(200).json(result.rows[0]);
@@ -57,8 +59,6 @@ export default async function handler(req, res) {
         
         if (req.method === 'DELETE') {
             const { id } = req.body;
-            if (!id) return res.status(400).json({ error: 'Se requiere el ID.' });
-
             await pool.query('DELETE FROM tareas_delegadas WHERE id = $1', [id]);
             return res.status(200).json({ message: 'Función borrada' });
         }
@@ -67,6 +67,6 @@ export default async function handler(req, res) {
 
     } catch (error) {
         console.error("🚨 ERROR EN API TAREAS:", error);
-        return res.status(500).json({ error: 'Error interno en el servidor', detalle: error.message });
+        return res.status(500).json({ error: 'Error interno', detalle: error.message });
     }
 }
