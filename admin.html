@@ -37,6 +37,8 @@
         .papelera-box { border: 2px dashed var(--btn-borrar); padding: 20px; border-radius: 8px; background-color: rgba(255, 51, 102, 0.05); }
         input[type="file"] { padding: 9px; cursor: pointer; }
         input[type="file"]::file-selector-button { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--acento-amarillo); padding: 8px 16px; border-radius: 4px; margin-right: 15px; cursor: pointer; }
+        /* Ajuste para iconos de calendario en inputs date */
+        ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -46,7 +48,7 @@
     </header>
 
     <div class="tabs-container">
-        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Cliente</button>
+        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Formación</button>
         <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
         <button class="tab-btn" id="btn-personal" onclick="cambiarFormulario('personal')">Registrar Equipo</button>
         <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
@@ -57,8 +59,7 @@
         <h2 class="panel-titulo">Datos del Cliente</h2>
         <form id="form-cliente">
             <div class="row-group">
-                <div><label>Semana</label><select id="semana-cliente" required></select></div>
-                <div><label>Día</label><select id="dia-cliente" required><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
+                <div><label>Fecha de Ejecución</label><input type="date" id="fecha-cliente" required></div>
                 <div><label>Hora</label><input type="time" id="hora-cliente" required></div>
             </div>
             
@@ -68,11 +69,16 @@
             </div>
 
             <div class="form-group"><label>Nombre del Cliente</label><input type="text" id="nombre-cliente" required></div>
-            <div class="form-group"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
-            <div class="form-group"><label>Curso al detal</label><input type="text" id="curso-cliente" required></div>
+            
+            <div class="row-group">
+                <div><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
+                <div><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
+            </div>
+
+            <div class="form-group"><label>Acción de Formación</label><input type="text" id="accion-formacion-cliente" required></div>
             <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" required><option value="" disabled selected>Cargando personal...</option></select></div>
-            <div class="form-group"><label>Estatus</label><select id="estatus-cliente" required><option value="programado">Programado</option><option value="importante">Aviso Próximo</option><option value="retrasado">Retrasado</option></select></div>
-            <button type="submit" class="btn-submit">Guardar Cliente</button>
+            <div class="form-group"><label>Estatus inicial</label><select id="estatus-cliente" required><option value="programado">Programado</option><option value="importante">Aviso Próximo</option><option value="retrasado">Retrasado</option></select></div>
+            <button type="submit" class="btn-submit">Guardar Formación</button>
         </form>
     </div>
 
@@ -85,8 +91,7 @@
             <div class="form-group"><label>Responsable</label><select id="responsable-tarea" required><option value="" disabled selected>Cargando personal...</option></select></div>
             <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
             <div class="row-group">
-                <div><label>Semana Límite</label><select id="semana-tarea" required></select></div>
-                <div><label>Día Límite</label><select id="dia-tarea" required><option value="1">Lunes</option><option value="2">Martes</option><option value="3">Miércoles</option><option value="4">Jueves</option><option value="5">Viernes</option><option value="6">Sábado</option><option value="7">Domingo</option></select></div>
+                <div><label>Fecha Límite</label><input type="date" id="fecha-tarea" required></div>
                 <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
             </div>
             <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
@@ -124,9 +129,9 @@
 
     <!-- VISTA GESTIÓN GENERAL -->
     <div class="vista" id="vista-gestion">
-        <h2 class="panel-titulo">Programas Activos (Clientes)</h2>
+        <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
         <table class="tabla-gestion">
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Curso</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción</th><th>Acción</th></tr></thead>
             <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
         </table>
         <h2 class="panel-titulo">Funciones Delegadas</h2>
@@ -144,54 +149,21 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
-        // --- SISTEMA DE FECHAS ESTRICTO Y SEMANA ACTUAL ---
-        function llenarSemanas() {
-            const selects = [document.getElementById('semana-cliente'), document.getElementById('semana-tarea')];
-            let hoy = new Date(); 
-            let diaSemana = hoy.getDay() === 0 ? 7 : hoy.getDay(); 
-            let lunesActual = new Date(hoy); 
-            lunesActual.setDate(hoy.getDate() - diaSemana + 1); 
-            lunesActual.setHours(0,0,0,0);
-            
-            selects.forEach(select => select.innerHTML = '');
-            let valorSemanaActual = ""; 
+        // --- SISTEMA DE FECHAS NATIVO (CALENDARIO) ---
+        function inicializarFechas() {
+            let hoy = new Date();
+            // Formatear hoy como YYYY-MM-DD para el input type="date"
+            let yyyy = hoy.getFullYear();
+            let mm = String(hoy.getMonth() + 1).padStart(2, '0');
+            let dd = String(hoy.getDate()).padStart(2, '0');
+            let fechaString = `${yyyy}-${mm}-${dd}`;
 
-            for (let i = -2; i < 10; i++) {
-                let lunesSemana = new Date(lunesActual.getTime() + (i * 7 * 24 * 60 * 60 * 1000));
-                let d = new Date(Date.UTC(lunesSemana.getFullYear(), lunesSemana.getMonth(), lunesSemana.getDate()));
-                d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay()||7));
-                let yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
-                let numSemana = Math.ceil(( ( (d - yearStart) / 86400000) + 1)/7);
-                
-                let mes = String(lunesSemana.getMonth() + 1).padStart(2, '0');
-                let dia = String(lunesSemana.getDate()).padStart(2, '0');
-                let fechaStr = `${lunesSemana.getFullYear()}-${mes}-${dia}`;
-                
-                if (i === 0) valorSemanaActual = fechaStr; // Identifica cuál es la semana de hoy
-
-                let label = `Semana ${numSemana} (Inicio: ${dia}/${mes})`;
-                selects.forEach(select => select.add(new Option(label, fechaStr)));
-            }
+            document.getElementById('fecha-cliente').value = fechaString;
+            document.getElementById('fecha-tarea').value = fechaString;
             
-            // SELECCIONA LA SEMANA Y DÍA ACTUAL POR DEFECTO EN LOS FORMULARIOS
-            if (valorSemanaActual) {
-                document.getElementById('semana-cliente').value = valorSemanaActual;
-                document.getElementById('semana-tarea').value = valorSemanaActual;
-            }
-            document.getElementById('dia-cliente').value = diaSemana;
-            document.getElementById('dia-tarea').value = diaSemana;
-        }
-
-        function construirFecha(idSemana, idDia, idHora) {
-            let fechaBase = new Date(document.getElementById(idSemana).value + "T00:00:00"); 
-            fechaBase.setDate(fechaBase.getDate() + parseInt(document.getElementById(idDia).value) - 1);
-            
-            let yyyy = fechaBase.getFullYear();
-            let mm = String(fechaBase.getMonth() + 1).padStart(2, '0');
-            let dd = String(fechaBase.getDate()).padStart(2, '0');
-            let hora = document.getElementById(idHora).value || "00:00";
-            
-            return `${yyyy}-${mm}-${dd}T${hora}:00`;
+            // Horas por defecto
+            document.getElementById('hora-cliente').value = "08:00";
+            document.getElementById('hora-tarea').value = "17:00";
         }
 
         // --- SISTEMA DE PERSONAL Y PAPELERA ---
@@ -219,7 +191,7 @@
             personalCompleto.forEach(p => {
                 if (enPapelera.has(p.id)) {
                     contadorPapelera++;
-                    tbPap.innerHTML += `<tr><td>${p.nombre} <span style="font-size:0.8rem; color:var(--texto-secundario);">(${p.rol})</span></td><td style="text-align: right;"><button class="btn-accion btn-restaurar" onclick="accionPapelera(${p.id}, 'restaurar')">Restaurar</button><button class="btn-accion btn-borrar" onclick="accionPapelera(${p.id}, 'eliminar')">Eliminar Definitivo</button></td></tr>`;
+                    tbPap.innerHTML += `<tr><td>${p.nombre} <span style="font-size:0.8rem; color:var(--texto-secundario);">(${p.rol})</span></td><td style="text-align: right;"><button class="btn-accion btn-restaurar" onclick="accionPapelera(${p.id}, 'restaurar')">Restaurar</button><button class="btn-accion btn-borrar" onclick="accionPapelera(${p.id}, 'eliminar')">Borrar Definitivo</button></td></tr>`;
                 } else {
                     const fila = `<tr><td>${p.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-mover" onclick="accionPapelera(${p.id}, 'mover')">A Papelera</button></td></tr>`;
                     if (p.rol === 'facilitador') tbFac.innerHTML += fila; else tbResp.innerHTML += fila;
@@ -278,34 +250,39 @@
             try {
                 const res = await fetch('/api/clientes?t='+new Date().getTime(), { cache: 'no-store' }); const clientes = await res.json();
                 const sel = document.getElementById('programa-vinculado');
-                sel.innerHTML = '<option value="" disabled selected>Selecciona un programa...</option>';
+                sel.innerHTML = '<option value="" disabled selected>Selecciona una formación...</option>';
                 clientes.forEach(c => {
                     let d = new Date(c.fecha_atencion);
                     let mes = String(d.getMonth() + 1).padStart(2, '0');
                     let dia = String(d.getDate()).padStart(2, '0');
-                    sel.innerHTML += `<option value="${c.id}">${dia}/${mes} - ${c.nombre_cliente}</option>`
+                    sel.innerHTML += `<option value="${c.id}">${dia}/${mes} - ${c.nombre_cliente} (${c.accion_formacion})</option>`
                 });
             } catch (error) {}
         }
 
+        // GUARDAR CLIENTE (Con nuevos campos Ciudad y Acción)
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault(); 
             const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
             const fileInput = document.getElementById('logo-cliente');
 
             const procesarEnvio = async (logoStr) => {
+                let fechaFormateada = document.getElementById('fecha-cliente').value + "T" + document.getElementById('hora-cliente').value + ":00";
+                
                 try {
                     const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                        fecha_atencion: construirFecha('semana-cliente', 'dia-cliente', 'hora-cliente'), 
-                        logo_url: logoStr, nombre_cliente: document.getElementById('nombre-cliente').value, 
+                        fecha_atencion: fechaFormateada, 
+                        logo_url: logoStr, 
+                        nombre_cliente: document.getElementById('nombre-cliente').value, 
                         lugar_atencion: document.getElementById('lugar-cliente').value, 
-                        curso: document.getElementById('curso-cliente').value, 
+                        ciudad: document.getElementById('ciudad-cliente').value,
+                        accion_formacion: document.getElementById('accion-formacion-cliente').value, 
                         facilitador: document.getElementById('facilitador-cliente').value, 
                         estatus: document.getElementById('estatus-cliente').value
                     })});
-                    if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); cargarProgramasDropdown(); } 
-                    else { const data = await res.json(); alert(data.error || "Error al guardar el cliente."); }
-                } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Cliente"; btn.disabled = false; }
+                    if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); inicializarFechas(); cargarProgramasDropdown(); } 
+                    else { const data = await res.json(); alert(data.error || "Error al guardar."); }
+                } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
             };
 
             if (fileInput.files.length > 0) {
@@ -315,16 +292,22 @@
             } else { procesarEnvio(""); }
         });
 
+        // GUARDAR TAREA (Adaptado al input date)
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
             const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
+            let fechaFormateada = document.getElementById('fecha-tarea').value + "T" + document.getElementById('hora-tarea').value + ":00";
+            
             try {
                 const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, 
-                    responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, 
-                    fecha_limite: construirFecha('semana-tarea', 'dia-tarea', 'hora-tarea'), urgencia: document.getElementById('urgencia-tarea').value
+                    tipo_tarea: tipo, 
+                    programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, 
+                    responsable: document.getElementById('responsable-tarea').value, 
+                    descripcion: document.getElementById('descripcion-tarea').value, 
+                    fecha_limite: fechaFormateada, 
+                    urgencia: document.getElementById('urgencia-tarea').value
                 })});
-                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); } else alert("Error al delegar función.");
+                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); } else alert("Error al delegar función.");
             } catch (error) { alert("Error de red."); } finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
         });
 
@@ -334,10 +317,10 @@
                 const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
                 if(resC.ok) {
                     const clientes = await resC.json(); tbC.innerHTML = '';
-                    if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin clientes</td></tr>';
+                    if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
                     clientes.forEach(c => {
                         let d = new Date(c.fecha_atencion);
-                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.curso}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`;
+                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`;
                     });
                 }
                 const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
@@ -359,7 +342,9 @@
         }
 
         // INICIALIZACIÓN
-        llenarSemanas(); cargarPersonal(); cargarProgramasDropdown();
+        inicializarFechas(); 
+        cargarPersonal(); 
+        cargarProgramasDropdown();
     </script>
 </body>
 </html>
