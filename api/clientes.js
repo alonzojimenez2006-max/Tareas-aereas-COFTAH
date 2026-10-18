@@ -26,7 +26,8 @@ export default async function handler(req, res) {
         
         // MÉTODO POST: Registrar nuevo cliente
         if (req.method === 'POST') {
-            let { fecha_atencion, logo_url, nombre_cliente, lugar_atencion, curso, facilitador, estatus } = req.body;
+            // AQUI AGREGAMOS "ciudad" Y CAMBIAMOS "curso" POR "accion_formacion"
+            let { fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus } = req.body;
             
             // Validación 1: Logo Opcional Seguro
             if (!logo_url || logo_url.trim() === '') {
@@ -47,11 +48,11 @@ export default async function handler(req, res) {
                 });
             }
             
-            // Inserción en la base de datos
+            // Inserción en la base de datos con los nuevos campos
             const result = await pool.query(
-                `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, curso, facilitador, estatus) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-                [fecha_atencion, logo_url, nombre_cliente, lugar_atencion, curso, facilitador, estatus]
+                `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+                [fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, estatus]
             );
             
             return res.status(201).json(result.rows[0]);
