@@ -75,16 +75,13 @@
                 </div>
             </div>
             
-            <div id="contenedor-fechas" style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <!-- Se llena con JS -->
-            </div>
+            <div id="contenedor-fechas" style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
             
             <div class="form-group">
                 <label>Cliente / Empresa</label>
                 <select id="cliente-directorio" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
             </div>
             
-            <!-- AQUI AGREGAMOS LA NUEVA COLUMNA EN EL PANEL -->
             <div class="row-group">
                 <div style="flex: 2;"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
                 <div style="flex: 1.5;"><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
@@ -123,7 +120,6 @@
             <div class="form-group"><label>Logo Oficial</label><input type="file" id="logo-empresa" accept="image/png, image/jpeg, image/webp" required></div>
             <button type="submit" class="btn-submit">Guardar en Directorio Permanente</button>
         </form>
-
         <h3 style="color: var(--acento-amarillo); margin-bottom: 10px; margin-top: 30px;">📋 Empresas Registradas</h3>
         <table class="tabla-gestion"><tbody id="tbody-empresas"><tr><td>Cargando...</td></tr></tbody></table>
     </div>
@@ -308,7 +304,7 @@
             
             personalCompleto.forEach(p => {
                 if (!enPapelera.has(p.id)) {
-                    if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.id}" data-nombre="${p.nombre}">${p.nombre}</option>`; 
+                    if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.id}">${p.nombre}</option>`; 
                     if(p.rol === 'responsable') selResp.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
                 }
             });
@@ -345,7 +341,7 @@
             } catch (error) {}
         }
 
-        // --- GUARDAR FORMACIÓN (CON PARTICIPANTES) ---
+        // ENVÍO DE DATOS PERFECTAMENTE ESTRUCTURADO
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
 
@@ -356,7 +352,7 @@
 
             let selectFac = document.getElementById('facilitador-cliente');
             let facId = selectFac.value;
-            let facNombre = selectFac.options[selectFac.selectedIndex].getAttribute('data-nombre');
+            let facNombre = selectFac.options[selectFac.selectedIndex].text; // Extracción infalible del nombre
 
             try {
                 const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
@@ -364,7 +360,7 @@
                     nombre_cliente: document.getElementById('cliente-directorio').value, 
                     lugar_atencion: document.getElementById('lugar-cliente').value, 
                     ciudad: document.getElementById('ciudad-cliente').value,
-                    participantes: document.getElementById('participantes-cliente').value, // <--- ENVIANDO PARTICIPANTES
+                    participantes: document.getElementById('participantes-cliente').value,
                     accion_formacion: document.getElementById('accion-formacion-cliente').value, 
                     facilitador: facNombre, 
                     facilitador_id: facId,
@@ -395,7 +391,6 @@
                     if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
                     clientes.forEach(c => { 
                         let d = new Date(c.fecha_atencion); 
-                        // Mostramos los participantes en la tabla de gestión también
                         tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span></td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`; 
                     });
                 }
