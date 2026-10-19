@@ -40,8 +40,8 @@
         
         .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
-        /* CUADRÍCULA ACTUALIZADA: 9 columnas con la de PARTICIPANTES (70px) incluida */
-        .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 70px 7fr 1.5fr 110px; }
+        /* COLUMNAS COMPACTAS A LA IZQUIERDA Y CENTRO EXPANDIDO */
+        .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 7fr 1.5fr 110px; }
         .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
@@ -137,9 +137,8 @@
     </header>
 
     <div class="vista active" id="vista-clientes">
-        <!-- COLUMNA DE PARTICIPANTES AÑADIDA AL ENCABEZADO -->
         <div class="fila-header grid-clientes">
-            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
+            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
@@ -167,28 +166,6 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN Y DESBLOQUEO DE VOZ ---
-        document.body.addEventListener('click', function() {
-            if ('speechSynthesis' in window) {
-                let msg = new SpeechSynthesisUtterance("");
-                msg.volume = 0; 
-                window.speechSynthesis.speak(msg);
-            }
-        }, { once: true });
-
-        function hablar(texto, interrumpir = false) { 
-            if ('speechSynthesis' in window) { 
-                if (interrumpir) {
-                    window.speechSynthesis.cancel(); 
-                }
-                let m = new SpeechSynthesisUtterance(texto); 
-                m.lang = 'es-ES'; 
-                m.rate = 1.0; 
-                m.volume = 1.0;
-                window.speechSynthesis.speak(m); 
-            } 
-        }
-
         setInterval(() => { document.getElementById('reloj-digital').textContent = new Date().toLocaleTimeString('en-US', { hour12: true }); }, 1000);
         function toggleMenu() { document.getElementById('menu-desplegable').classList.toggle('show'); }
         document.addEventListener('click', function(e) { const menu = document.getElementById('menu-desplegable'); if (!menu.contains(e.target) && e.target.id !== 'btn-menu') menu.classList.remove('show'); });
@@ -239,7 +216,6 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- EVENTOS DE VOZ INTACTOS ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -247,16 +223,16 @@
                 } else {
                     clientes.forEach(c => { 
                         if (!clientesConocidos.has(c.id)) { 
-                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`, false); 
+                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
                             let msj = t.nombre_cliente
-                                ? `Atención. Nueva función delegada a ${t.responsable} para la empresa ${t.nombre_cliente}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}.`;
-                            hablar(msj, false); 
+                                ? `Atención. Nueva función delegada a ${t.responsable} para el cliente ${t.nombre_cliente}. Tarea: ${t.descripcion}.`
+                                : `Atención. Nueva función delegada a ${t.responsable}. Tarea: ${t.descripcion}.`;
+                            hablar(msj); 
                             tareasConocidas.add(t.id); 
                         }
                     });
@@ -310,17 +286,16 @@
                     let estatusFinal = esHoy ? 'EN PROCESO' : c.estatus.toUpperCase();
                     let claseEstatus = esHoy ? 'estatus-en-proceso' : `estatus-${c.estatus}`;
                     
+                    // LÓGICA DE FOTOS INTELIGENTES
                     let logoVisual = c.logo_url_final ? c.logo_url_final : 'COFTAH.png.png';
                     let avatarVisual = c.facilitador_foto ? `<img src="${c.facilitador_foto}" class="avatar-mini">` : '';
 
-                    // AGREGADO: Elemento visual de la columna de Participantes
                     return `<div class="fila-item grid-clientes">
                         <div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
                         <div><img src="${logoVisual}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
                         <div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div>
                         <div>${c.lugar_atencion}</div>
                         <div>${c.ciudad}</div>
-                        <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--acento-amarillo);">👤 ${c.participantes || 0}</div>
                         <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--texto-principal);">${c.accion_formacion}</div>
                         <div class="perfil-wrapper" style="color:var(--urgencia-baja);">${avatarVisual} ${c.facilitador}</div>
                         <div style="text-align:center;"><span class="badge ${claseEstatus}">${estatusFinal}</span></div>
@@ -440,23 +415,26 @@
                     if (accion === 'proceso') {
                         tObj.urgencia = 'en_proceso'; 
                         mensajeVoz = tObj.nombre_cliente
-                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}.`
-                            : `Atención equipo. ${responsable} ha iniciado la misión.`;
-                        hablar(mensajeVoz, true);
+                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}. Tarea en proceso: ${tObj.descripcion}.`
+                            : `Atención equipo. ${responsable} ha iniciado la misión. Tarea en proceso: ${tObj.descripcion}.`;
                     } else {
                         tObj.completada = true; 
                         mensajeVoz = tObj.nombre_cliente
-                            ? `Excelente trabajo ${responsable}. Misión cumplida para la empresa ${tObj.nombre_cliente}.`
-                            : `Excelente trabajo ${responsable}. Misión cumplida.`;
-                        hablar(mensajeVoz, true);
+                            ? `Excelente trabajo ${responsable}. Misión cumplida para el cliente ${tObj.nombre_cliente}. Tarea finalizada: ${tObj.descripcion}.`
+                            : `Excelente trabajo ${responsable}. Misión cumplida. Tarea finalizada: ${tObj.descripcion}.`;
                     }
                     
                     cerrarModal(); 
                     renderizarVistas(); 
+
+                    window.speechSynthesis.cancel();
+                    setTimeout(() => { hablar(mensajeVoz); }, 500);
                     
                 } catch (error) { console.error("Error actualizando estatus", error); }
             }
         }
+
+        function hablar(texto) { if ('speechSynthesis' in window) { let m = new SpeechSynthesisUtterance(texto); m.lang = 'es-ES'; window.speechSynthesis.speak(m); } }
 
         function verificarTiempos() {
             const ahora = new Date();
@@ -465,8 +443,7 @@
                 const limite = parseFechaLocal(t.fecha_limite); const inicio = parseFechaLocal(t.created_at); 
                 const tiempoRestante = limite.getTime() - ahora.getTime();
                 if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
-                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`, false); 
-                    tareasAvisadas.add(t.id);
+                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`); tareasAvisadas.add(t.id);
                 }
             });
         }
