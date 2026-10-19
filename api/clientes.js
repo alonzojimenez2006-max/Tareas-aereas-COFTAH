@@ -18,7 +18,6 @@ export default async function handler(req, res) {
 
     try {
         if (req.method === 'GET') {
-            // Traemos todo, incluyendo la nueva columna 'participantes' gracias al "SELECT c.*"
             const result = await pool.query(`
                 SELECT c.*, 
                        COALESCE(d.logo_url, c.logo_url, 'COFTAH.png.png') AS logo_url_final,
@@ -32,39 +31,35 @@ export default async function handler(req, res) {
         }
         
         if (req.method === 'POST') {
-            // 1. AHORA RECIBIMOS LA VARIABLE "participantes"
-            let { fechas_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes } = req.body;
+            let { fechas_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes } = req.body;
             
             if (!fechas_atencion || fechas_atencion.length === 0) {
                 return res.status(400).json({ error: 'Se requiere al menos una fecha.' });
             }
 
-            // 2. Blindaje: Asegurarnos de que sea un número. Si viene vacío, lo ponemos en 0.
+            // LIMPIEZA DE DATOS ESTRICTA PARA EVITAR ERROR 500
             const cantParticipantes = parseInt(participantes) || 0;
+            const idFacilitador = parseInt(facilitador_id) || null;
 
+            // Validación Antichoques (Usando el nombre como puente seguro)
             for (let fecha of fechas_atencion) {
                 const validacionTurno = await pool.query(
-                    `SELECT id FROM clientes_agenda 
-                     WHERE facilitador_id = $1 
-                     AND DATE(fecha_atencion) = DATE($2)`,
-                    [facilitador_id, fecha]
+                    `SELECT id FROM clientes_agenda WHERE facilitador = $1 AND DATE(fecha_atencion) = DATE($2)`,
+                    [facilitador, fecha]
                 );
-
                 if (validacionTurno.rows.length > 0) {
                     let fechaCorta = fecha.split('T')[0];
-                    return res.status(400).json({ 
-                        error: `No se puede registrar. El facilitador ${facilitador} ya tiene una actividad el día ${fechaCorta}.` 
-                    });
+                    return res.status(400).json({ error: `El facilitador ${facilitador} ya tiene una actividad el ${fechaCorta}.` });
                 }
             }
             
             let registrosCreados = [];
             for (let fecha of fechas_atencion) {
-                // 3. INYECTAMOS LOS PARTICIPANTES EN LA BASE DE DATOS ($10)
+                // Inyectamos 'default.png' para que la base de datos no tranque el proceso por exigir un logo_url
                 const result = await pool.query(
                     `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
-                    [fecha, logo_url || null, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, cantParticipantes]
+                    VALUES ($1, 'default.png', $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+                    [fecha, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, idFacilitador, estatus, cantParticipantes]
                 );
                 registrosCreados.push(result.rows[0]);
             }
@@ -82,6 +77,6 @@ export default async function handler(req, res) {
         
     } catch (error) {
         console.error("🚨 ERROR EN API CLIENTES:", error);
-        return res.status(500).json({ error: 'Error interno', detalle: error.message });
+        return res.status(500).json({ error: 'Error interno en el servidor', detalle: error.message });
     }
 }
