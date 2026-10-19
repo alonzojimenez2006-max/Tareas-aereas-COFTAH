@@ -60,7 +60,7 @@
         <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
     </div>
 
-    <!-- VISTA CLIENTES (Ahora usa el directorio y no pide logo manual) -->
+    <!-- VISTA CLIENTES -->
     <div class="vista active" id="vista-clientes">
         <h2 class="panel-titulo">Datos de la Formación</h2>
         <form id="form-cliente">
@@ -84,9 +84,11 @@
                 <select id="cliente-directorio" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
             </div>
             
+            <!-- AQUI AGREGAMOS LA NUEVA COLUMNA EN EL PANEL -->
             <div class="row-group">
-                <div><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
-                <div><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
+                <div style="flex: 2;"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
+                <div style="flex: 1.5;"><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
+                <div style="flex: 1;"><label>Participantes</label><input type="number" id="participantes-cliente" min="1" value="10" required></div>
             </div>
 
             <div class="form-group"><label>Acción de Formación</label><input type="text" id="accion-formacion-cliente" required></div>
@@ -113,7 +115,7 @@
         </form>
     </div>
 
-    <!-- NUEVA VISTA: DIRECTORIO EMPRESAS -->
+    <!-- VISTA DIRECTORIO EMPRESAS -->
     <div class="vista" id="vista-directorio">
         <h2 class="panel-titulo">Añadir Empresa al Directorio</h2>
         <form id="form-directorio">
@@ -126,7 +128,7 @@
         <table class="tabla-gestion"><tbody id="tbody-empresas"><tr><td>Cargando...</td></tr></tbody></table>
     </div>
 
-    <!-- VISTA PERSONAL (Añadido Foto de Perfil) -->
+    <!-- VISTA PERSONAL -->
     <div class="vista" id="vista-personal">
         <h2 class="panel-titulo">Añadir Nuevo Miembro</h2>
         <form id="form-personal">
@@ -165,7 +167,7 @@
         </div>
         <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
         <table class="tabla-gestion">
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción y Participantes</th><th>Acción</th></tr></thead>
             <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
         </table>
         <h2 class="panel-titulo">Funciones Delegadas</h2>
@@ -183,7 +185,6 @@
             document.getElementById(`btn-${vistaId}`).classList.add('active');
         }
 
-        // --- SISTEMA DE FECHAS ---
         function inicializarFechas() {
             let hoy = new Date();
             let yyyy = hoy.getFullYear();
@@ -195,6 +196,7 @@
             document.getElementById('hora-tarea').value = "17:00";
             document.getElementById('dias-formacion').value = 1;
             document.getElementById('hora-cliente').value = "08:00";
+            document.getElementById('participantes-cliente').value = "10";
             generarCamposFechas(fechaString);
         }
 
@@ -210,7 +212,6 @@
             }
         }
 
-        // --- BUSCADOR ---
         function filtrarGestion() {
             let filtro = document.getElementById('buscador-general').value.toLowerCase();
             let tablas = ['tbody-clientes', 'tbody-tareas'];
@@ -223,7 +224,6 @@
             });
         }
 
-        // --- DIRECTORIO DE EMPRESAS ---
         async function cargarDirectorio() {
             try {
                 const res = await fetch('/api/directorio?t=' + new Date().getTime(), { cache: 'no-store' });
@@ -268,7 +268,6 @@
             }
         }
 
-        // --- SISTEMA DE PERSONAL ---
         let personalCompleto = []; let enPapelera = new Set(); 
         async function cargarPersonal() {
             try {
@@ -309,7 +308,7 @@
             
             personalCompleto.forEach(p => {
                 if (!enPapelera.has(p.id)) {
-                    if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.id}" data-nombre="${p.nombre}">${p.nombre}</option>`; // IMPORTANTE: Guarda el ID para el backend
+                    if(p.rol === 'facilitador') selFac.innerHTML += `<option value="${p.id}" data-nombre="${p.nombre}">${p.nombre}</option>`; 
                     if(p.rol === 'responsable') selResp.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
                 }
             });
@@ -329,7 +328,6 @@
             if (fileInput.files.length > 0) { const reader = new FileReader(); reader.onload = function(evt) { procesarPersonal(evt.target.result); }; reader.readAsDataURL(fileInput.files[0]); } else { procesarPersonal(""); }
         });
 
-        // --- VINCULACIÓN Y DROPDOWNS ---
         document.querySelectorAll('input[name="tipo-tarea"]').forEach(r => r.addEventListener('change', function() {
             document.getElementById('grupo-programa-vinculado').style.display = this.value === 'vinculada' ? 'block' : 'none';
             document.getElementById('programa-vinculado').required = this.value === 'vinculada';
@@ -347,7 +345,7 @@
             } catch (error) {}
         }
 
-        // --- GUARDAR FORMACIÓN (USANDO DIRECTORIO E ID DE FACILITADOR) ---
+        // --- GUARDAR FORMACIÓN (CON PARTICIPANTES) ---
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
 
@@ -356,7 +354,6 @@
             let hora = document.getElementById('hora-cliente').value;
             inputsFechas.forEach(input => { arregloFechas.push(input.value + "T" + hora + ":00"); });
 
-            // Capturamos el ID y el Nombre del facilitador del select
             let selectFac = document.getElementById('facilitador-cliente');
             let facId = selectFac.value;
             let facNombre = selectFac.options[selectFac.selectedIndex].getAttribute('data-nombre');
@@ -364,9 +361,10 @@
             try {
                 const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
                     fechas_atencion: arregloFechas,  
-                    nombre_cliente: document.getElementById('cliente-directorio').value, // Solo mandamos el nombre, el backend busca el logo
+                    nombre_cliente: document.getElementById('cliente-directorio').value, 
                     lugar_atencion: document.getElementById('lugar-cliente').value, 
                     ciudad: document.getElementById('ciudad-cliente').value,
+                    participantes: document.getElementById('participantes-cliente').value, // <--- ENVIANDO PARTICIPANTES
                     accion_formacion: document.getElementById('accion-formacion-cliente').value, 
                     facilitador: facNombre, 
                     facilitador_id: facId,
@@ -377,7 +375,6 @@
             } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
         });
 
-        // --- GUARDAR TAREA ---
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
             const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
@@ -396,7 +393,11 @@
                 if(resC.ok) {
                     const clientes = await resC.json(); tbC.innerHTML = '';
                     if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
-                    clientes.forEach(c => { let d = new Date(c.fecha_atencion); tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`; });
+                    clientes.forEach(c => { 
+                        let d = new Date(c.fecha_atencion); 
+                        // Mostramos los participantes en la tabla de gestión también
+                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span></td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`; 
+                    });
                 }
                 const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
                 if(resT.ok) {
