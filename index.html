@@ -161,6 +161,7 @@
     </div>
 
     <script>
+        // --- CONFIGURACIÓN Y DESBLOQUEO DE VOZ ---
         document.body.addEventListener('click', function() {
             if ('speechSynthesis' in window) {
                 let msg = new SpeechSynthesisUtterance("");
@@ -232,7 +233,7 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- TEXTOS EXACTOS DE VOZ ---
+                // --- NUEVOS EVENTOS DE VOZ DETALLADOS ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -243,17 +244,17 @@
                             let d = parseFechaLocal(c.fecha_atencion);
                             let fechaTexto = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
                             
-                            // 1. VOZ DE NUEVA FORMACIÓN
-                            hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`, false); 
+                            // VOZ: Al subir una nueva formación
+                            hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`, false); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
-                            // 2. VOZ DE NUEVA TAREA ASIGNADA
+                            // VOZ: Al delegar una nueva función
                             let msj = t.nombre_cliente
-                                ? `Se le dio una nueva función a ${t.responsable} para la empresa${t.nombre_cliente} para la formación ${t.accion_formacion} y la tarea es:${t.descripcion}.`
-                                : `Se le dio una nueva función a ${t.responsable} y la tarea es:${t.descripcion}.`;
+                                ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion} y la tarea es: ${t.descripcion}.`
+                                : `Se le dio una nueva función a ${t.responsable} y la tarea es: ${t.descripcion}.`;
                             hablar(msj, false); 
                             tareasConocidas.add(t.id); 
                         }
@@ -319,7 +320,7 @@
                         <div>${c.ciudad}</div>
                         <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--acento-amarillo);">👤 ${c.participantes || 0}</div>
                         <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--texto-principal);">${c.accion_formacion}</div>
-                        <div class="perfil-wrapper" style="color:var(--urgencia-baja);">${avatarVisual}${c.facilitador}</div>
+                        <div class="perfil-wrapper" style="color:var(--urgencia-baja);">${avatarVisual} ${c.facilitador}</div>
                         <div style="text-align:center;"><span class="badge ${claseEstatus}">${estatusFinal}</span></div>
                     </div>`;
                 }).join('');
@@ -342,7 +343,7 @@
                     let infoResp = `<div class="perfil-wrapper" style="color:var(--acento-amarillo); font-size:1.1rem;">${avatarResp} <span>${t.responsable}</span></div>`;
                     
                     if (t.tipo_tarea === 'vinculada' && t.nombre_cliente) {
-                        let etiqueta = `${t.nombre_cliente} \vert{}${t.accion_formacion}`;
+                        let etiqueta = `${t.nombre_cliente} | ${t.accion_formacion}`;
                         infoResp = `<div class="perfil-wrapper" style="color:var(--acento-amarillo); font-size:1.1rem; align-items: flex-start;">${avatarResp} <div style="display:flex; flex-direction:column;">${t.responsable} <span style="color:#64FFDA; font-size:0.85rem; font-weight:normal; margin-top:3px;">Para: ${etiqueta}</span></div></div>`;
                     }
                     
@@ -383,4 +384,95 @@
             let textoUrgenciaModal = t.urgencia.replace('_', ' ').toUpperCase();
 
             htmlBody += `
-                <div class="
+                <div class="modal-seccion" style="border-left-color: var(--acento-amarillo);">
+                    <strong>MISIÓN ASIGNADA A ${t.responsable.toUpperCase()}</strong>
+                    <p style="font-size: 1.25rem; font-weight: 500; margin-top: 10px; color: white;">${t.descripcion}</p>
+                </div>
+                <div style="display: flex; justify-content: space-between; color: var(--texto-secundario); font-size: 0.95rem;">
+                    <span><b>Límite de Entrega:</b> ${parseFechaLocal(t.fecha_limite).toLocaleString('es-ES', { weekday:'long', hour:'2-digit', minute:'2-digit', hour12:true })}</span>
+                    <span><b>Nivel de Urgencia:</b> <span style="font-weight: bold; color: ${t.urgencia === 'en_proceso' ? 'var(--en-proceso)' : 'inherit'}">${textoUrgenciaModal}</span></span>
+                </div>
+            `;
+
+            document.getElementById('modal-body').innerHTML = htmlBody;
+
+            const btnCompletar = document.getElementById('btn-completar-modal');
+            const btnProceso = document.getElementById('btn-proceso-modal');
+
+            if(t.completada) {
+                btnCompletar.style.display = 'none';
+                btnProceso.style.display = 'none';
+            } else {
+                btnCompletar.style.display = 'block';
+                btnCompletar.onclick = () => actualizarEstatusTarea(t.id, t.responsable, 'completar');
+                
+                if (t.urgencia === 'en_proceso') {
+                    btnProceso.style.display = 'none';
+                } else {
+                    btnProceso.style.display = 'block';
+                    btnProceso.onclick = () => actualizarEstatusTarea(t.id, t.responsable, 'proceso');
+                }
+            }
+            document.getElementById('modal-tarea').classList.add('active');
+        }
+
+        function cerrarModal() { document.getElementById('modal-tarea').classList.remove('active'); }
+
+        async function actualizarEstatusTarea(id, responsable, accion) {
+            const msjConfirmacion = accion === 'proceso' 
+                ? `¿Confirmas que vas a empezar a realizar esta tarea, ${responsable}?`
+                : `¿Confirmas que terminaste la tarea, ${responsable}?`;
+
+            if (!confirm(msjConfirmacion)) return;
+            
+            const tObj = tareas.find(t => t.id === id);
+            if (tObj && !tObj.completada) {
+                try {
+                    await fetch('/api/tareas', { 
+                        method: 'PATCH', 
+                        headers: { 'Content-Type': 'application/json' }, 
+                        body: JSON.stringify({ id: id, accion: accion }) 
+                    });
+                    
+                    let mensajeVoz = "";
+                    if (accion === 'proceso') {
+                        tObj.urgencia = 'en_proceso'; 
+                        // VOZ: Al presionar "Realizando"
+                        mensajeVoz = tObj.nombre_cliente
+                            ? `${responsable} empezó a realizar la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion} y el nombre de la función es: ${tObj.descripcion}.`
+                            : `${responsable} empezó a realizar la función y el nombre de la función es: ${tObj.descripcion}.`;
+                        hablar(mensajeVoz, true);
+                    } else {
+                        tObj.completada = true; 
+                        // VOZ: Al presionar "Marcar como Hecho"
+                        mensajeVoz = tObj.nombre_cliente
+                            ? `${responsable} ha terminado la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion} y la función fue: ${tObj.descripcion}.`
+                            : `${responsable} ha terminado la función y la función fue: ${tObj.descripcion}.`;
+                        hablar(mensajeVoz, true);
+                    }
+                    
+                    cerrarModal(); 
+                    renderizarVistas(); 
+                    
+                } catch (error) { console.error("Error actualizando estatus", error); }
+            }
+        }
+
+        function verificarTiempos() {
+            const ahora = new Date();
+            tareas.forEach(t => {
+                if (t.completada || !t.created_at) return; 
+                const limite = parseFechaLocal(t.fecha_limite); const inicio = parseFechaLocal(t.created_at); 
+                const tiempoRestante = limite.getTime() - ahora.getTime();
+                if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
+                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`, false); 
+                    tareasAvisadas.add(t.id);
+                }
+            });
+        }
+
+        inicializarFechas(); cargarDatos();
+        setInterval(cargarDatos, 15000); setInterval(verificarTiempos, 10000);
+    </script>
+</body>
+</html>
