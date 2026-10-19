@@ -40,7 +40,6 @@
         
         .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
-        /* CUADRÍCULA ACTUALIZADA: 9 columnas con la de PARTICIPANTES (70px) incluida */
         .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 70px 7fr 1.5fr 110px; }
         .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
         
@@ -48,7 +47,6 @@
         .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
         .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
         
-        /* ESTILOS PARA AVATARES Y LOGOS */
         .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
         .perfil-wrapper { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .avatar-mini { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); background-color: white; flex-shrink: 0; }
@@ -61,7 +59,6 @@
         .estatus-critica, .estatus-retrasado { background-color: var(--urgencia-critica); color: #fff; }
         .estatus-completado { background-color: var(--completado); color: #fff; }
         
-        /* Animaciones EN PROCESO */
         .estatus-en-proceso, .estatus-en_proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
         @keyframes pulsoAzul { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
         
@@ -70,7 +67,6 @@
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-        /* VENTANA MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
@@ -81,7 +77,6 @@
         .modal-seccion { background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--urgencia-baja); }
         .modal-seccion strong { color: var(--texto-secundario); display: block; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 5px; }
         
-        /* FOOTER DE BOTONES */
         .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
         .btn-modal { padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
         .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
@@ -137,7 +132,6 @@
     </header>
 
     <div class="vista active" id="vista-clientes">
-        <!-- COLUMNA DE PARTICIPANTES AÑADIDA AL ENCABEZADO -->
         <div class="fila-header grid-clientes">
             <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
         </div>
@@ -239,7 +233,7 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- EVENTOS DE VOZ INTACTOS ---
+                // --- NUEVOS EVENTOS DE VOZ DETALLADOS ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -247,15 +241,20 @@
                 } else {
                     clientes.forEach(c => { 
                         if (!clientesConocidos.has(c.id)) { 
-                            hablar(`Atención equipo. Nueva acción de formación registrada para la empresa ${c.nombre_cliente}.`, false); 
+                            let d = parseFechaLocal(c.fecha_atencion);
+                            let fechaTexto = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+                            
+                            // VOZ: Al subir una nueva formación
+                            hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`, false); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
+                            // VOZ: Al delegar una nueva función
                             let msj = t.nombre_cliente
-                                ? `Atención. Nueva función delegada a ${t.responsable} para la empresa ${t.nombre_cliente}.`
-                                : `Atención. Nueva función delegada a ${t.responsable}.`;
+                                ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion} y la tarea es: ${t.descripcion}.`
+                                : `Se le dio una nueva función a ${t.responsable} y la tarea es: ${t.descripcion}.`;
                             hablar(msj, false); 
                             tareasConocidas.add(t.id); 
                         }
@@ -313,7 +312,6 @@
                     let logoVisual = c.logo_url_final ? c.logo_url_final : 'COFTAH.png.png';
                     let avatarVisual = c.facilitador_foto ? `<img src="${c.facilitador_foto}" class="avatar-mini">` : '';
 
-                    // AGREGADO: Elemento visual de la columna de Participantes
                     return `<div class="fila-item grid-clientes">
                         <div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
                         <div><img src="${logoVisual}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
@@ -439,15 +437,17 @@
                     let mensajeVoz = "";
                     if (accion === 'proceso') {
                         tObj.urgencia = 'en_proceso'; 
+                        // VOZ: Al presionar "Realizando"
                         mensajeVoz = tObj.nombre_cliente
-                            ? `Atención equipo. ${responsable} ha iniciado la misión para ${tObj.nombre_cliente}.`
-                            : `Atención equipo. ${responsable} ha iniciado la misión.`;
+                            ? `${responsable} empezó a realizar la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion} y el nombre de la función es: ${tObj.descripcion}.`
+                            : `${responsable} empezó a realizar la función y el nombre de la función es: ${tObj.descripcion}.`;
                         hablar(mensajeVoz, true);
                     } else {
                         tObj.completada = true; 
+                        // VOZ: Al presionar "Marcar como Hecho"
                         mensajeVoz = tObj.nombre_cliente
-                            ? `Excelente trabajo ${responsable}. Misión cumplida para la empresa ${tObj.nombre_cliente}.`
-                            : `Excelente trabajo ${responsable}. Misión cumplida.`;
+                            ? `${responsable} ha terminado la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion} y la función fue: ${tObj.descripcion}.`
+                            : `${responsable} ha terminado la función y la función fue: ${tObj.descripcion}.`;
                         hablar(mensajeVoz, true);
                     }
                     
