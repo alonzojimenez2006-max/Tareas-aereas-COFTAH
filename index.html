@@ -40,8 +40,8 @@
         
         .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
-        /* COLUMNAS COMPACTAS A LA IZQUIERDA Y CENTRO EXPANDIDO */
-        .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 7fr 1.5fr 110px; }
+        /* COLUMNAS COMPACTAS A LA IZQUIERDA Y CENTRO EXPANDIDO (Modificado con 70px para PARTICIPANTES) */
+        .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 70px 7fr 1.5fr 110px; }
         .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
@@ -137,8 +137,9 @@
     </header>
 
     <div class="vista active" id="vista-clientes">
+        <!-- MODIFICADO: Agregada la columna PART. -->
         <div class="fila-header grid-clientes">
-            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
+            <div>Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
         </div>
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
@@ -290,12 +291,14 @@
                     let logoVisual = c.logo_url_final ? c.logo_url_final : 'COFTAH.png.png';
                     let avatarVisual = c.facilitador_foto ? `<img src="${c.facilitador_foto}" class="avatar-mini">` : '';
 
+                    // MODIFICADO: Agregada la variable de participantes en el HTML
                     return `<div class="fila-item grid-clientes">
                         <div style="font-weight:bold; color:var(--acento-amarillo);">${d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true })}</div>
                         <div><img src="${logoVisual}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
                         <div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div>
                         <div>${c.lugar_atencion}</div>
                         <div>${c.ciudad}</div>
+                        <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--acento-amarillo);">👤 ${c.participantes || 0}</div>
                         <div style="text-align:center; font-weight:bold; font-size:1.1rem; color:var(--texto-principal);">${c.accion_formacion}</div>
                         <div class="perfil-wrapper" style="color:var(--urgencia-baja);">${avatarVisual} ${c.facilitador}</div>
                         <div style="text-align:center;"><span class="badge ${claseEstatus}">${estatusFinal}</span></div>
