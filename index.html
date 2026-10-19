@@ -40,6 +40,7 @@
         
         .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
+        /* CUADRÍCULA CON COLUMNA DE PARTICIPANTES DE 70px */
         .grid-clientes { grid-template-columns: 65px 40px 1fr 1fr 1fr 70px 7fr 1.5fr 110px; }
         .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
         
@@ -161,7 +162,7 @@
     </div>
 
     <script>
-        // --- CONFIGURACIÓN Y DESBLOQUEO DE VOZ ---
+        // --- DESBLOQUEO DE AUDIO INICIAL ---
         document.body.addEventListener('click', function() {
             if ('speechSynthesis' in window) {
                 let msg = new SpeechSynthesisUtterance("");
@@ -170,11 +171,10 @@
             }
         }, { once: true });
 
-        function hablar(texto, interrumpir = false) { 
+        // --- FUNCIÓN DE HABLAR ORIGINAL (QUE SABEMOS QUE FUNCIONA) ---
+        function hablar(texto) { 
             if ('speechSynthesis' in window) { 
-                if (interrumpir) {
-                    window.speechSynthesis.cancel(); 
-                }
+                window.speechSynthesis.cancel(); 
                 let m = new SpeechSynthesisUtterance(texto); 
                 m.lang = 'es-ES'; 
                 m.rate = 1.0; 
@@ -233,7 +233,7 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- NUEVOS EVENTOS DE VOZ DETALLADOS ---
+                // --- AQUÍ ESTÁN LOS TEXTOS EXACTOS QUE ME PEDISTE ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -241,21 +241,21 @@
                 } else {
                     clientes.forEach(c => { 
                         if (!clientesConocidos.has(c.id)) { 
+                            // Texto: Al subir nueva formación
                             let d = parseFechaLocal(c.fecha_atencion);
                             let fechaTexto = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-                            
-                            // VOZ: Al subir una nueva formación
-                            hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`, false); 
+                            let msj = `Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`;
+                            hablar(msj); 
                             clientesConocidos.add(c.id); 
                         }
                     });
                     tareas.forEach(t => { 
                         if (!tareasConocidas.has(t.id)) { 
-                            // VOZ: Al delegar una nueva función
+                            // Texto: Al delegar función
                             let msj = t.nombre_cliente
-                                ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion} y la tarea es: ${t.descripcion}.`
+                                ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion || ''} y la tarea es: ${t.descripcion}.`
                                 : `Se le dio una nueva función a ${t.responsable} y la tarea es: ${t.descripcion}.`;
-                            hablar(msj, false); 
+                            hablar(msj); 
                             tareasConocidas.add(t.id); 
                         }
                     });
@@ -437,22 +437,24 @@
                     let mensajeVoz = "";
                     if (accion === 'proceso') {
                         tObj.urgencia = 'en_proceso'; 
-                        // VOZ: Al presionar "Realizando"
+                        // Texto: Tarea en proceso
                         mensajeVoz = tObj.nombre_cliente
-                            ? `${responsable} empezó a realizar la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion} y el nombre de la función es: ${tObj.descripcion}.`
+                            ? `${responsable} empezó a realizar la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion || ''} y el nombre de la función es: ${tObj.descripcion}.`
                             : `${responsable} empezó a realizar la función y el nombre de la función es: ${tObj.descripcion}.`;
-                        hablar(mensajeVoz, true);
                     } else {
                         tObj.completada = true; 
-                        // VOZ: Al presionar "Marcar como Hecho"
+                        // Texto: Tarea completada
                         mensajeVoz = tObj.nombre_cliente
-                            ? `${responsable} ha terminado la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion} y la función fue: ${tObj.descripcion}.`
+                            ? `${responsable} ha terminado la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion || ''} y la función fue: ${tObj.descripcion}.`
                             : `${responsable} ha terminado la función y la función fue: ${tObj.descripcion}.`;
-                        hablar(mensajeVoz, true);
                     }
                     
                     cerrarModal(); 
                     renderizarVistas(); 
+                    
+                    // MÉTODO ORIGINAL DE EJECUCIÓN DE VOZ (Seguro y comprobado)
+                    window.speechSynthesis.cancel();
+                    setTimeout(() => { hablar(mensajeVoz); }, 500);
                     
                 } catch (error) { console.error("Error actualizando estatus", error); }
             }
@@ -465,7 +467,7 @@
                 const limite = parseFechaLocal(t.fecha_limite); const inicio = parseFechaLocal(t.created_at); 
                 const tiempoRestante = limite.getTime() - ahora.getTime();
                 if (tiempoRestante > 0 && tiempoRestante <= ((limite.getTime() - inicio.getTime()) * 0.30) && !tareasAvisadas.has(t.id)) {
-                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`, false); 
+                    hablar(`Atención ${t.responsable}. Quedan ${Math.ceil(tiempoRestante / 60000)} minutos para entregar la función.`); 
                     tareasAvisadas.add(t.id);
                 }
             });
