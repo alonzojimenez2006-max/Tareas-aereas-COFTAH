@@ -40,14 +40,17 @@
         
         .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
-        /* CUADRÍCULA: La primera columna de Fecha/Hora se ajusta a 85px para acomodar el nuevo formato */
         .grid-clientes { grid-template-columns: 85px 40px 1fr 1fr 1fr 70px 7fr 1.5fr 110px; }
         .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
-        .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; }
+        .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; border-left: 4px solid transparent; }
         .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
         
+        /* ESTILO PARA FILAS CADUCADAS (Sombreado rojo y subrayado lateral) */
+        .fila-caducada { background-color: rgba(255, 51, 102, 0.12) !important; border-left: 4px solid var(--urgencia-critica) !important; opacity: 0.85; }
+        .fila-caducada:hover { background-color: rgba(255, 51, 102, 0.22) !important; opacity: 1; }
+
         .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
         .perfil-wrapper { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .avatar-mini { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); background-color: white; flex-shrink: 0; }
@@ -106,7 +109,6 @@
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
                 <div id="menu-desplegable" class="menu-desplegable">
-                    <!-- SE AGREGÓ EL CRONOGRAMA GENERAL AL MENÚ -->
                     <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma por Día</button>
                     <button class="menu-item" id="btn-general" onclick="cambiarVista('general')">Cronograma General</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
@@ -144,7 +146,7 @@
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
-    <!-- VISTA 2: CRONOGRAMA GENERAL (TODAS LAS FORMACIONES) -->
+    <!-- VISTA 2: CRONOGRAMA GENERAL -->
     <div class="vista" id="vista-general">
         <div class="fila-header grid-clientes">
             <div>Fecha y Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
@@ -247,7 +249,7 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- TEXTOS EXACTOS DE VOZ ---
+                // --- TEXTOS DE VOZ INTACTOS ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -286,10 +288,9 @@
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
             
-            // LÓGICA DE TÍTULOS Y FILTROS SEGÚN LA VISTA
             if (vistaId === 'general') {
                 document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA GENERAL';
-                document.getElementById('contenedor-filtro-dia').style.display = 'none'; // En la general no filtramos por día
+                document.getElementById('contenedor-filtro-dia').style.display = 'none';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'block';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'none';
             } else if (vistaId === 'tareas') {
@@ -316,29 +317,42 @@
             let fechaCabecera = parseFechaLocal(diaFiltro + "T00:00:00");
             document.getElementById('dia-actual-header').textContent = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
 
+            // OBTENER LA FECHA REAL EXACTA DE HOY A LAS 00:00 PARA COMPARACIONES MATEMÁTICAS
             let hoyReal = new Date();
+            hoyReal.setHours(0,0,0,0);
             let hoyString = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
-            let esHoy = (diaFiltro === hoyString);
 
-            // FUNCIÓN REUTILIZABLE PARA PINTAR LAS FILAS DE CLIENTES
+            // FUNCION INTELIGENTE QUE COLOREA Y CREA LAS FILAS
             const mapearClientes = (lista, aplicarHoyFuerte) => {
                 return lista.map(c => {
                     let d = parseFechaLocal(c.fecha_atencion);
-                    let cDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    let dSoloFecha = new Date(d);
+                    dSoloFecha.setHours(0,0,0,0);
                     
-                    // Lógica para que el día de "HOY" se marque "EN PROCESO"
-                    let esEsteHoy = (cDateStr === hoyString);
-                    let estatusFinal = (aplicarHoyFuerte && esEsteHoy) ? 'EN PROCESO' : c.estatus.toUpperCase();
-                    let claseEstatus = (aplicarHoyFuerte && esEsteHoy) ? 'estatus-en-proceso' : `estatus-${c.estatus}`;
+                    let esEsteHoy = (dSoloFecha.getTime() === hoyReal.getTime());
+                    let esPasado = (dSoloFecha.getTime() < hoyReal.getTime());
+                    
+                    let estatusFinal = c.estatus.toUpperCase();
+                    let claseEstatus = `estatus-${c.estatus}`;
+                    let claseFilaExtra = ''; // Para el sombreado rojo
+                    
+                    // APLICANDO REGLAS VISUALES DE CADUCIDAD O PROCESO
+                    if (esPasado) {
+                        estatusFinal = 'FINALIZADO';
+                        claseEstatus = 'estatus-critica';
+                        claseFilaExtra = 'fila-caducada'; // Pinta de rojo la fila y le pone subrayado
+                    } else if (aplicarHoyFuerte && esEsteHoy) {
+                        estatusFinal = 'EN PROCESO';
+                        claseEstatus = 'estatus-en-proceso';
+                    }
                     
                     let logoVisual = c.logo_url_final ? c.logo_url_final : 'COFTAH.png.png';
                     let avatarVisual = c.facilitador_foto ? `<img src="${c.facilitador_foto}" class="avatar-mini">` : '';
 
-                    // FORMATO FECHA/HORA: "19/10/26" y debajo "08:00 AM"
-                    let fechaCorta = `${d.getDate()}/${d.getMonth() + 1}/${String(d.getFullYear()).slice(-2)}`;
+                    let fechaCorta = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`;
                     let horaTexto = d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
 
-                    return `<div class="fila-item grid-clientes">
+                    return `<div class="fila-item grid-clientes ${claseFilaExtra}">
                         <div style="font-weight:bold; color:var(--acento-amarillo); line-height: 1.2;">
                             ${fechaCorta}<br>
                             <span style="font-size: 0.8rem; color: var(--texto-secundario);">${horaTexto}</span>
@@ -355,7 +369,7 @@
                 }).join('');
             };
 
-            // RENDERIZAR VISTA 1: CRONOGRAMA POR DÍA
+            // --- VISTA 1: CRONOGRAMA POR DÍA ---
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
@@ -363,15 +377,39 @@
                 return cDateStr === diaFiltro && (filtroFac === 'TODOS' || c.facilitador === filtroFac);
             });
             if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones programadas para este día.</div>`;
-            else contC.innerHTML = mapearClientes(filtC, true); // true = Forzar estatus "En proceso" si es hoy
+            else contC.innerHTML = mapearClientes(filtC, true);
 
-            // RENDERIZAR VISTA 2: CRONOGRAMA GENERAL
+            // --- VISTA 2: CRONOGRAMA GENERAL (CON COLA INTELIGENTE) ---
             const contG = document.getElementById('lista-general');
-            const filtG = clientes.filter(c => (filtroFac === 'TODOS' || c.facilitador === filtroFac));
-            if (filtG.length === 0) contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones registradas en el sistema.</div>`;
-            else contG.innerHTML = mapearClientes(filtG, true); // Aplica "En proceso" automático a los de hoy
+            let filtG = clientes.filter(c => (filtroFac === 'TODOS' || c.facilitador === filtroFac));
+            
+            if (filtG.length === 0) {
+                contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones registradas en el sistema.</div>`;
+            } else {
+                let formacionesHoy = [];
+                let formacionesFuturo = [];
+                let formacionesPasado = [];
+                
+                filtG.forEach(c => {
+                    let d = parseFechaLocal(c.fecha_atencion);
+                    let dSoloFecha = new Date(d);
+                    dSoloFecha.setHours(0,0,0,0);
+                    
+                    if (dSoloFecha.getTime() === hoyReal.getTime()) {
+                        formacionesHoy.push(c);
+                    } else if (dSoloFecha.getTime() > hoyReal.getTime()) {
+                        formacionesFuturo.push(c);
+                    } else {
+                        formacionesPasado.push(c);
+                    }
+                });
+                
+                // ORDENAMIENTO EXACTO: 1. Hoy, 2. Futuro, 3. Pasado (al fondo de la cola)
+                let listaOrdenada = [...formacionesHoy, ...formacionesFuturo, ...formacionesPasado];
+                contG.innerHTML = mapearClientes(listaOrdenada, true);
+            }
 
-            // RENDERIZAR VISTA 3: TAREAS
+            // --- VISTA 3: TAREAS ---
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
@@ -486,17 +524,18 @@
                         mensajeVoz = tObj.nombre_cliente
                             ? `${responsable} empezó a realizar la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion || ''} y el nombre de la función es: ${tObj.descripcion}.`
                             : `${responsable} empezó a realizar la función y el nombre de la función es: ${tObj.descripcion}.`;
-                        hablar(mensajeVoz, true);
                     } else {
                         tObj.completada = true; 
                         mensajeVoz = tObj.nombre_cliente
                             ? `${responsable} ha terminado la función para la empresa ${tObj.nombre_cliente} de la formación ${tObj.accion_formacion || ''} y la función fue: ${tObj.descripcion}.`
                             : `${responsable} ha terminado la función y la función fue: ${tObj.descripcion}.`;
-                        hablar(mensajeVoz, true);
                     }
                     
                     cerrarModal(); 
                     renderizarVistas(); 
+                    
+                    window.speechSynthesis.cancel();
+                    setTimeout(() => { hablar(mensajeVoz); }, 500);
                     
                 } catch (error) { console.error("Error actualizando estatus", error); }
             }
