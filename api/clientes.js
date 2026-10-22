@@ -31,17 +31,17 @@ export default async function handler(req, res) {
         }
         
         if (req.method === 'POST') {
-            let { fechas_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes } = req.body;
+            // Extraemos la nueva variable duracion_curso
+            let { fechas_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso } = req.body;
             
             if (!fechas_atencion || fechas_atencion.length === 0) {
                 return res.status(400).json({ error: 'Se requiere al menos una fecha.' });
             }
 
-            // LIMPIEZA DE DATOS ESTRICTA PARA EVITAR ERROR 500
             const cantParticipantes = parseInt(participantes) || 0;
             const idFacilitador = parseInt(facilitador_id) || null;
+            const duracionFinal = duracion_curso || '-'; // Valor por defecto si queda vacío
 
-            // Validación Antichoques (Usando el nombre como puente seguro)
             for (let fecha of fechas_atencion) {
                 const validacionTurno = await pool.query(
                     `SELECT id FROM clientes_agenda WHERE facilitador = $1 AND DATE(fecha_atencion) = DATE($2)`,
@@ -55,11 +55,11 @@ export default async function handler(req, res) {
             
             let registrosCreados = [];
             for (let fecha of fechas_atencion) {
-                // Inyectamos 'default.png' para que la base de datos no tranque el proceso por exigir un logo_url
+                // Inyectamos duracion_curso en la base de datos
                 const result = await pool.query(
-                    `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes) 
-                    VALUES ($1, 'default.png', $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
-                    [fecha, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, idFacilitador, estatus, cantParticipantes]
+                    `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso) 
+                    VALUES ($1, 'default.png', $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
+                    [fecha, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, idFacilitador, estatus, cantParticipantes, duracionFinal]
                 );
                 registrosCreados.push(result.rows[0]);
             }
