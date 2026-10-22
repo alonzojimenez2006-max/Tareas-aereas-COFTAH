@@ -12,6 +12,7 @@
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 45px; width: auto; }
+        .logo-blanco { filter: brightness(0) invert(1); } /* FILTRO PARA VOLVER LOGO A BLANCO PURO */
         .titulos { display: flex; flex-direction: column; justify-content: center; }
         .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
@@ -47,9 +48,20 @@
         .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; border-left: 4px solid transparent; }
         .fila-item:hover { background-color: rgba(255, 255, 255, 0.08); transform: translateY(-2px); }
         
-        /* ESTILO PARA FILAS CADUCADAS (Sombreado rojo y subrayado lateral) */
         .fila-caducada { background-color: rgba(255, 51, 102, 0.12) !important; border-left: 4px solid var(--urgencia-critica) !important; opacity: 0.85; }
         .fila-caducada:hover { background-color: rgba(255, 51, 102, 0.22) !important; opacity: 1; }
+
+        /* --- ESTILOS DEL ALMANAQUE --- */
+        .almanaque-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; padding-right: 10px; height: 100%; }
+        .mes-card { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; }
+        .mes-titulo { color: var(--acento-amarillo); font-weight: bold; text-align: center; margin-bottom: 10px; text-transform: uppercase; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+        .dias-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+        .dia-header { font-size: 0.75rem; color: var(--texto-secundario); margin-bottom: 5px; font-weight: bold; }
+        .dia-cell { aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 0.9rem; border-radius: 4px; background-color: rgba(255,255,255,0.03); cursor: default; position: relative; transition: all 0.2s; border: 1px solid transparent; }
+        .dia-cell:not(:empty):hover { background-color: rgba(255,255,255,0.1); }
+        .dia-cell.con-eventos { border-color: var(--acento-amarillo); background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); font-weight: bold; cursor: pointer; }
+        .dia-cell.con-eventos:hover { background-color: rgba(255, 215, 0, 0.25); transform: scale(1.05); z-index: 10; }
+        .badge-contador { position: absolute; top: -6px; right: -6px; background-color: var(--urgencia-critica); color: white; font-size: 0.65rem; width: 18px; height: 18px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.8); }
 
         .logo-cliente { width: 35px; height: 35px; background-color: white; border-radius: 50%; object-fit: contain; }
         .perfil-wrapper { display: flex; align-items: center; gap: 10px; font-weight: bold; }
@@ -91,10 +103,11 @@
 <body>
     <header>
         <div class="brand">
-            <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
+            <!-- LOGO MODIFICADO CON CLASE BLANCA MONOCROMÁTICA -->
+            <img src="COFTAH.png.png" alt="Logo" class="logo-blanco" onerror="this.style.display='none'">
             <div class="titulos">
                 <h1>COFTAH / TABLERO DE OPERACIONES</h1>
-                <div id="subtitulo-vista">CRONOGRAMA DE CLIENTES</div>
+                <div id="subtitulo-vista">CRONOGRAMA DE ACTIVIDADES</div>
             </div>
         </div>
         <div class="header-derecha">
@@ -109,8 +122,10 @@
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
                 <div id="menu-desplegable" class="menu-desplegable">
-                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma por Día</button>
-                    <button class="menu-item" id="btn-general" onclick="cambiarVista('general')">Cronograma General</button>
+                    <!-- NUEVOS TEXTOS EN EL MENÚ Y BOTÓN ALMANAQUE -->
+                    <button class="menu-item active" id="btn-clientes" onclick="cambiarVista('clientes')">Cronograma de Actividades</button>
+                    <button class="menu-item" id="btn-general" onclick="cambiarVista('general')">Cronograma General de Actividades</button>
+                    <button class="menu-item" id="btn-almanaque" onclick="cambiarVista('almanaque')">Almanaque de Actividades</button>
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     
                     <div class="filtros-semanales">
@@ -138,7 +153,7 @@
         </div>
     </header>
 
-    <!-- VISTA 1: CRONOGRAMA DIARIO -->
+    <!-- VISTA 1: CRONOGRAMA DE ACTIVIDADES (Diario) -->
     <div class="vista active" id="vista-clientes">
         <div class="fila-header grid-clientes">
             <div>Fecha y Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
@@ -146,7 +161,7 @@
         <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
-    <!-- VISTA 2: CRONOGRAMA GENERAL -->
+    <!-- VISTA 2: CRONOGRAMA GENERAL DE ACTIVIDADES -->
     <div class="vista" id="vista-general">
         <div class="fila-header grid-clientes">
             <div>Fecha y Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
@@ -154,7 +169,14 @@
         <div class="contenedor-lista" id="lista-general"></div>
     </div>
 
-    <!-- VISTA 3: TAREAS -->
+    <!-- NUEVA VISTA 3: ALMANAQUE ANUAL -->
+    <div class="vista" id="vista-almanaque">
+        <div class="almanaque-container" id="almanaque-container">
+            <!-- Se generará por Javascript -->
+        </div>
+    </div>
+
+    <!-- VISTA 4: TAREAS -->
     <div class="vista" id="vista-tareas">
         <div class="fila-header grid-tareas">
             <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div style="text-align:center;">Estatus</div>
@@ -209,13 +231,16 @@
             return new Date(limpia);
         }
 
+        // --- FUNCIÓN DE FECHA MODIFICADA PARA AÑADIR AÑO Y "DEL" ---
         function inicializarFechas() {
             let hoy = new Date();
             let yyyy = hoy.getFullYear();
             let mm = String(hoy.getMonth() + 1).padStart(2, '0');
             let dd = String(hoy.getDate()).padStart(2, '0');
             document.getElementById('filtro-dia').value = `${yyyy}-${mm}-${dd}`;
-            document.getElementById('dia-actual-header').textContent = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+            
+            let textoF = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('dia-actual-header').textContent = textoF.replace(',', '').replace(' de 20', ' del 20').toUpperCase();
         }
 
         let clientes = []; let tareas = [];
@@ -249,7 +274,6 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // --- TEXTOS DE VOZ INTACTOS ---
                 if (esPrimeraCarga) {
                     clientes.forEach(c => clientesConocidos.add(c.id));
                     tareas.forEach(t => tareasConocidas.add(t.id));
@@ -288,8 +312,9 @@
             document.getElementById(`vista-${vistaId}`).classList.add('active');
             document.getElementById(`btn-${vistaId}`).classList.add('active');
             
+            // --- NUEVOS TÍTULOS Y REGLAS DE VISIBILIDAD ---
             if (vistaId === 'general') {
-                document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA GENERAL';
+                document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA GENERAL DE ACTIVIDADES';
                 document.getElementById('contenedor-filtro-dia').style.display = 'none';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'block';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'none';
@@ -298,8 +323,13 @@
                 document.getElementById('contenedor-filtro-dia').style.display = 'block';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'none';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'block';
+            } else if (vistaId === 'almanaque') {
+                document.getElementById('subtitulo-vista').textContent = 'ALMANAQUE DE ACTIVIDADES';
+                document.getElementById('contenedor-filtro-dia').style.display = 'none';
+                document.getElementById('contenedor-filtro-facilitador').style.display = 'none';
+                document.getElementById('contenedor-filtro-responsable').style.display = 'none';
             } else {
-                document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA POR DÍA';
+                document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA DE ACTIVIDADES';
                 document.getElementById('contenedor-filtro-dia').style.display = 'block';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'block';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'none';
@@ -315,14 +345,15 @@
             const filtroResp = document.getElementById('filtro-responsable').value;
             
             let fechaCabecera = parseFechaLocal(diaFiltro + "T00:00:00");
-            document.getElementById('dia-actual-header').textContent = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: '2-digit', month: 'long' }).toUpperCase();
+            
+            // --- ACTUALIZACIÓN DE FECHA CABECERA CON AÑO Y "DEL" ---
+            let textoF = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            document.getElementById('dia-actual-header').textContent = textoF.replace(',', '').replace(' de 20', ' del 20').toUpperCase();
 
-            // OBTENER LA FECHA REAL EXACTA DE HOY A LAS 00:00 PARA COMPARACIONES MATEMÁTICAS
             let hoyReal = new Date();
             hoyReal.setHours(0,0,0,0);
             let hoyString = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
 
-            // FUNCION INTELIGENTE QUE COLOREA Y CREA LAS FILAS
             const mapearClientes = (lista, aplicarHoyFuerte) => {
                 return lista.map(c => {
                     let d = parseFechaLocal(c.fecha_atencion);
@@ -334,13 +365,12 @@
                     
                     let estatusFinal = c.estatus.toUpperCase();
                     let claseEstatus = `estatus-${c.estatus}`;
-                    let claseFilaExtra = ''; // Para el sombreado rojo
+                    let claseFilaExtra = '';
                     
-                    // APLICANDO REGLAS VISUALES DE CADUCIDAD O PROCESO
                     if (esPasado) {
-                        estatusFinal = 'FINALIZADO';
+                        estatusFinal = 'FINALIZADA'; // CAMBIO A FEMENINO
                         claseEstatus = 'estatus-critica';
-                        claseFilaExtra = 'fila-caducada'; // Pinta de rojo la fila y le pone subrayado
+                        claseFilaExtra = 'fila-caducada'; 
                     } else if (aplicarHoyFuerte && esEsteHoy) {
                         estatusFinal = 'EN PROCESO';
                         claseEstatus = 'estatus-en-proceso';
@@ -369,7 +399,6 @@
                 }).join('');
             };
 
-            // --- VISTA 1: CRONOGRAMA POR DÍA ---
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
@@ -379,37 +408,27 @@
             if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones programadas para este día.</div>`;
             else contC.innerHTML = mapearClientes(filtC, true);
 
-            // --- VISTA 2: CRONOGRAMA GENERAL (CON COLA INTELIGENTE) ---
             const contG = document.getElementById('lista-general');
             let filtG = clientes.filter(c => (filtroFac === 'TODOS' || c.facilitador === filtroFac));
             
             if (filtG.length === 0) {
                 contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones registradas en el sistema.</div>`;
             } else {
-                let formacionesHoy = [];
-                let formacionesFuturo = [];
-                let formacionesPasado = [];
+                let formacionesHoy = []; let formacionesFuturo = []; let formacionesPasado = [];
                 
                 filtG.forEach(c => {
                     let d = parseFechaLocal(c.fecha_atencion);
-                    let dSoloFecha = new Date(d);
-                    dSoloFecha.setHours(0,0,0,0);
+                    let dSoloFecha = new Date(d); dSoloFecha.setHours(0,0,0,0);
                     
-                    if (dSoloFecha.getTime() === hoyReal.getTime()) {
-                        formacionesHoy.push(c);
-                    } else if (dSoloFecha.getTime() > hoyReal.getTime()) {
-                        formacionesFuturo.push(c);
-                    } else {
-                        formacionesPasado.push(c);
-                    }
+                    if (dSoloFecha.getTime() === hoyReal.getTime()) formacionesHoy.push(c);
+                    else if (dSoloFecha.getTime() > hoyReal.getTime()) formacionesFuturo.push(c);
+                    else formacionesPasado.push(c);
                 });
                 
-                // ORDENAMIENTO EXACTO: 1. Hoy, 2. Futuro, 3. Pasado (al fondo de la cola)
                 let listaOrdenada = [...formacionesHoy, ...formacionesFuturo, ...formacionesPasado];
                 contG.innerHTML = mapearClientes(listaOrdenada, true);
             }
 
-            // --- VISTA 3: TAREAS ---
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
@@ -442,7 +461,66 @@
                     </div>`;
                 });
             }
+
+            // --- LLAMADA AL MOTOR DEL ALMANAQUE ---
+            renderizarAlmanaque();
         }
+
+        // --- LÓGICA MATEMÁTICA DEL ALMANAQUE ANUAL ---
+        function renderizarAlmanaque() {
+            const contenedor = document.getElementById('almanaque-container');
+            if (!contenedor) return;
+            contenedor.innerHTML = '';
+            
+            const año = new Date().getFullYear();
+            const mesesNombres = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+            // Contar cuantas formaciones hay por cada día exacto
+            let conteoEventos = {};
+            clientes.forEach(c => {
+                let d = parseFechaLocal(c.fecha_atencion);
+                let key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                conteoEventos[key] = (conteoEventos[key] || 0) + 1;
+            });
+
+            // Dibujar los 12 meses
+            for(let mes = 0; mes < 12; mes++) {
+                let primerDia = new Date(año, mes, 1).getDay();
+                primerDia = primerDia === 0 ? 6 : primerDia - 1; // Ajuste para que empiece en Lunes
+                let diasEnMes = new Date(año, mes + 1, 0).getDate();
+
+                let htmlMes = `<div class="mes-card"><div class="mes-titulo">${mesesNombres[mes]} ${año}</div><div class="dias-grid">`;
+                
+                // Cabeceras L M X J V S D
+                diasSemana.forEach(d => htmlMes += `<div class="dia-header">${d}</div>`);
+                
+                // Espacios vacíos antes del día 1
+                for(let i = 0; i < primerDia; i++) htmlMes += `<div></div>`;
+                
+                // Días del mes
+                for(let dia = 1; dia <= diasEnMes; dia++) {
+                    let keyStr = `${año}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+                    let cant = conteoEventos[keyStr] || 0;
+                    
+                    let claseConEventos = cant > 0 ? 'con-eventos' : '';
+                    let badge = cant > 0 ? `<div class="badge-contador">${cant}</div>` : '';
+                    
+                    // Si tiene eventos, le asignamos el clic automático para viajar a esa fecha
+                    let accionClick = cant > 0 ? `onclick="saltarADia('${keyStr}')"` : '';
+                    
+                    htmlMes += `<div class="dia-cell ${claseConEventos}" ${accionClick}>${dia}${badge}</div>`;
+                }
+                htmlMes += `</div></div>`;
+                contenedor.innerHTML += htmlMes;
+            }
+        }
+
+        // --- FUNCIÓN REDIRECCIÓN AL DAR CLIC EN UN DÍA DEL ALMANAQUE ---
+        window.saltarADia = function(fechaStr) {
+            document.getElementById('filtro-dia').value = fechaStr;
+            cambiarVista('clientes');
+        };
 
         function abrirModal(id) {
             const t = tareas.find(x => x.id === id);
