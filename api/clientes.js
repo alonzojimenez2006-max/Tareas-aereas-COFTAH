@@ -8,7 +8,7 @@ const pool = new Pool({
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Añadido PUT
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -31,7 +31,6 @@ export default async function handler(req, res) {
         }
         
         if (req.method === 'POST') {
-            // Extraemos la nueva variable duracion_curso
             let { fechas_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso } = req.body;
             
             if (!fechas_atencion || fechas_atencion.length === 0) {
@@ -40,7 +39,7 @@ export default async function handler(req, res) {
 
             const cantParticipantes = parseInt(participantes) || 0;
             const idFacilitador = parseInt(facilitador_id) || null;
-            const duracionFinal = duracion_curso || '-'; // Valor por defecto si queda vacío
+            const duracionFinal = duracion_curso || '-'; 
 
             for (let fecha of fechas_atencion) {
                 const validacionTurno = await pool.query(
@@ -55,7 +54,6 @@ export default async function handler(req, res) {
             
             let registrosCreados = [];
             for (let fecha of fechas_atencion) {
-                // Inyectamos duracion_curso en la base de datos
                 const result = await pool.query(
                     `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso) 
                     VALUES ($1, 'default.png', $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *`,
@@ -65,6 +63,39 @@ export default async function handler(req, res) {
             }
             
             return res.status(201).json(registrosCreados);
+        }
+
+        // NUEVO MÉTODO PARA EDITAR (ACTUALIZAR)
+        if (req.method === 'PUT') {
+            const { id, fecha_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso } = req.body;
+            
+            if (!id) return res.status(400).json({ error: 'El ID es obligatorio para editar' });
+
+            const cantParticipantes = parseInt(participantes) || 0;
+            const idFacilitador = parseInt(facilitador_id) || null;
+            const duracionFinal = duracion_curso || '-';
+
+            const result = await pool.query(
+                `UPDATE clientes_agenda 
+                 SET fecha_atencion = $1, 
+                     nombre_cliente = $2, 
+                     lugar_atencion = $3, 
+                     ciudad = $4, 
+                     accion_formacion = $5, 
+                     facilitador = $6, 
+                     facilitador_id = $7, 
+                     estatus = $8, 
+                     participantes = $9, 
+                     duracion_curso = $10
+                 WHERE id = $11 RETURNING *`,
+                [fecha_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, idFacilitador, estatus, cantParticipantes, duracionFinal, id]
+            );
+
+            if (result.rowCount === 0) {
+                return res.status(404).json({ error: 'Registro no encontrado en la base de datos' });
+            }
+
+            return res.status(200).json(result.rows[0]);
         }
         
         if (req.method === 'DELETE') {
