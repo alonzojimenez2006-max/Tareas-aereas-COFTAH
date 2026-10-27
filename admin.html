@@ -125,7 +125,7 @@
                     <option value="programado">Programado</option>
                     <option value="importante">Aviso Próximo</option>
                     <option value="retrasado">Retrasado</option>
-                    <option value="cancelado">Cancelada</option> <!-- NUEVA OPCIÓN -->
+                    <option value="cancelado">Cancelada</option>
                 </select>
             </div>
             <button type="submit" class="btn-submit">Guardar Formación</button>
@@ -267,14 +267,15 @@
                             <option value="programado">Programado</option>
                             <option value="importante">Aviso Próximo</option>
                             <option value="retrasado">Retrasado</option>
-                            <option value="cancelado">Cancelada</option> <!-- NUEVA OPCIÓN -->
+                            <option value="cancelado">Cancelada</option>
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalEditar()">Cancelar</button>
-                <button type="submit" form="form-editar-cliente" class="btn-modal btn-modal-guardar">Actualizar Formación</button>
+                <!-- SE AGREGÓ UN ID AL BOTÓN PARA QUE JAVASCRIPT LO ENCUENTRE SIEMPRE -->
+                <button type="submit" form="form-editar-cliente" id="btn-actualizar-modal" class="btn-modal btn-modal-guardar">Actualizar Formación</button>
             </div>
         </div>
     </div>
@@ -517,6 +518,17 @@
             } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
         });
 
+        document.getElementById('form-tarea').addEventListener('submit', async function(e) {
+            e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
+            const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
+            let fechaFormateada = document.getElementById('fecha-tarea').value + "T" + document.getElementById('hora-tarea').value + ":00";
+            
+            try {
+                const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: fechaFormateada, urgencia: document.getElementById('urgencia-tarea').value })});
+                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); cargarDatosGestion(); } else alert("Error al delegar función.");
+            } catch (error) {} finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
+        });
+
         async function cargarDatosGestion() {
             try {
                 const ts = new Date().getTime(); const conf = { cache: 'no-store' };
@@ -587,9 +599,10 @@
             document.getElementById('modal-editar-cliente').classList.remove('active');
         }
 
+        // --- SOLUCIÓN APLICADA AQUÍ: EL BOTÓN AHORA SE BUSCA DIRECTO POR SU ID ---
         document.getElementById('form-editar-cliente').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = this.querySelector('button[type="submit"]');
+            const btn = document.getElementById('btn-actualizar-modal');
             btn.textContent = "Actualizando..."; btn.disabled = true;
 
             let fechaFormateada = document.getElementById('edit-fecha').value + "T" + document.getElementById('edit-hora').value + ":00";
