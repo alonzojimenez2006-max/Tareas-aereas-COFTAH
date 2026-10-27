@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard COFTAH</title>
     <style>
-        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; --en-proceso: #00BFFF; }
+        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; --en-proceso: #00BFFF; --cancelado: #4B5563; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
         
@@ -41,7 +41,6 @@
         
         .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
         
-        /* MODIFICADO: 10 columnas. Duración AF tiene 70px (igual que PART.) y va entre Acción (6fr) y Facilitador (1.5fr) */
         .grid-clientes { grid-template-columns: 85px 40px 1fr 1fr 1fr 70px 6fr 70px 1.5fr 110px; }
         .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
         
@@ -51,6 +50,11 @@
         
         .fila-caducada { background-color: rgba(255, 51, 102, 0.12) !important; border-left: 4px solid var(--urgencia-critica) !important; opacity: 0.85; }
         .fila-caducada:hover { background-color: rgba(255, 51, 102, 0.22) !important; opacity: 1; }
+
+        /* NUEVO: ESTILOS PARA FILAS CANCELADAS */
+        .estatus-cancelado { background-color: var(--cancelado); color: white; }
+        .fila-cancelada { background-color: rgba(255,255,255,0.02) !important; border-left: 4px solid var(--cancelado) !important; opacity: 0.4; filter: grayscale(100%); }
+        .fila-cancelada:hover { opacity: 0.6; }
 
         .almanaque-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; padding-right: 10px; height: 100%; }
         .mes-card { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; }
@@ -152,7 +156,6 @@
     </header>
 
     <div class="vista active" id="vista-clientes">
-        <!-- MODIFICADO: Nueva cabecera "Duración de AF" con el mismo espacio de PARTICIPANTES -->
         <div class="fila-header grid-clientes">
             <div>Fecha y Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div style="text-align:center;">Duración de AF</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
         </div>
@@ -357,7 +360,12 @@
                     let claseEstatus = `estatus-${c.estatus}`;
                     let claseFilaExtra = '';
                     
-                    if (esPasado) {
+                    // --- NUEVA LÓGICA DE PRIORIDAD PARA EL ESTATUS CANCELADO ---
+                    if (c.estatus === 'cancelado') {
+                        estatusFinal = 'CANCELADA';
+                        claseEstatus = 'estatus-cancelado';
+                        claseFilaExtra = 'fila-cancelada';
+                    } else if (esPasado) {
                         estatusFinal = 'FINALIZADA';
                         claseEstatus = 'estatus-critica';
                         claseFilaExtra = 'fila-caducada'; 
@@ -372,7 +380,6 @@
                     let fechaCorta = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`;
                     let horaTexto = d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
 
-                    // MODIFICADO: Mapeo de la nueva variable c.duracion_curso
                     return `<div class="fila-item grid-clientes ${claseFilaExtra}">
                         <div style="font-weight:bold; color:var(--acento-amarillo); line-height: 1.2;">
                             ${fechaCorta}<br>
