@@ -49,7 +49,6 @@
 
         .avatar-mini { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); margin-right: 10px; display: inline-block; vertical-align: middle; background-color: white;}
 
-        /* ESTILOS DEL MODAL DE EDICIÓN */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
@@ -120,7 +119,15 @@
             </div>
             
             <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" required><option value="" disabled selected>Cargando personal...</option></select></div>
-            <div class="form-group"><label>Estatus inicial</label><select id="estatus-cliente" required><option value="programado">Programado</option><option value="importante">Aviso Próximo</option><option value="retrasado">Retrasado</option></select></div>
+            <div class="form-group">
+                <label>Estatus inicial</label>
+                <select id="estatus-cliente" required>
+                    <option value="programado">Programado</option>
+                    <option value="importante">Aviso Próximo</option>
+                    <option value="retrasado">Retrasado</option>
+                    <option value="cancelado">Cancelada</option> <!-- NUEVA OPCIÓN -->
+                </select>
+            </div>
             <button type="submit" class="btn-submit">Guardar Formación</button>
         </form>
     </div>
@@ -260,6 +267,7 @@
                             <option value="programado">Programado</option>
                             <option value="importante">Aviso Próximo</option>
                             <option value="retrasado">Retrasado</option>
+                            <option value="cancelado">Cancelada</option> <!-- NUEVA OPCIÓN -->
                         </select>
                     </div>
                 </form>
@@ -272,7 +280,6 @@
     </div>
 
     <script>
-        // VARIABLE GLOBAL PARA ALMACENAR CLIENTES Y PODER EDITARLOS
         let clientesRegistrados = [];
 
         function cambiarFormulario(vistaId) {
@@ -510,17 +517,6 @@
             } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
         });
 
-        document.getElementById('form-tarea').addEventListener('submit', async function(e) {
-            e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
-            const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
-            let fechaFormateada = document.getElementById('fecha-tarea').value + "T" + document.getElementById('hora-tarea').value + ":00";
-            
-            try {
-                const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: fechaFormateada, urgencia: document.getElementById('urgencia-tarea').value })});
-                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); cargarDatosGestion(); } else alert("Error al delegar función.");
-            } catch (error) {} finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
-        });
-
         async function cargarDatosGestion() {
             try {
                 const ts = new Date().getTime(); const conf = { cache: 'no-store' };
@@ -530,7 +526,6 @@
                     if(clientesRegistrados.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
                     clientesRegistrados.forEach(c => { 
                         let d = new Date(c.fecha_atencion); 
-                        // MODIFICADO: Añadido el botón Editar junto al botón Borrar
                         tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span></td>
                         <td style="min-width: 160px;">
                             <button class="btn-accion btn-editar" onclick="abrirModalEditarCliente(${c.id})">Editar</button>
@@ -555,24 +550,20 @@
             }
         }
 
-        // --- FUNCIONES DEL MODAL DE EDICIÓN ---
         function abrirModalEditarCliente(id) {
             const c = clientesRegistrados.find(x => x.id === id);
             if(!c) return;
 
-            // Copiamos las listas desplegables para no tener que cargarlas de cero
             document.getElementById('edit-cliente').innerHTML = document.getElementById('cliente-directorio').innerHTML;
             document.getElementById('edit-accion').innerHTML = document.getElementById('accion-formacion-cliente').innerHTML;
             document.getElementById('edit-facilitador').innerHTML = document.getElementById('facilitador-cliente').innerHTML;
 
-            // Separar fecha y hora
             let fechaCompleta = c.fecha_atencion.endsWith('Z') ? c.fecha_atencion.slice(0, -1) : c.fecha_atencion;
             let [fechaStr, horaStr] = fechaCompleta.split('T');
 
-            // Cargar datos en el formulario
             document.getElementById('edit-id').value = c.id;
             document.getElementById('edit-fecha').value = fechaStr;
-            document.getElementById('edit-hora').value = horaStr.substring(0, 5); // Tomar solo HH:MM
+            document.getElementById('edit-hora').value = horaStr.substring(0, 5); 
             document.getElementById('edit-cliente').value = c.nombre_cliente;
             document.getElementById('edit-lugar').value = c.lugar_atencion;
             document.getElementById('edit-ciudad').value = c.ciudad;
@@ -580,7 +571,6 @@
             document.getElementById('edit-accion').value = c.accion_formacion;
             document.getElementById('edit-duracion').value = c.duracion_curso || '';
             
-            // Buscar el facilitador_id correcto en la lista
             let facSelect = document.getElementById('edit-facilitador');
             for(let i=0; i<facSelect.options.length; i++) {
                 if(facSelect.options[i].text === c.facilitador) {
@@ -590,7 +580,6 @@
             
             document.getElementById('edit-estatus').value = c.estatus;
 
-            // Mostrar el modal
             document.getElementById('modal-editar-cliente').classList.add('active');
         }
 
