@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Dashboard COFTAH</title>
     <style>
-        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D; --borde-input: #234E8A; --btn-borrar: #FF3366; --btn-restaurar: #2E8B57; }
+        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D; --borde-input: #234E8A; --btn-borrar: #FF3366; --btn-editar: #00BFFF; --btn-restaurar: #2E8B57; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-principal); color: var(--texto-principal); min-height: 100vh; padding: 20px; }
         header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg-paneles); }
@@ -26,10 +26,14 @@
         .tabla-gestion { width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
         .tabla-gestion th, .tabla-gestion td { padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input); vertical-align: middle; }
         .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); font-size: 0.9rem; }
-        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px;}
+        
+        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px; transition: 0.2s;}
         .btn-borrar { background-color: var(--btn-borrar); }
+        .btn-editar { background-color: var(--btn-editar); color: #000; }
         .btn-mover { background-color: #d4a017; color: #000; }
         .btn-restaurar { background-color: var(--btn-restaurar); }
+        .btn-accion:hover { filter: brightness(1.2); }
+        
         .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 30px; }
         #grupo-programa-vinculado { display: none; }
         .grid-personal { display: flex; gap: 20px; margin-bottom: 30px; }
@@ -44,6 +48,19 @@
         .buscador-contenedor input::placeholder { color: var(--texto-secundario); }
 
         .avatar-mini { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); margin-right: 10px; display: inline-block; vertical-align: middle; background-color: white;}
+
+        /* ESTILOS DEL MODAL DE EDICIÓN */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-header { background-color: rgba(255, 215, 0, 0.1); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.5rem; margin: 0; text-transform: uppercase; }
+        .modal-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
+        .modal-body { padding: 25px; overflow-y: auto; }
+        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); }
+        .btn-modal { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
+        .btn-modal-guardar { background-color: var(--acento-amarillo); color: #000; }
     </style>
 </head>
 <body>
@@ -89,7 +106,6 @@
                 <div style="flex: 1;"><label>Participantes</label><input type="number" id="participantes-cliente" min="1" value="10" required></div>
             </div>
 
-            <!-- MODIFICADO: Agregada casilla Duración de AF -->
             <div class="row-group">
                 <div style="flex: 3;">
                     <label>Acción de Formación</label>
@@ -201,7 +217,64 @@
         </table>
     </div>
 
+    <!-- MODAL DE EDICIÓN DE CLIENTE/FORMACIÓN -->
+    <div class="modal-overlay" id="modal-editar-cliente">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Formación Programada</h2>
+                <button class="modal-close" onclick="cerrarModalEditar()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-cliente">
+                    <input type="hidden" id="edit-id">
+                    <div class="row-group">
+                        <div><label>Fecha</label><input type="date" id="edit-fecha" required></div>
+                        <div><label>Hora</label><input type="time" id="edit-hora" required></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cliente / Empresa</label>
+                        <select id="edit-cliente" required></select>
+                    </div>
+                    <div class="row-group">
+                        <div style="flex: 2;"><label>Lugar</label><input type="text" id="edit-lugar" required></div>
+                        <div style="flex: 1.5;"><label>Ciudad</label><input type="text" id="edit-ciudad" required></div>
+                        <div style="flex: 1;"><label>Participantes</label><input type="number" id="edit-participantes" min="1" required></div>
+                    </div>
+                    <div class="row-group">
+                        <div style="flex: 3;">
+                            <label>Acción de Formación</label>
+                            <select id="edit-accion" required></select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label>Duración de AF</label>
+                            <input type="text" id="edit-duracion" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Facilitador</label>
+                        <select id="edit-facilitador" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estatus</label>
+                        <select id="edit-estatus" required>
+                            <option value="programado">Programado</option>
+                            <option value="importante">Aviso Próximo</option>
+                            <option value="retrasado">Retrasado</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalEditar()">Cancelar</button>
+                <button type="submit" form="form-editar-cliente" class="btn-modal btn-modal-guardar">Actualizar Formación</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // VARIABLE GLOBAL PARA ALMACENAR CLIENTES Y PODER EDITARLOS
+        let clientesRegistrados = [];
+
         function cambiarFormulario(vistaId) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -221,7 +294,7 @@
             document.getElementById('dias-formacion').value = 1;
             document.getElementById('hora-cliente').value = "08:00";
             document.getElementById('participantes-cliente').value = "10";
-            document.getElementById('duracion-cliente').value = "8 Hrs"; // Valor por defecto
+            document.getElementById('duracion-cliente').value = "8 Hrs";
             generarCamposFechas(fechaString);
         }
 
@@ -396,17 +469,17 @@
 
         async function cargarProgramasDropdown() {
             try {
-                const res = await fetch('/api/clientes?t='+new Date().getTime(), { cache: 'no-store' }); const clientes = await res.json();
+                const res = await fetch('/api/clientes?t='+new Date().getTime(), { cache: 'no-store' }); 
+                clientesRegistrados = await res.json();
                 const sel = document.getElementById('programa-vinculado');
                 sel.innerHTML = '<option value="" disabled selected>Selecciona una formación...</option>';
-                clientes.forEach(c => {
+                clientesRegistrados.forEach(c => {
                     let d = new Date(c.fecha_atencion);
                     sel.innerHTML += `<option value="${c.id}">${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} - ${c.nombre_cliente} (${c.accion_formacion})</option>`
                 });
             } catch (error) {}
         }
 
-        // --- ENVIANDO LA NUEVA VARIABLE DURACIÓN AL SERVIDOR ---
         document.getElementById('form-cliente').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
 
@@ -426,15 +499,26 @@
                     lugar_atencion: document.getElementById('lugar-cliente').value, 
                     ciudad: document.getElementById('ciudad-cliente').value,
                     participantes: document.getElementById('participantes-cliente').value,
-                    duracion_curso: document.getElementById('duracion-cliente').value, // <--- Nueva variable capturada
+                    duracion_curso: document.getElementById('duracion-cliente').value,
                     accion_formacion: document.getElementById('accion-formacion-cliente').value, 
                     facilitador: facNombre, 
                     facilitador_id: facId,
                     estatus: document.getElementById('estatus-cliente').value
                 })});
-                if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); inicializarFechas(); cargarProgramasDropdown(); } 
+                if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); inicializarFechas(); cargarProgramasDropdown(); cargarDatosGestion(); } 
                 else { const data = await res.json(); alert(data.error || "Error al guardar."); }
             } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
+        });
+
+        document.getElementById('form-tarea').addEventListener('submit', async function(e) {
+            e.preventDefault(); const btn = this.querySelector('button'); btn.textContent = "Guardando..."; btn.disabled = true;
+            const tipo = document.querySelector('input[name="tipo-tarea"]:checked').value;
+            let fechaFormateada = document.getElementById('fecha-tarea').value + "T" + document.getElementById('hora-tarea').value + ":00";
+            
+            try {
+                const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: fechaFormateada, urgencia: document.getElementById('urgencia-tarea').value })});
+                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); cargarDatosGestion(); } else alert("Error al delegar función.");
+            } catch (error) {} finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
         });
 
         async function cargarDatosGestion() {
@@ -442,11 +526,16 @@
                 const ts = new Date().getTime(); const conf = { cache: 'no-store' };
                 const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
                 if(resC.ok) {
-                    const clientes = await resC.json(); tbC.innerHTML = '';
-                    if(clientes.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
-                    clientes.forEach(c => { 
+                    clientesRegistrados = await resC.json(); tbC.innerHTML = '';
+                    if(clientesRegistrados.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
+                    clientesRegistrados.forEach(c => { 
                         let d = new Date(c.fecha_atencion); 
-                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span></td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button></td></tr>`; 
+                        // MODIFICADO: Añadido el botón Editar junto al botón Borrar
+                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span></td>
+                        <td style="min-width: 160px;">
+                            <button class="btn-accion btn-editar" onclick="abrirModalEditarCliente(${c.id})">Editar</button>
+                            <button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button>
+                        </td></tr>`; 
                     });
                 }
                 const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
@@ -465,6 +554,95 @@
                 cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown();
             }
         }
+
+        // --- FUNCIONES DEL MODAL DE EDICIÓN ---
+        function abrirModalEditarCliente(id) {
+            const c = clientesRegistrados.find(x => x.id === id);
+            if(!c) return;
+
+            // Copiamos las listas desplegables para no tener que cargarlas de cero
+            document.getElementById('edit-cliente').innerHTML = document.getElementById('cliente-directorio').innerHTML;
+            document.getElementById('edit-accion').innerHTML = document.getElementById('accion-formacion-cliente').innerHTML;
+            document.getElementById('edit-facilitador').innerHTML = document.getElementById('facilitador-cliente').innerHTML;
+
+            // Separar fecha y hora
+            let fechaCompleta = c.fecha_atencion.endsWith('Z') ? c.fecha_atencion.slice(0, -1) : c.fecha_atencion;
+            let [fechaStr, horaStr] = fechaCompleta.split('T');
+
+            // Cargar datos en el formulario
+            document.getElementById('edit-id').value = c.id;
+            document.getElementById('edit-fecha').value = fechaStr;
+            document.getElementById('edit-hora').value = horaStr.substring(0, 5); // Tomar solo HH:MM
+            document.getElementById('edit-cliente').value = c.nombre_cliente;
+            document.getElementById('edit-lugar').value = c.lugar_atencion;
+            document.getElementById('edit-ciudad').value = c.ciudad;
+            document.getElementById('edit-participantes').value = c.participantes;
+            document.getElementById('edit-accion').value = c.accion_formacion;
+            document.getElementById('edit-duracion').value = c.duracion_curso || '';
+            
+            // Buscar el facilitador_id correcto en la lista
+            let facSelect = document.getElementById('edit-facilitador');
+            for(let i=0; i<facSelect.options.length; i++) {
+                if(facSelect.options[i].text === c.facilitador) {
+                    facSelect.selectedIndex = i; break;
+                }
+            }
+            
+            document.getElementById('edit-estatus').value = c.estatus;
+
+            // Mostrar el modal
+            document.getElementById('modal-editar-cliente').classList.add('active');
+        }
+
+        function cerrarModalEditar() {
+            document.getElementById('modal-editar-cliente').classList.remove('active');
+        }
+
+        document.getElementById('form-editar-cliente').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.textContent = "Actualizando..."; btn.disabled = true;
+
+            let fechaFormateada = document.getElementById('edit-fecha').value + "T" + document.getElementById('edit-hora').value + ":00";
+            let selectFac = document.getElementById('edit-facilitador');
+            let facId = selectFac.value;
+            let facNombre = selectFac.options[selectFac.selectedIndex].text;
+
+            try {
+                const res = await fetch('/api/clientes', { 
+                    method: 'PUT', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({
+                        id: document.getElementById('edit-id').value,
+                        fecha_atencion: fechaFormateada,
+                        nombre_cliente: document.getElementById('edit-cliente').value, 
+                        lugar_atencion: document.getElementById('edit-lugar').value, 
+                        ciudad: document.getElementById('edit-ciudad').value,
+                        participantes: document.getElementById('edit-participantes').value,
+                        duracion_curso: document.getElementById('edit-duracion').value,
+                        accion_formacion: document.getElementById('edit-accion').value, 
+                        facilitador: facNombre, 
+                        facilitador_id: facId,
+                        estatus: document.getElementById('edit-estatus').value
+                    })
+                });
+                
+                if (res.ok) { 
+                    alert("Formación actualizada correctamente."); 
+                    cerrarModalEditar();
+                    cargarDatosGestion(); 
+                    cargarProgramasDropdown();
+                } else { 
+                    const data = await res.json(); 
+                    alert(data.error || "Error al actualizar."); 
+                }
+            } catch (error) { 
+                alert("Error de conexión."); 
+            } finally { 
+                btn.textContent = "Actualizar Formación"; 
+                btn.disabled = false; 
+            }
+        });
 
         inicializarFechas(); cargarPersonal(); cargarDirectorio(); cargarProgramasDropdown(); cargarFormaciones();
     </script>
