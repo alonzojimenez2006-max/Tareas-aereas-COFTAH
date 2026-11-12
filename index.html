@@ -18,7 +18,15 @@
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
         .header-derecha { display: flex; align-items: center; gap: 20px; }
         
-        .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 10px; }
+        /* NUEVO: ESTILOS DEL BOTÓN DE SINCRONIZACIÓN MANUAL */
+        .btn-sincronizar { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 1px solid var(--acento-amarillo); padding: 10px 18px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; text-transform: uppercase; }
+        .btn-sincronizar:hover { background-color: var(--acento-amarillo); color: #000; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
+        .btn-sincronizar:active { transform: scale(0.95); }
+        .btn-sincronizar:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .icono-girar { animation: rotar 1s linear infinite; }
+        @keyframes rotar { 100% { transform: rotate(360deg); } }
+
+        .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 10px; min-width: 140px; }
         .punto-verde { width: 10px; height: 10px; background-color: var(--urgencia-baja); border-radius: 50%; box-shadow: 0 0 8px var(--urgencia-baja); animation: titilar 2s infinite; }
         @keyframes titilar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
@@ -51,7 +59,6 @@
         .fila-caducada { background-color: rgba(255, 51, 102, 0.12) !important; border-left: 4px solid var(--urgencia-critica) !important; opacity: 0.85; }
         .fila-caducada:hover { background-color: rgba(255, 51, 102, 0.22) !important; opacity: 1; }
 
-        /* NUEVO: ESTILOS PARA FILAS CANCELADAS */
         .estatus-cancelado { background-color: var(--cancelado); color: white; }
         .fila-cancelada { background-color: rgba(255,255,255,0.02) !important; border-left: 4px solid var(--cancelado) !important; opacity: 0.4; filter: grayscale(100%); }
         .fila-cancelada:hover { opacity: 0.6; }
@@ -114,8 +121,13 @@
             </div>
         </div>
         <div class="header-derecha">
+            <!-- BOTÓN DE SINCRONIZACIÓN MANUAL -->
+            <button id="btn-sincronizar" class="btn-sincronizar" onclick="cargarDatos()">
+                <span id="icono-sync">🔄</span> Sincronizar
+            </button>
+
             <div class="estado-conexion" id="estado-conexion">
-                <div class="punto-verde"></div> Conectado
+                <div class="punto-verde"></div> <span id="texto-conexion">Conectado</span>
             </div>
             <div class="reloj">
                 <span id="dia-actual-header">FECHA</span>
@@ -243,7 +255,13 @@
 
         async function cargarDatos() {
             const ind = document.getElementById('estado-conexion');
-            ind.innerHTML = `<div class="punto-verde" style="background-color: var(--acento-amarillo); box-shadow: 0 0 8px var(--acento-amarillo);"></div> Actualizando...`;
+            const btnSinc = document.getElementById('btn-sincronizar');
+            const iconoSync = document.getElementById('icono-sync');
+            
+            // Estado de carga visual
+            ind.innerHTML = `<div class="punto-verde" style="background-color: var(--acento-amarillo); box-shadow: 0 0 8px var(--acento-amarillo);"></div> <span style="color: var(--acento-amarillo);">Descargando...</span>`;
+            btnSinc.disabled = true;
+            iconoSync.classList.add('icono-girar');
             
             try {
                 const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' } };
@@ -295,9 +313,17 @@
                 }
                 
                 renderizarVistas();
-                setTimeout(() => { ind.innerHTML = `<div class="punto-verde"></div> Conectado`; }, 1000);
+                
+                // Confirmación de éxito
+                let horaF = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute:'2-digit' });
+                ind.innerHTML = `<div class="punto-verde"></div> <span style="color: var(--urgencia-baja);">Act. ${horaF}</span>`;
+                btnSinc.disabled = false;
+                iconoSync.classList.remove('icono-girar');
+                
             } catch (error) {
-                ind.innerHTML = `<div class="punto-verde" style="background-color: var(--urgencia-critica); box-shadow: 0 0 8px var(--urgencia-critica);"></div> Desconectado`;
+                ind.innerHTML = `<div class="punto-verde" style="background-color: var(--urgencia-critica); box-shadow: 0 0 8px var(--urgencia-critica);"></div> <span style="color: var(--urgencia-critica);">Error de red</span>`;
+                btnSinc.disabled = false;
+                iconoSync.classList.remove('icono-girar');
             }
         }
 
@@ -360,7 +386,6 @@
                     let claseEstatus = `estatus-${c.estatus}`;
                     let claseFilaExtra = '';
                     
-                    // --- NUEVA LÓGICA DE PRIORIDAD PARA EL ESTATUS CANCELADO ---
                     if (c.estatus === 'cancelado') {
                         estatusFinal = 'CANCELADA';
                         claseEstatus = 'estatus-cancelado';
@@ -620,8 +645,11 @@
             });
         }
 
-        inicializarFechas(); cargarDatos();
-        setInterval(cargarDatos, 15000); setInterval(verificarTiempos, 10000);
+        // ELIMINADA LA RECARGA AUTOMÁTICA DE LA BASE DE DATOS (setInterval de 15 segundos)
+        inicializarFechas(); cargarDatos(); 
+        
+        // Mantenemos solo el reloj interno que evalúa las tareas para alertas locales (no consume base de datos)
+        setInterval(verificarTiempos, 10000); 
     </script>
 </body>
 </html>
