@@ -8,7 +8,7 @@ const pool = new Pool({
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS'); // Añadido PUT
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         }
         
         if (req.method === 'POST') {
-            let { fechas_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso } = req.body;
+            let { fechas_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso, forzar } = req.body;
             
             if (!fechas_atencion || fechas_atencion.length === 0) {
                 return res.status(400).json({ error: 'Se requiere al menos una fecha.' });
@@ -41,14 +41,21 @@ export default async function handler(req, res) {
             const idFacilitador = parseInt(facilitador_id) || null;
             const duracionFinal = duracion_curso || '-'; 
 
+            // VERIFICACIÓN DE CHOQUE DE FECHAS
             for (let fecha of fechas_atencion) {
                 const validacionTurno = await pool.query(
                     `SELECT id FROM clientes_agenda WHERE facilitador = $1 AND DATE(fecha_atencion) = DATE($2)`,
                     [facilitador, fecha]
                 );
-                if (validacionTurno.rows.length > 0) {
-                    let fechaCorta = fecha.split('T')[0];
-                    return res.status(400).json({ error: `El facilitador ${facilitador} ya tiene una actividad el ${fechaCorta}.` });
+                
+                // Si hay choque y NO hemos forzado el guardado, pedimos autorización
+                if (validacionTurno.rows.length > 0 && !forzar) {
+                    let d = new Date(fecha);
+                    let fechaCorta = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+                    return res.status(409).json({ 
+                        confirmacion_requerida: true, 
+                        error: `⚠️ AUTORIZACIÓN REQUERIDA\n\nEl facilitador ${facilitador} ya tiene otra formación asignada el día ${fechaCorta}.\n\n¿Autorizas asignarle esta nueva formación para el mismo día?` 
+                    });
                 }
             }
             
@@ -65,9 +72,8 @@ export default async function handler(req, res) {
             return res.status(201).json(registrosCreados);
         }
 
-        // NUEVO MÉTODO PARA EDITAR (ACTUALIZAR)
         if (req.method === 'PUT') {
-            const { id, fecha_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso } = req.body;
+            const { id, fecha_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso, forzar } = req.body;
             
             if (!id) return res.status(400).json({ error: 'El ID es obligatorio para editar' });
 
@@ -75,26 +81,29 @@ export default async function handler(req, res) {
             const idFacilitador = parseInt(facilitador_id) || null;
             const duracionFinal = duracion_curso || '-';
 
+            // VERIFICACIÓN DE CHOQUE AL EDITAR (Excluyendo la formación actual)
+            const validacionTurno = await pool.query(
+                `SELECT id FROM clientes_agenda WHERE facilitador = $1 AND DATE(fecha_atencion) = DATE($2) AND id != $3`,
+                [facilitador, fecha_atencion, id]
+            );
+            
+            if (validacionTurno.rows.length > 0 && !forzar) {
+                let d = new Date(fecha_atencion);
+                let fechaCorta = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+                return res.status(409).json({ 
+                    confirmacion_requerida: true, 
+                    error: `⚠️ AUTORIZACIÓN REQUERIDA\n\nEl facilitador ${facilitador} ya tiene otra formación distinta asignada el día ${fechaCorta}.\n\n¿Autorizas asignarle esta formación doble?` 
+                });
+            }
+
             const result = await pool.query(
                 `UPDATE clientes_agenda 
-                 SET fecha_atencion = $1, 
-                     nombre_cliente = $2, 
-                     lugar_atencion = $3, 
-                     ciudad = $4, 
-                     accion_formacion = $5, 
-                     facilitador = $6, 
-                     facilitador_id = $7, 
-                     estatus = $8, 
-                     participantes = $9, 
-                     duracion_curso = $10
+                 SET fecha_atencion = $1, nombre_cliente = $2, lugar_atencion = $3, ciudad = $4, accion_formacion = $5, facilitador = $6, facilitador_id = $7, estatus = $8, participantes = $9, duracion_curso = $10
                  WHERE id = $11 RETURNING *`,
                 [fecha_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, idFacilitador, estatus, cantParticipantes, duracionFinal, id]
             );
 
-            if (result.rowCount === 0) {
-                return res.status(404).json({ error: 'Registro no encontrado en la base de datos' });
-            }
-
+            if (result.rowCount === 0) return res.status(404).json({ error: 'Registro no encontrado en la base de datos' });
             return res.status(200).json(result.rows[0]);
         }
         
