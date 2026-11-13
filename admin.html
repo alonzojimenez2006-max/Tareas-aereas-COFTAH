@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Dashboard COFTAH</title>
+    
+    <!-- LIBRERÍAS PARA EL BUSCADOR EN LOS SELECTORES (Select2) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <style>
         :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D; --borde-input: #234E8A; --btn-borrar: #FF3366; --btn-editar: #00BFFF; --btn-restaurar: #2E8B57; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
@@ -21,7 +27,18 @@
         .row-group { display: flex; gap: 15px; margin-bottom: 20px; }
         .row-group > div { flex: 1; }
         label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
+        
         input, select, textarea { width: 100%; padding: 12px; background-color: var(--input-bg); border: 1px solid var(--borde-input); border-radius: 6px; color: var(--texto-principal); font-size: 1rem; outline: none; }
+        
+        /* ESTILOS PERSONALIZADOS PARA EL BUSCADOR SELECT2 (Tema Oscuro COFTAH) */
+        .select2-container--default .select2-selection--single { background-color: var(--input-bg); border: 1px solid var(--borde-input); height: 45px; border-radius: 6px; }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--texto-principal); line-height: 45px; padding-left: 12px; font-size: 1rem; }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 43px; right: 10px; }
+        .select2-dropdown { background-color: var(--bg-paneles); border: 1px solid var(--acento-amarillo); color: var(--texto-principal); }
+        .select2-search--dropdown .select2-search__field { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--borde-input); padding: 8px; border-radius: 4px; }
+        .select2-results__option--selected { background-color: rgba(255, 215, 0, 0.2) !important; color: var(--acento-amarillo); font-weight: bold; }
+        .select2-results__option--highlighted.select2-results__option--selectable { background-color: var(--acento-amarillo) !important; color: #000 !important; }
+
         .radio-group { display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px; }
         .tabla-gestion { width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
         .tabla-gestion th, .tabla-gestion td { padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input); vertical-align: middle; }
@@ -44,7 +61,7 @@
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
         .buscador-contenedor { background-color: rgba(255, 215, 0, 0.1); border: 1px solid var(--acento-amarillo); padding: 15px; border-radius: 8px; margin-bottom: 25px; }
-        .buscador-contenedor input { background-color: transparent; border: none; color: white; font-size: 1.1rem; width: 100%; }
+        .buscador-contenedor input { background-color: transparent; border: none; color: white; font-size: 1.1rem; width: 100%; outline: none; }
         .buscador-contenedor input::placeholder { color: var(--texto-secundario); }
 
         .avatar-mini { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); margin-right: 10px; display: inline-block; vertical-align: middle; background-color: white;}
@@ -77,7 +94,7 @@
         <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
     </div>
 
-    <!-- VISTA CLIENTES (PROGRAMAR FORMACIÓN) -->
+    <!-- VISTA PROGRAMAR FORMACIÓN -->
     <div class="vista active" id="vista-clientes">
         <h2 class="panel-titulo">Datos de la Formación</h2>
         <form id="form-cliente">
@@ -96,7 +113,7 @@
             
             <div class="form-group">
                 <label>Cliente / Empresa</label>
-                <select id="cliente-directorio" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
+                <select id="cliente-directorio" class="select-buscador" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
             </div>
             
             <div class="row-group">
@@ -108,7 +125,7 @@
             <div class="row-group">
                 <div style="flex: 3;">
                     <label>Acción de Formación</label>
-                    <select id="accion-formacion-cliente" required>
+                    <select id="accion-formacion-cliente" class="select-buscador" required>
                         <option value="" disabled selected>Cargando formaciones...</option>
                     </select>
                 </div>
@@ -118,7 +135,7 @@
                 </div>
             </div>
             
-            <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" required><option value="" disabled selected>Cargando personal...</option></select></div>
+            <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" class="select-buscador" required><option value="" disabled selected>Cargando personal...</option></select></div>
             <div class="form-group">
                 <label>Estatus inicial</label>
                 <select id="estatus-cliente" required>
@@ -128,7 +145,7 @@
                     <option value="cancelado">Cancelada</option>
                 </select>
             </div>
-            <button type="submit" class="btn-submit">Guardar Formación</button>
+            <button type="submit" id="btn-guardar-formacion" class="btn-submit">Guardar Formación</button>
         </form>
     </div>
 
@@ -151,8 +168,8 @@
         <h2 class="panel-titulo">Asignación de Tareas</h2>
         <form id="form-tarea">
             <div class="form-group"><label>Tipo de Función</label><div class="radio-group"><label><input type="radio" name="tipo-tarea" value="aislada" checked> Aislada</label><label><input type="radio" name="tipo-tarea" value="vinculada"> Vincular</label></div></div>
-            <div class="form-group" id="grupo-programa-vinculado"><label>Programa Activo</label><select id="programa-vinculado"></select></div>
-            <div class="form-group"><label>Responsable</label><select id="responsable-tarea" required><option value="" disabled selected>Cargando personal...</option></select></div>
+            <div class="form-group" id="grupo-programa-vinculado"><label>Programa Activo</label><select id="programa-vinculado" class="select-buscador"></select></div>
+            <div class="form-group"><label>Responsable</label><select id="responsable-tarea" class="select-buscador" required><option value="" disabled selected>Cargando personal...</option></select></div>
             <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
             <div class="row-group">
                 <div><label>Fecha Límite</label><input type="date" id="fecha-tarea" required></div>
@@ -210,7 +227,7 @@
     <!-- VISTA GESTIÓN GENERAL -->
     <div class="vista" id="vista-gestion">
         <div class="buscador-contenedor">
-            <input type="text" id="buscador-general" placeholder="🔍 Buscar por fecha (ej: 15/10), nombre, acción, estatus..." onkeyup="filtrarGestion()">
+            <input type="text" id="buscador-general" placeholder="🔍 Buscar rápidamente por fecha, cliente, acción..." onkeyup="filtrarGestion()">
         </div>
         <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
         <table class="tabla-gestion">
@@ -240,7 +257,8 @@
                     </div>
                     <div class="form-group">
                         <label>Cliente / Empresa</label>
-                        <select id="edit-cliente" required></select>
+                        <!-- APLICADO EL BUSCADOR TAMBIÉN EN EL MODAL -->
+                        <select id="edit-cliente" class="select-buscador-modal" required></select>
                     </div>
                     <div class="row-group">
                         <div style="flex: 2;"><label>Lugar</label><input type="text" id="edit-lugar" required></div>
@@ -250,7 +268,7 @@
                     <div class="row-group">
                         <div style="flex: 3;">
                             <label>Acción de Formación</label>
-                            <select id="edit-accion" required></select>
+                            <select id="edit-accion" class="select-buscador-modal" required></select>
                         </div>
                         <div style="flex: 1;">
                             <label>Duración de AF</label>
@@ -259,7 +277,7 @@
                     </div>
                     <div class="form-group">
                         <label>Facilitador</label>
-                        <select id="edit-facilitador" required></select>
+                        <select id="edit-facilitador" class="select-buscador-modal" required></select>
                     </div>
                     <div class="form-group">
                         <label>Estatus</label>
@@ -274,7 +292,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalEditar()">Cancelar</button>
-                <!-- SE AGREGÓ UN ID AL BOTÓN PARA QUE JAVASCRIPT LO ENCUENTRE SIEMPRE -->
                 <button type="submit" form="form-editar-cliente" id="btn-actualizar-modal" class="btn-modal btn-modal-guardar">Actualizar Formación</button>
             </div>
         </div>
@@ -282,6 +299,17 @@
 
     <script>
         let clientesRegistrados = [];
+
+        // INICIALIZACIÓN DE BUSCADORES EN LISTAS DESPLEGABLES (Select2)
+        function inicializarBuscadores() {
+            $('.select-buscador').select2({ width: '100%', placeholder: 'Escribe para buscar...' });
+            
+            // Para el modal, el buscador necesita saber dónde adherirse visualmente
+            $('.select-buscador-modal').select2({ 
+                width: '100%', 
+                dropdownParent: $('#modal-editar-cliente')
+            });
+        }
 
         function cambiarFormulario(vistaId) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
@@ -338,7 +366,7 @@
                     const sel = document.getElementById('accion-formacion-cliente');
                     const tb = document.getElementById('tbody-formaciones');
                     
-                    sel.innerHTML = '<option value="" disabled selected>Seleccione una formación...</option>';
+                    sel.innerHTML = '<option value="" disabled selected>Selecciona o busca...</option>';
                     tb.innerHTML = '';
                     
                     if(formaciones.length === 0) tb.innerHTML = '<tr><td style="color:var(--texto-secundario);">No hay formaciones registradas</td></tr>';
@@ -347,6 +375,7 @@
                         sel.innerHTML += `<option value="${f.nombre}">${f.nombre}</option>`;
                         tb.innerHTML += `<tr><td>${f.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-borrar" onclick="borrarFormacion(${f.id})">Eliminar</button></td></tr>`;
                     });
+                    $('#accion-formacion-cliente').trigger('change');
                 }
             } catch (error) {}
         }
@@ -374,7 +403,7 @@
                     const sel = document.getElementById('cliente-directorio');
                     const tb = document.getElementById('tbody-empresas');
                     
-                    sel.innerHTML = '<option value="" disabled selected>Seleccione empresa del directorio...</option>';
+                    sel.innerHTML = '<option value="" disabled selected>Selecciona o busca...</option>';
                     tb.innerHTML = '';
                     
                     if(empresas.length === 0) tb.innerHTML = '<tr><td style="color:var(--texto-secundario);">No hay empresas registradas</td></tr>';
@@ -383,6 +412,7 @@
                         sel.innerHTML += `<option value="${e.nombre}">${e.nombre}</option>`;
                         tb.innerHTML += `<tr><td><img src="${e.logo_url}" class="avatar-mini">${e.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-borrar" onclick="borrarEmpresa(${e.id})">Eliminar</button></td></tr>`;
                     });
+                    $('#cliente-directorio').trigger('change');
                 }
             } catch (error) {}
         }
@@ -446,7 +476,7 @@
 
         function actualizarSelectoresPersonal() {
             const selFac = document.getElementById('facilitador-cliente'); const selResp = document.getElementById('responsable-tarea');
-            selFac.innerHTML = '<option value="" disabled selected>Seleccione facilitador...</option>'; selResp.innerHTML = '<option value="" disabled selected>Seleccione responsable...</option>';
+            selFac.innerHTML = '<option value="" disabled selected>Selecciona o busca...</option>'; selResp.innerHTML = '<option value="" disabled selected>Selecciona o busca...</option>';
             
             personalCompleto.forEach(p => {
                 if (!enPapelera.has(p.id)) {
@@ -454,6 +484,8 @@
                     if(p.rol === 'responsable') selResp.innerHTML += `<option value="${p.nombre}">${p.nombre}</option>`;
                 }
             });
+            $('#facilitador-cliente').trigger('change');
+            $('#responsable-tarea').trigger('change');
         }
 
         document.getElementById('form-personal').addEventListener('submit', async function(e) {
@@ -480,16 +512,19 @@
                 const res = await fetch('/api/clientes?t='+new Date().getTime(), { cache: 'no-store' }); 
                 clientesRegistrados = await res.json();
                 const sel = document.getElementById('programa-vinculado');
-                sel.innerHTML = '<option value="" disabled selected>Selecciona una formación...</option>';
+                sel.innerHTML = '<option value="" disabled selected>Busca y vincula a una formación...</option>';
                 clientesRegistrados.forEach(c => {
                     let d = new Date(c.fecha_atencion);
                     sel.innerHTML += `<option value="${c.id}">${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} - ${c.nombre_cliente} (${c.accion_formacion})</option>`
                 });
+                $('#programa-vinculado').trigger('change');
             } catch (error) {}
         }
 
-        document.getElementById('form-cliente').addEventListener('submit', async function(e) {
-            e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
+        // --- SISTEMA INTELIGENTE DE GUARDADO (PIDE PERMISO SI HAY CHOQUE) ---
+        async function guardarFormacionPrincipal(forzarGuardado = false) {
+            const btn = document.getElementById('btn-guardar-formacion');
+            btn.textContent = "Guardando..."; btn.disabled = true;
 
             let inputsFechas = document.querySelectorAll('.fecha-multi');
             let arregloFechas = [];
@@ -501,21 +536,62 @@
             let facNombre = selectFac.options[selectFac.selectedIndex].text;
 
             try {
-                const res = await fetch('/api/clientes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    fechas_atencion: arregloFechas,  
-                    nombre_cliente: document.getElementById('cliente-directorio').value, 
-                    lugar_atencion: document.getElementById('lugar-cliente').value, 
-                    ciudad: document.getElementById('ciudad-cliente').value,
-                    participantes: document.getElementById('participantes-cliente').value,
-                    duracion_curso: document.getElementById('duracion-cliente').value,
-                    accion_formacion: document.getElementById('accion-formacion-cliente').value, 
-                    facilitador: facNombre, 
-                    facilitador_id: facId,
-                    estatus: document.getElementById('estatus-cliente').value
-                })});
-                if (res.ok) { alert("Guardado exitosamente."); document.getElementById('form-cliente').reset(); inicializarFechas(); cargarProgramasDropdown(); cargarDatosGestion(); } 
-                else { const data = await res.json(); alert(data.error || "Error al guardar."); }
-            } catch (error) { alert("Error de red."); } finally { btn.textContent = "Guardar Formación"; btn.disabled = false; }
+                const res = await fetch('/api/clientes', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({
+                        fechas_atencion: arregloFechas,  
+                        nombre_cliente: document.getElementById('cliente-directorio').value, 
+                        lugar_atencion: document.getElementById('lugar-cliente').value, 
+                        ciudad: document.getElementById('ciudad-cliente').value,
+                        participantes: document.getElementById('participantes-cliente').value,
+                        duracion_curso: document.getElementById('duracion-cliente').value,
+                        accion_formacion: document.getElementById('accion-formacion-cliente').value, 
+                        facilitador: facNombre, 
+                        facilitador_id: facId,
+                        estatus: document.getElementById('estatus-cliente').value,
+                        forzar: forzarGuardado // Envía la autorización
+                    })
+                });
+                
+                if (res.status === 409) {
+                    const data = await res.json();
+                    if (data.confirmacion_requerida) {
+                        // Si la API detecta choque, lanza la pregunta
+                        if (confirm(data.error)) {
+                            // Si el jefe dice SÍ, vuelve a llamar a la función pero forzando el guardado
+                            guardarFormacionPrincipal(true);
+                            return; 
+                        } else {
+                            // Si dice NO, se cancela todo
+                            alert("Guardado cancelado exitosamente.");
+                        }
+                    }
+                } else if (res.ok) { 
+                    alert("Guardado exitosamente."); 
+                    document.getElementById('form-cliente').reset(); 
+                    inicializarFechas(); 
+                    // Limpia los buscadores visualmente
+                    $('#cliente-directorio').val('').trigger('change');
+                    $('#accion-formacion-cliente').val('').trigger('change');
+                    $('#facilitador-cliente').val('').trigger('change');
+                    
+                    cargarProgramasDropdown(); 
+                    cargarDatosGestion(); 
+                } else { 
+                    const data = await res.json(); 
+                    alert(data.error || "Error al guardar."); 
+                }
+            } catch (error) { 
+                alert("Error de conexión al servidor."); 
+            } finally { 
+                btn.textContent = "Guardar Formación"; btn.disabled = false; 
+            }
+        }
+
+        document.getElementById('form-cliente').addEventListener('submit', function(e) {
+            e.preventDefault(); 
+            guardarFormacionPrincipal(false); // Primer intento sin forzar
         });
 
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
@@ -525,7 +601,11 @@
             
             try {
                 const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: fechaFormateada, urgencia: document.getElementById('urgencia-tarea').value })});
-                if (res.ok) { alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); cargarDatosGestion(); } else alert("Error al delegar función.");
+                if (res.ok) { 
+                    alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); cargarDatosGestion(); 
+                    $('#responsable-tarea').val('').trigger('change');
+                    $('#programa-vinculado').val('').trigger('change');
+                } else alert("Error al delegar función.");
             } catch (error) {} finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
         });
 
@@ -534,7 +614,12 @@
                 const ts = new Date().getTime(); const conf = { cache: 'no-store' };
                 const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
                 if(resC.ok) {
-                    clientesRegistrados = await resC.json(); tbC.innerHTML = '';
+                    clientesRegistrados = await resC.json(); 
+                    
+                    // REORDENAMIENTO: Las formaciones más nuevas (futuro/recientes) van arriba
+                    clientesRegistrados.sort((a, b) => new Date(b.fecha_atencion) - new Date(a.fecha_atencion));
+                    
+                    tbC.innerHTML = '';
                     if(clientesRegistrados.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
                     clientesRegistrados.forEach(c => { 
                         let d = new Date(c.fecha_atencion); 
@@ -547,7 +632,12 @@
                 }
                 const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
                 if(resT.ok) {
-                    const tareas = await resT.json(); tbT.innerHTML = '';
+                    let tareas = await resT.json(); 
+                    
+                    // REORDENAMIENTO: Las misiones más nuevas van arriba
+                    tareas.sort((a, b) => new Date(b.fecha_limite) - new Date(a.fecha_limite));
+                    
+                    tbT.innerHTML = '';
                     if(tareas.length===0) tbT.innerHTML='<tr><td colspan="4">Sin tareas</td></tr>';
                     tareas.forEach(t => tbT.innerHTML += `<tr><td>${t.responsable}</td><td>${t.descripcion.substring(0,25)}...</td><td>${t.urgencia.toUpperCase()}</td><td><button class="btn-accion btn-borrar" onclick="borrarRegistro('tareas', ${t.id})">Borrar</button></td></tr>`);
                 }
@@ -566,6 +656,7 @@
             const c = clientesRegistrados.find(x => x.id === id);
             if(!c) return;
 
+            // Inyectamos las listas en el modal
             document.getElementById('edit-cliente').innerHTML = document.getElementById('cliente-directorio').innerHTML;
             document.getElementById('edit-accion').innerHTML = document.getElementById('accion-formacion-cliente').innerHTML;
             document.getElementById('edit-facilitador').innerHTML = document.getElementById('facilitador-cliente').innerHTML;
@@ -576,12 +667,15 @@
             document.getElementById('edit-id').value = c.id;
             document.getElementById('edit-fecha').value = fechaStr;
             document.getElementById('edit-hora').value = horaStr.substring(0, 5); 
-            document.getElementById('edit-cliente').value = c.nombre_cliente;
             document.getElementById('edit-lugar').value = c.lugar_atencion;
             document.getElementById('edit-ciudad').value = c.ciudad;
             document.getElementById('edit-participantes').value = c.participantes;
-            document.getElementById('edit-accion').value = c.accion_formacion;
             document.getElementById('edit-duracion').value = c.duracion_curso || '';
+            document.getElementById('edit-estatus').value = c.estatus;
+
+            // Sincronizamos Select2 con los valores previos
+            $('#edit-cliente').val(c.nombre_cliente).trigger('change');
+            $('#edit-accion').val(c.accion_formacion).trigger('change');
             
             let facSelect = document.getElementById('edit-facilitador');
             for(let i=0; i<facSelect.options.length; i++) {
@@ -589,8 +683,7 @@
                     facSelect.selectedIndex = i; break;
                 }
             }
-            
-            document.getElementById('edit-estatus').value = c.estatus;
+            $('#edit-facilitador').trigger('change');
 
             document.getElementById('modal-editar-cliente').classList.add('active');
         }
@@ -599,9 +692,8 @@
             document.getElementById('modal-editar-cliente').classList.remove('active');
         }
 
-        // --- SOLUCIÓN APLICADA AQUÍ: EL BOTÓN AHORA SE BUSCA DIRECTO POR SU ID ---
-        document.getElementById('form-editar-cliente').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // SISTEMA DE EDICIÓN INTELIGENTE (PIDE PERMISO SI HAY CHOQUE AL EDITAR)
+        async function editarFormacionPrincipal(forzarGuardado = false) {
             const btn = document.getElementById('btn-actualizar-modal');
             btn.textContent = "Actualizando..."; btn.disabled = true;
 
@@ -625,11 +717,22 @@
                         accion_formacion: document.getElementById('edit-accion').value, 
                         facilitador: facNombre, 
                         facilitador_id: facId,
-                        estatus: document.getElementById('edit-estatus').value
+                        estatus: document.getElementById('edit-estatus').value,
+                        forzar: forzarGuardado // Envía la autorización
                     })
                 });
                 
-                if (res.ok) { 
+                if (res.status === 409) {
+                    const data = await res.json();
+                    if (data.confirmacion_requerida) {
+                        if (confirm(data.error)) {
+                            editarFormacionPrincipal(true); // Intento forzado
+                            return; 
+                        } else {
+                            alert("Modificación cancelada exitosamente.");
+                        }
+                    }
+                } else if (res.ok) { 
                     alert("Formación actualizada correctamente."); 
                     cerrarModalEditar();
                     cargarDatosGestion(); 
@@ -639,14 +742,27 @@
                     alert(data.error || "Error al actualizar."); 
                 }
             } catch (error) { 
-                alert("Error de conexión."); 
+                alert("Error de conexión al servidor."); 
             } finally { 
                 btn.textContent = "Actualizar Formación"; 
                 btn.disabled = false; 
             }
+        }
+
+        document.getElementById('form-editar-cliente').addEventListener('submit', function(e) {
+            e.preventDefault();
+            editarFormacionPrincipal(false);
         });
 
-        inicializarFechas(); cargarPersonal(); cargarDirectorio(); cargarProgramasDropdown(); cargarFormaciones();
+        // ARRANCAR EL SISTEMA
+        $(document).ready(function() {
+            inicializarBuscadores();
+            inicializarFechas(); 
+            cargarPersonal(); 
+            cargarDirectorio(); 
+            cargarProgramasDropdown(); 
+            cargarFormaciones();
+        });
     </script>
 </body>
 </html>
