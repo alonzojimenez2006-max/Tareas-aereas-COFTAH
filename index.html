@@ -6,10 +6,15 @@
     <title>Dashboard COFTAH</title>
     <style>
         :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; --en-proceso: #00BFFF; --cancelado: #4B5563; }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-principal); color: var(--texto-principal); height: 100vh; display: flex; flex-direction: column; overflow: hidden; padding: 15px; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        
+        /* FIX DEFINITIVO PARA SMART TVS: Posición absoluta clava el marco a la pantalla física sin importar el zoom */
+        html, body { position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg-principal); color: var(--texto-principal); }
+        
+        body { padding: 15px; display: flex; flex-direction: column; }
+        
+        header { flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid var(--bg-paneles); }
         .brand { display: flex; align-items: center; gap: 15px; }
         .brand img { height: 45px; width: auto; }
         .logo-blanco { filter: brightness(0) invert(1); }
@@ -18,7 +23,6 @@
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
         .header-derecha { display: flex; align-items: center; gap: 20px; }
         
-        /* NUEVO: ESTILOS DEL BOTÓN DE SINCRONIZACIÓN MANUAL */
         .btn-sincronizar { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 1px solid var(--acento-amarillo); padding: 10px 18px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; text-transform: uppercase; }
         .btn-sincronizar:hover { background-color: var(--acento-amarillo); color: #000; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
         .btn-sincronizar:active { transform: scale(0.95); }
@@ -44,13 +48,28 @@
         .filtros-semanales select, .filtros-semanales input[type="date"] { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; }
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
-        .vista { display: none; background-color: var(--bg-paneles); flex: 1; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
-        .vista.active { display: flex; }
+        /* EL CONTENEDOR PRINCIPAL QUE AHORA LLENA TODO EL ESPACIO SIN CORTARSE */
+        .vista { 
+            display: none; 
+            background-color: var(--bg-paneles); 
+            flex: 1 1 auto; 
+            min-height: 0; 
+            border-radius: 12px; 
+            padding: 20px; 
+            flex-direction: column; 
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); 
+            overflow: hidden; 
+        }
+        .vista.active { display: flex !important; }
         
-        .fila-header, .fila-item { display: grid; gap: 10px; align-items: center; padding: 12px 15px; border-radius: 8px; }
+        /* NUEVA ESTRUCTURA DE TABLA ANTI-ZOOM CON CABECERA FIJA */
+        .tabla-wrapper { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-x: auto; width: 100%; }
+        .tabla-header-container { flex-shrink: 0; min-width: 1200px; padding-right: 8px; } /* padding-right compensa la barra de scroll */
+        .tabla-body-container { flex: 1 1 auto; min-height: 0; overflow-y: auto; min-width: 1200px; padding-right: 8px; }
         
-        .grid-clientes { grid-template-columns: 85px 40px 1fr 1fr 1fr 70px 6fr 70px 1.5fr 110px; }
-        .grid-tareas { grid-template-columns: 1.2fr 3fr 100px 120px 110px; }
+        .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
+        .grid-clientes { grid-template-columns: 1fr 0.5fr 2fr 1.5fr 1.5fr 0.8fr 4.5fr 1fr 1.5fr 1.2fr; }
+        .grid-tareas { grid-template-columns: 1.2fr 3fr 1fr 1.2fr 1.1fr; }
         
         .fila-header { font-size: 0.9rem; color: var(--texto-secundario); text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 10px; }
         .fila-item { background-color: rgba(255, 255, 255, 0.03); margin-bottom: 8px; transition: all 0.3s ease; cursor: pointer; border-left: 4px solid transparent; }
@@ -63,7 +82,7 @@
         .fila-cancelada { background-color: rgba(255,255,255,0.02) !important; border-left: 4px solid var(--cancelado) !important; opacity: 0.4; filter: grayscale(100%); }
         .fila-cancelada:hover { opacity: 0.6; }
 
-        .almanaque-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; padding-right: 10px; height: 100%; }
+        .almanaque-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; overflow-y: auto; padding-right: 10px; height: 100%; min-height: 0; }
         .mes-card { background-color: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 15px; }
         .mes-titulo { color: var(--acento-amarillo); font-weight: bold; text-align: center; margin-bottom: 10px; text-transform: uppercase; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
         .dias-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
@@ -89,8 +108,7 @@
         .estatus-en-proceso, .estatus-en_proceso { background-color: var(--en-proceso); color: #000; box-shadow: 0 0 12px var(--en-proceso); animation: pulsoAzul 1.5s infinite; }
         @keyframes pulsoAzul { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
         
-        .contenedor-lista { flex-grow: 1; overflow-y: auto; padding-right: 10px; }
-        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
@@ -121,7 +139,6 @@
             </div>
         </div>
         <div class="header-derecha">
-            <!-- BOTÓN DE SINCRONIZACIÓN MANUAL -->
             <button id="btn-sincronizar" class="btn-sincronizar" onclick="cargarDatos()">
                 <span id="icono-sync">🔄</span> Sincronizar
             </button>
@@ -167,29 +184,47 @@
         </div>
     </header>
 
+    <!-- VISTA 1: CRONOGRAMA DE ACTIVIDADES -->
     <div class="vista active" id="vista-clientes">
-        <div class="fila-header grid-clientes">
-            <div>Fecha y Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div style="text-align:center;">Duración de AF</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
+        <div class="tabla-wrapper">
+            <!-- CABECERA ESTÁTICA -->
+            <div class="tabla-header-container">
+                <div class="fila-header grid-clientes">
+                    <div>Fecha y Hora</div><div style="text-align:center;">Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div style="text-align:center;">Duración</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
+                </div>
+            </div>
+            <!-- CUERPO CON SCROLL VERTICAL INDEPENDIENTE -->
+            <div class="tabla-body-container" id="lista-clientes"></div>
         </div>
-        <div class="contenedor-lista" id="lista-clientes"></div>
     </div>
 
+    <!-- VISTA 2: CRONOGRAMA GENERAL -->
     <div class="vista" id="vista-general">
-        <div class="fila-header grid-clientes">
-            <div>Fecha y Hora</div><div>Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div style="text-align:center;">Duración de AF</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
+        <div class="tabla-wrapper">
+            <div class="tabla-header-container">
+                <div class="fila-header grid-clientes">
+                    <div>Fecha y Hora</div><div style="text-align:center;">Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div style="text-align:center;">Duración</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
+                </div>
+            </div>
+            <div class="tabla-body-container" id="lista-general"></div>
         </div>
-        <div class="contenedor-lista" id="lista-general"></div>
     </div>
 
+    <!-- VISTA 3: ALMANAQUE -->
     <div class="vista" id="vista-almanaque">
         <div class="almanaque-container" id="almanaque-container"></div>
     </div>
 
+    <!-- VISTA 4: TAREAS -->
     <div class="vista" id="vista-tareas">
-        <div class="fila-header grid-tareas">
-            <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div style="text-align:center;">Estatus</div>
+        <div class="tabla-wrapper">
+            <div class="tabla-header-container">
+                <div class="fila-header grid-tareas">
+                    <div>Responsable</div><div>Tarea Asignada</div><div>Hora Límite</div><div>Tiempo Restante</div><div style="text-align:center;">Estatus</div>
+                </div>
+            </div>
+            <div class="tabla-body-container" id="lista-tareas"></div>
         </div>
-        <div class="contenedor-lista" id="lista-tareas"></div>
     </div>
 
     <div class="modal-overlay" id="modal-tarea">
@@ -211,20 +246,15 @@
         document.body.addEventListener('click', function() {
             if ('speechSynthesis' in window) {
                 let msg = new SpeechSynthesisUtterance("");
-                msg.volume = 0; 
-                window.speechSynthesis.speak(msg);
+                msg.volume = 0; window.speechSynthesis.speak(msg);
             }
         }, { once: true });
 
         function hablar(texto, interrumpir = false) { 
             if ('speechSynthesis' in window) { 
-                if (interrumpir) {
-                    window.speechSynthesis.cancel(); 
-                }
+                if (interrumpir) window.speechSynthesis.cancel(); 
                 let m = new SpeechSynthesisUtterance(texto); 
-                m.lang = 'es-ES'; 
-                m.rate = 1.0; 
-                m.volume = 1.0;
+                m.lang = 'es-ES'; m.rate = 1.0; m.volume = 1.0;
                 window.speechSynthesis.speak(m); 
             } 
         }
@@ -258,7 +288,6 @@
             const btnSinc = document.getElementById('btn-sincronizar');
             const iconoSync = document.getElementById('icono-sync');
             
-            // Estado de carga visual
             ind.innerHTML = `<div class="punto-verde" style="background-color: var(--acento-amarillo); box-shadow: 0 0 8px var(--acento-amarillo);"></div> <span style="color: var(--acento-amarillo);">Descargando...</span>`;
             btnSinc.disabled = true;
             iconoSync.classList.add('icono-girar');
@@ -296,8 +325,7 @@
                         if (!clientesConocidos.has(c.id)) { 
                             let d = parseFechaLocal(c.fecha_atencion);
                             let fechaTexto = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-                            let msj = `Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`;
-                            hablar(msj); 
+                            hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`); 
                             clientesConocidos.add(c.id); 
                         }
                     });
@@ -314,7 +342,6 @@
                 
                 renderizarVistas();
                 
-                // Confirmación de éxito
                 let horaF = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute:'2-digit' });
                 ind.innerHTML = `<div class="punto-verde"></div> <span style="color: var(--urgencia-baja);">Act. ${horaF}</span>`;
                 btnSinc.disabled = false;
@@ -371,13 +398,11 @@
 
             let hoyReal = new Date();
             hoyReal.setHours(0,0,0,0);
-            let hoyString = `${hoyReal.getFullYear()}-${String(hoyReal.getMonth() + 1).padStart(2, '0')}-${String(hoyReal.getDate()).padStart(2, '0')}`;
 
             const mapearClientes = (lista, aplicarHoyFuerte) => {
                 return lista.map(c => {
                     let d = parseFechaLocal(c.fecha_atencion);
-                    let dSoloFecha = new Date(d);
-                    dSoloFecha.setHours(0,0,0,0);
+                    let dSoloFecha = new Date(d); dSoloFecha.setHours(0,0,0,0);
                     
                     let esEsteHoy = (dSoloFecha.getTime() === hoyReal.getTime());
                     let esPasado = (dSoloFecha.getTime() < hoyReal.getTime());
@@ -406,11 +431,8 @@
                     let horaTexto = d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
 
                     return `<div class="fila-item grid-clientes ${claseFilaExtra}">
-                        <div style="font-weight:bold; color:var(--acento-amarillo); line-height: 1.2;">
-                            ${fechaCorta}<br>
-                            <span style="font-size: 0.8rem; color: var(--texto-secundario);">${horaTexto}</span>
-                        </div>
-                        <div><img src="${logoVisual}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
+                        <div style="font-weight:bold; color:var(--acento-amarillo); line-height: 1.2;">${fechaCorta}<br><span style="font-size: 0.8rem; color: var(--texto-secundario);">${horaTexto}</span></div>
+                        <div style="text-align:center;"><img src="${logoVisual}" class="logo-cliente" onerror="this.src='COFTAH.png.png'"></div>
                         <div style="font-weight:bold; font-size:1.1rem;">${c.nombre_cliente}</div>
                         <div>${c.lugar_atencion}</div>
                         <div>${c.ciudad}</div>
@@ -423,6 +445,7 @@
                 }).join('');
             };
 
+            // VISTA 1: CRONOGRAMA DE ACTIVIDADES (Diario)
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
@@ -432,6 +455,7 @@
             if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones programadas para este día.</div>`;
             else contC.innerHTML = mapearClientes(filtC, true);
 
+            // VISTA 2: CRONOGRAMA GENERAL
             const contG = document.getElementById('lista-general');
             let filtG = clientes.filter(c => (filtroFac === 'TODOS' || c.facilitador === filtroFac));
             
@@ -449,10 +473,14 @@
                     else formacionesPasado.push(c);
                 });
                 
+                // REGLA MATEMÁTICA ESTRICTA: Las finalizadas (pasado) se ordenan con la más nueva arriba y la más vieja al fondo
+                formacionesPasado.sort((a, b) => parseFechaLocal(b.fecha_atencion) - parseFechaLocal(a.fecha_atencion));
+                
                 let listaOrdenada = [...formacionesHoy, ...formacionesFuturo, ...formacionesPasado];
                 contG.innerHTML = mapearClientes(listaOrdenada, true);
             }
 
+            // VISTA TAREAS
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
@@ -645,10 +673,7 @@
             });
         }
 
-        // ELIMINADA LA RECARGA AUTOMÁTICA DE LA BASE DE DATOS (setInterval de 15 segundos)
         inicializarFechas(); cargarDatos(); 
-        
-        // Mantenemos solo el reloj interno que evalúa las tareas para alertas locales (no consume base de datos)
         setInterval(verificarTiempos, 10000); 
     </script>
 </body>
