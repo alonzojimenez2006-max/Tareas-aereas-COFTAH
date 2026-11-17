@@ -9,7 +9,7 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         
-        /* FIX DEFINITIVO PARA SMART TVS: Posición absoluta clava el marco a la pantalla física sin importar el zoom */
+        /* FIX DEFINITIVO PARA SMART TVS */
         html, body { position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg-principal); color: var(--texto-principal); }
         
         body { padding: 15px; display: flex; flex-direction: column; }
@@ -39,32 +39,25 @@
         
         .menu-container { position: relative; }
         .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; padding: 0 10px; }
-        .menu-desplegable { display: none; position: absolute; top: 110%; right: 0; background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario); border-radius: 8px; padding: 15px; z-index: 1000; min-width: 260px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px; }
+        .menu-desplegable { display: none; position: absolute; top: 110%; right: 0; background-color: var(--bg-paneles); border: 1px solid var(--texto-secundario); border-radius: 8px; padding: 15px; z-index: 1000; min-width: 280px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); flex-direction: column; gap: 10px; }
         .menu-desplegable.show { display: flex; }
         .menu-item { background-color: transparent; color: var(--texto-secundario); border: none; padding: 12px; text-align: left; font-size: 1.1rem; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; }
         .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
         .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
+        
+        /* ESTILOS DEL NUEVO BUSCADOR Y FILTROS */
         .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
-        .filtros-semanales select, .filtros-semanales input[type="date"] { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; }
+        .filtros-semanales select, .filtros-semanales input[type="date"], .filtros-semanales input[type="text"] { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; outline: none; }
+        .filtros-semanales input[type="text"] { cursor: text; }
+        .filtros-semanales input[type="text"]::placeholder { color: var(--texto-secundario); font-weight: normal; }
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
-        /* EL CONTENEDOR PRINCIPAL QUE AHORA LLENA TODO EL ESPACIO SIN CORTARSE */
-        .vista { 
-            display: none; 
-            background-color: var(--bg-paneles); 
-            flex: 1 1 auto; 
-            min-height: 0; 
-            border-radius: 12px; 
-            padding: 20px; 
-            flex-direction: column; 
-            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); 
-            overflow: hidden; 
-        }
+        .vista { display: none; background-color: var(--bg-paneles); flex: 1 1 auto; min-height: 0; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex !important; }
         
-        /* NUEVA ESTRUCTURA DE TABLA ANTI-ZOOM CON CABECERA FIJA */
+        /* TABLA ANTI-ZOOM CON CABECERA FIJA */
         .tabla-wrapper { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-x: auto; width: 100%; }
-        .tabla-header-container { flex-shrink: 0; min-width: 1200px; padding-right: 8px; } /* padding-right compensa la barra de scroll */
+        .tabla-header-container { flex-shrink: 0; min-width: 1200px; padding-right: 8px; }
         .tabla-body-container { flex: 1 1 auto; min-height: 0; overflow-y: auto; min-width: 1200px; padding-right: 8px; }
         
         .fila-header, .fila-item { display: grid; gap: 15px; align-items: center; padding: 12px 15px; border-radius: 8px; }
@@ -151,6 +144,7 @@
                 <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
                 <span id="reloj-digital">00:00:00</span>
             </div>
+            
             <div class="menu-container">
                 <button id="btn-menu" class="btn-hamburguesa" onclick="toggleMenu()">&#9776;</button>
                 <div id="menu-desplegable" class="menu-desplegable">
@@ -160,11 +154,26 @@
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     
                     <div class="filtros-semanales">
+                        
+                        <!-- NUEVO: BUSCADOR DE TEXTO LIBRE -->
+                        <div id="contenedor-buscador-index">
+                            <label>Buscador Rápido</label>
+                            <input type="text" id="buscador-index" placeholder="Cliente, acción o facilitador..." onkeyup="renderizarVistas()">
+                        </div>
+
                         <div id="contenedor-filtro-dia">
                             <label>Filtrar por Día</label>
                             <input type="date" id="filtro-dia" onchange="renderizarVistas()">
                         </div>
                         
+                        <!-- NUEVO: FILTRO POR EMPRESA (CLIENTE) -->
+                        <div id="contenedor-filtro-cliente" style="display: block; margin-top: 10px;">
+                            <label>Filtrar por Empresa</label>
+                            <select id="filtro-cliente" onchange="renderizarVistas()">
+                                <option value="TODOS">Todas las empresas</option>
+                            </select>
+                        </div>
+
                         <div id="contenedor-filtro-facilitador" style="display: block; margin-top: 10px;">
                             <label>Filtrar por Facilitador</label>
                             <select id="filtro-facilitador" onchange="renderizarVistas()">
@@ -187,13 +196,11 @@
     <!-- VISTA 1: CRONOGRAMA DE ACTIVIDADES -->
     <div class="vista active" id="vista-clientes">
         <div class="tabla-wrapper">
-            <!-- CABECERA ESTÁTICA -->
             <div class="tabla-header-container">
                 <div class="fila-header grid-clientes">
                     <div>Fecha y Hora</div><div style="text-align:center;">Logo</div><div>Cliente</div><div>Lugar</div><div>Ciudad</div><div style="text-align:center;">PART.</div><div style="text-align:center;">Acción de Formación</div><div style="text-align:center;">Duración</div><div>Facilitador</div><div style="text-align:center;">Estatus</div>
                 </div>
             </div>
-            <!-- CUERPO CON SCROLL VERTICAL INDEPENDIENTE -->
             <div class="tabla-body-container" id="lista-clientes"></div>
         </div>
     </div>
@@ -309,6 +316,14 @@
                 facilitadoresUnicos.forEach(f => selectFac.add(new Option(f, f)));
                 if (facilitadoresUnicos.includes(valorActualFac)) selectFac.value = valorActualFac;
 
+                // NUEVO: CARGAR EL SELECTOR DE CLIENTES (EMPRESAS)
+                const clientesUnicos = [...new Set(clientes.map(c => c.nombre_cliente))].sort();
+                const selectCli = document.getElementById('filtro-cliente');
+                const valorActualCli = selectCli.value;
+                selectCli.innerHTML = '<option value="TODOS">Todas las empresas</option>';
+                clientesUnicos.forEach(cli => selectCli.add(new Option(cli, cli)));
+                if (clientesUnicos.includes(valorActualCli)) selectCli.value = valorActualCli;
+
                 const responsablesUnicos = [...new Set(tareas.map(t => t.responsable))].sort();
                 const selectResp = document.getElementById('filtro-responsable');
                 const valorActualResp = selectResp.value;
@@ -354,6 +369,7 @@
             }
         }
 
+        // SE ACTUALIZAN LAS REGLAS DE VISIBILIDAD PARA EL MENÚ
         function cambiarVista(vistaId) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
@@ -364,22 +380,30 @@
                 document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA GENERAL DE ACTIVIDADES';
                 document.getElementById('contenedor-filtro-dia').style.display = 'none';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'block';
+                document.getElementById('contenedor-filtro-cliente').style.display = 'block';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'none';
+                document.getElementById('contenedor-buscador-index').style.display = 'block';
             } else if (vistaId === 'tareas') {
                 document.getElementById('subtitulo-vista').textContent = 'DELEGACIÓN DE FUNCIONES';
                 document.getElementById('contenedor-filtro-dia').style.display = 'block';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'none';
+                document.getElementById('contenedor-filtro-cliente').style.display = 'none';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'block';
+                document.getElementById('contenedor-buscador-index').style.display = 'block';
             } else if (vistaId === 'almanaque') {
                 document.getElementById('subtitulo-vista').textContent = 'ALMANAQUE DE ACTIVIDADES';
                 document.getElementById('contenedor-filtro-dia').style.display = 'none';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'none';
+                document.getElementById('contenedor-filtro-cliente').style.display = 'none';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'none';
+                document.getElementById('contenedor-buscador-index').style.display = 'none';
             } else {
                 document.getElementById('subtitulo-vista').textContent = 'CRONOGRAMA DE ACTIVIDADES';
                 document.getElementById('contenedor-filtro-dia').style.display = 'block';
                 document.getElementById('contenedor-filtro-facilitador').style.display = 'block';
+                document.getElementById('contenedor-filtro-cliente').style.display = 'block';
                 document.getElementById('contenedor-filtro-responsable').style.display = 'none';
+                document.getElementById('contenedor-buscador-index').style.display = 'block';
             }
             
             document.getElementById('menu-desplegable').classList.remove('show');
@@ -387,12 +411,14 @@
         }
 
         function renderizarVistas() {
+            // CAPTURAMOS LOS VALORES DE TODOS LOS FILTROS
             const diaFiltro = document.getElementById('filtro-dia').value;
             const filtroFac = document.getElementById('filtro-facilitador').value;
             const filtroResp = document.getElementById('filtro-responsable').value;
+            const filtroCli = document.getElementById('filtro-cliente').value;
+            const terminoBusqueda = document.getElementById('buscador-index').value.toLowerCase();
             
             let fechaCabecera = parseFechaLocal(diaFiltro + "T00:00:00");
-            
             let textoF = fechaCabecera.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('dia-actual-header').textContent = textoF.replace(',', '').replace(' de 20', ' del 20').toUpperCase();
 
@@ -426,7 +452,6 @@
                     
                     let logoVisual = c.logo_url_final ? c.logo_url_final : 'COFTAH.png.png';
                     let avatarVisual = c.facilitador_foto ? `<img src="${c.facilitador_foto}" class="avatar-mini">` : '';
-
                     let fechaCorta = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`;
                     let horaTexto = d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
 
@@ -445,22 +470,42 @@
                 }).join('');
             };
 
-            // VISTA 1: CRONOGRAMA DE ACTIVIDADES (Diario)
+            // FILTRADO INTELIGENTE: CRONOGRAMA DIARIO
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
                 let cDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                return cDateStr === diaFiltro && (filtroFac === 'TODOS' || c.facilitador === filtroFac);
+                
+                let pasaDia = cDateStr === diaFiltro;
+                let pasaFac = filtroFac === 'TODOS' || c.facilitador === filtroFac;
+                let pasaCli = filtroCli === 'TODOS' || c.nombre_cliente === filtroCli;
+                let pasaBus = !terminoBusqueda || 
+                              c.nombre_cliente.toLowerCase().includes(terminoBusqueda) || 
+                              c.accion_formacion.toLowerCase().includes(terminoBusqueda) || 
+                              c.lugar_atencion.toLowerCase().includes(terminoBusqueda) || 
+                              c.facilitador.toLowerCase().includes(terminoBusqueda);
+                              
+                return pasaDia && pasaFac && pasaCli && pasaBus;
             });
-            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones programadas para este día.</div>`;
+            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones que coincidan con la búsqueda.</div>`;
             else contC.innerHTML = mapearClientes(filtC, true);
 
-            // VISTA 2: CRONOGRAMA GENERAL
+            // FILTRADO INTELIGENTE: CRONOGRAMA GENERAL
             const contG = document.getElementById('lista-general');
-            let filtG = clientes.filter(c => (filtroFac === 'TODOS' || c.facilitador === filtroFac));
+            let filtG = clientes.filter(c => {
+                let pasaFac = filtroFac === 'TODOS' || c.facilitador === filtroFac;
+                let pasaCli = filtroCli === 'TODOS' || c.nombre_cliente === filtroCli;
+                let pasaBus = !terminoBusqueda || 
+                              c.nombre_cliente.toLowerCase().includes(terminoBusqueda) || 
+                              c.accion_formacion.toLowerCase().includes(terminoBusqueda) || 
+                              c.lugar_atencion.toLowerCase().includes(terminoBusqueda) || 
+                              c.facilitador.toLowerCase().includes(terminoBusqueda);
+                              
+                return pasaFac && pasaCli && pasaBus;
+            });
             
             if (filtG.length === 0) {
-                contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones registradas en el sistema.</div>`;
+                contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones que coincidan con la búsqueda.</div>`;
             } else {
                 let formacionesHoy = []; let formacionesFuturo = []; let formacionesPasado = [];
                 
@@ -473,23 +518,29 @@
                     else formacionesPasado.push(c);
                 });
                 
-                // REGLA MATEMÁTICA ESTRICTA: Las finalizadas (pasado) se ordenan con la más nueva arriba y la más vieja al fondo
                 formacionesPasado.sort((a, b) => parseFechaLocal(b.fecha_atencion) - parseFechaLocal(a.fecha_atencion));
-                
                 let listaOrdenada = [...formacionesHoy, ...formacionesFuturo, ...formacionesPasado];
                 contG.innerHTML = mapearClientes(listaOrdenada, true);
             }
 
-            // VISTA TAREAS
+            // FILTRADO INTELIGENTE: TAREAS
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
                 let tDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                return tDateStr === diaFiltro && (filtroResp === 'TODOS' || t.responsable === filtroResp);
+                
+                let pasaDia = tDateStr === diaFiltro;
+                let pasaResp = filtroResp === 'TODOS' || t.responsable === filtroResp;
+                let pasaBus = !terminoBusqueda || 
+                              t.descripcion.toLowerCase().includes(terminoBusqueda) || 
+                              t.responsable.toLowerCase().includes(terminoBusqueda) || 
+                              (t.nombre_cliente && t.nombre_cliente.toLowerCase().includes(terminoBusqueda));
+                              
+                return pasaDia && pasaResp && pasaBus;
             });
 
             if (filtT.length === 0) {
-                contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas en esta vista.</div>`;
+                contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas que coincidan.</div>`;
             } else {
                 contT.innerHTML = '';
                 filtT.forEach(t => {
