@@ -29,8 +29,9 @@
         label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
         
         input, select, textarea { width: 100%; padding: 12px; background-color: var(--input-bg); border: 1px solid var(--borde-input); border-radius: 6px; color: var(--texto-principal); font-size: 1rem; outline: none; }
+        input:disabled { opacity: 0.45; cursor: not-allowed; }
         
-        /* ESTILOS PERSONALIZADOS PARA EL BUSCADOR SELECT2 (Tema Oscuro COFTAH) */
+        /* ESTILOS PERSONALIZADOS PARA EL BUSCADOR SELECT2 */
         .select2-container--default .select2-selection--single { background-color: var(--input-bg); border: 1px solid var(--borde-input); height: 45px; border-radius: 6px; }
         .select2-container--default .select2-selection--single .select2-selection__rendered { color: var(--texto-principal); line-height: 45px; padding-left: 12px; font-size: 1rem; }
         .select2-container--default .select2-selection--single .select2-selection__arrow { height: 43px; right: 10px; }
@@ -65,18 +66,31 @@
         .buscador-contenedor input::placeholder { color: var(--texto-secundario); }
 
         .avatar-mini { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); margin-right: 10px; display: inline-block; vertical-align: middle; background-color: white;}
+        .badge-bloque { display: inline-block; background-color: rgba(0, 191, 255, 0.18); color: #00BFFF; border: 1px solid #00BFFF; font-size: 0.75rem; font-weight: bold; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
+        /* CAJA DE OPCIÓN PARA EDITAR EN BLOQUE */
+        .bloque-check-box { background-color: rgba(0, 191, 255, 0.12); border: 1px solid var(--btn-editar); border-radius: 8px; padding: 14px; margin-bottom: 20px; }
+        .bloque-check-label { display: flex; align-items: center; gap: 10px; color: #FFFFFF; font-weight: bold; cursor: pointer; margin-bottom: 0; }
+        .bloque-check-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--acento-amarillo); }
+        .bloque-check-ayuda { font-size: 0.85rem; color: var(--texto-secundario); margin-top: 6px; margin-left: 28px; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
         .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-content.modal-peligro { max-width: 520px; border-color: var(--btn-borrar); }
         .modal-header { background-color: rgba(255, 215, 0, 0.1); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.5rem; margin: 0; text-transform: uppercase; }
+        .modal-content.modal-peligro .modal-header { background-color: rgba(255, 51, 102, 0.15); }
+        .modal-content.modal-peligro .modal-header h2 { color: var(--btn-borrar); }
+        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.4rem; margin: 0; text-transform: uppercase; }
         .modal-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
         .modal-body { padding: 25px; overflow-y: auto; }
-        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); }
-        .btn-modal { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
+        .btn-modal { padding: 10px 18px; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; transition: 0.2s; }
+        .btn-modal:hover { filter: brightness(1.15); }
         .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
         .btn-modal-guardar { background-color: var(--acento-amarillo); color: #000; }
+        .btn-modal-borrar-uno { background-color: #FF8C00; color: #000; }
+        .btn-modal-borrar-todo { background-color: var(--btn-borrar); color: #FFF; }
     </style>
 </head>
 <body>
@@ -251,13 +265,25 @@
             <div class="modal-body">
                 <form id="form-editar-cliente">
                     <input type="hidden" id="edit-id">
+                    <input type="hidden" id="edit-grupo-id">
+
+                    <!-- OPCIÓN DE EDICIÓN EN BLOQUE (SOLO VISIBLE SI HAY VARIOS DÍAS) -->
+                    <div id="contenedor-editar-grupo" class="bloque-check-box" style="display: none;">
+                        <label class="bloque-check-label">
+                            <input type="checkbox" id="edit-aplicar-grupo" onchange="toggleModoEdicionGrupo()">
+                            <span>Aplicar cambios a todos los días de esta formación (<span id="edit-grupo-cantidad">0</span> días)</span>
+                        </label>
+                        <div class="bloque-check-ayuda" id="texto-ayuda-grupo">
+                            Si la dejas desmarcada, solo editarás este día puntual.
+                        </div>
+                    </div>
+
                     <div class="row-group">
                         <div><label>Fecha</label><input type="date" id="edit-fecha" required></div>
                         <div><label>Hora</label><input type="time" id="edit-hora" required></div>
                     </div>
                     <div class="form-group">
                         <label>Cliente / Empresa</label>
-                        <!-- APLICADO EL BUSCADOR TAMBIÉN EN EL MODAL -->
                         <select id="edit-cliente" class="select-buscador-modal" required></select>
                     </div>
                     <div class="row-group">
@@ -297,14 +323,33 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMACIÓN PARA BORRAR BLOQUE O DÍA INDIVIDUAL -->
+    <div class="modal-overlay" id="modal-borrar-cliente">
+        <div class="modal-content modal-peligro">
+            <div class="modal-header">
+                <h2>Confirmar Eliminación</h2>
+                <button class="modal-close" onclick="cerrarModalBorrar()">×</button>
+            </div>
+            <div class="modal-body" id="modal-borrar-texto" style="line-height: 1.6; font-size: 1.05rem;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalBorrar()">Cancelar</button>
+                <button type="button" class="btn-modal btn-modal-borrar-uno" id="btn-borrar-solo-uno">Borrar solo este día</button>
+                <button type="button" class="btn-modal btn-modal-borrar-todo" id="btn-borrar-todo-bloque">Borrar todos los días</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let clientesRegistrados = [];
 
-        // INICIALIZACIÓN DE BUSCADORES EN LISTAS DESPLEGABLES (Select2)
+        function parseFechaLocal(fechaStr) {
+            if (!fechaStr) return new Date();
+            let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
+            return new Date(limpia);
+        }
+
         function inicializarBuscadores() {
             $('.select-buscador').select2({ width: '100%', placeholder: 'Escribe para buscar...' });
-            
-            // Para el modal, el buscador necesita saber dónde adherirse visualmente
             $('.select-buscador-modal').select2({ 
                 width: '100%', 
                 dropdownParent: $('#modal-editar-cliente')
@@ -450,12 +495,11 @@
 
         function renderizarTablasPersonal() {
             const tbFac = document.getElementById('tbody-facilitadores'); const tbResp = document.getElementById('tbody-responsables'); const tbPap = document.getElementById('tbody-papelera');
-            tbFac.innerHTML = ''; tbResp.innerHTML = ''; tbPap.innerHTML = ''; let contadorPapelera = 0;
+            tbFac.innerHTML = ''; tbResp.innerHTML = ''; tbPap.innerHTML = '';
 
             personalCompleto.forEach(p => {
                 let imgHtml = p.foto_url ? `<img src="${p.foto_url}" class="avatar-mini">` : `<div class="avatar-mini" style="background-color: var(--texto-secundario);"></div>`;
                 if (enPapelera.has(p.id)) {
-                    contadorPapelera++;
                     tbPap.innerHTML += `<tr><td>${imgHtml}${p.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-restaurar" onclick="accionPapelera(${p.id}, 'restaurar')">Restaurar</button><button class="btn-accion btn-borrar" onclick="accionPapelera(${p.id}, 'eliminar')">Borrar</button></td></tr>`;
                 } else {
                     const fila = `<tr><td>${imgHtml}${p.nombre}</td><td style="text-align: right;"><button class="btn-accion btn-mover" onclick="accionPapelera(${p.id}, 'mover')">Papelera</button></td></tr>`;
@@ -464,6 +508,7 @@
             });
             if(tbFac.innerHTML === '') tbFac.innerHTML = '<tr><td>No hay facilitadores</td></tr>';
             if(tbResp.innerHTML === '') tbResp.innerHTML = '<tr><td>No hay responsables</td></tr>';
+            if(tbPap.innerHTML === '') tbPap.innerHTML = '<tr><td style="color: var(--texto-secundario);">La papelera está vacía.</td></tr>';
         }
 
         async function accionPapelera(id, accion) {
@@ -514,14 +559,14 @@
                 const sel = document.getElementById('programa-vinculado');
                 sel.innerHTML = '<option value="" disabled selected>Busca y vincula a una formación...</option>';
                 clientesRegistrados.forEach(c => {
-                    let d = new Date(c.fecha_atencion);
-                    sel.innerHTML += `<option value="${c.id}">${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} - ${c.nombre_cliente} (${c.accion_formacion})</option>`
+                    let d = parseFechaLocal(c.fecha_atencion);
+                    sel.innerHTML += `<option value="${c.id}">${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')} - ${c.nombre_cliente} (${c.accion_formacion})</option>`;
                 });
                 $('#programa-vinculado').trigger('change');
             } catch (error) {}
         }
 
-        // --- SISTEMA INTELIGENTE DE GUARDADO (PIDE PERMISO SI HAY CHOQUE) ---
+        // GUARDADO CON AUTORIZACIÓN DE CHOQUE
         async function guardarFormacionPrincipal(forzarGuardado = false) {
             const btn = document.getElementById('btn-guardar-formacion');
             btn.textContent = "Guardando..."; btn.disabled = true;
@@ -550,20 +595,17 @@
                         facilitador: facNombre, 
                         facilitador_id: facId,
                         estatus: document.getElementById('estatus-cliente').value,
-                        forzar: forzarGuardado // Envía la autorización
+                        forzar: forzarGuardado
                     })
                 });
                 
                 if (res.status === 409) {
                     const data = await res.json();
                     if (data.confirmacion_requerida) {
-                        // Si la API detecta choque, lanza la pregunta
                         if (confirm(data.error)) {
-                            // Si el jefe dice SÍ, vuelve a llamar a la función pero forzando el guardado
                             guardarFormacionPrincipal(true);
                             return; 
                         } else {
-                            // Si dice NO, se cancela todo
                             alert("Guardado cancelado exitosamente.");
                         }
                     }
@@ -571,7 +613,6 @@
                     alert("Guardado exitosamente."); 
                     document.getElementById('form-cliente').reset(); 
                     inicializarFechas(); 
-                    // Limpia los buscadores visualmente
                     $('#cliente-directorio').val('').trigger('change');
                     $('#accion-formacion-cliente').val('').trigger('change');
                     $('#facilitador-cliente').val('').trigger('change');
@@ -591,7 +632,7 @@
 
         document.getElementById('form-cliente').addEventListener('submit', function(e) {
             e.preventDefault(); 
-            guardarFormacionPrincipal(false); // Primer intento sin forzar
+            guardarFormacionPrincipal(false);
         });
 
         document.getElementById('form-tarea').addEventListener('submit', async function(e) {
@@ -615,27 +656,36 @@
                 const resC = await fetch('/api/clientes?t='+ts, conf); const tbC = document.getElementById('tbody-clientes');
                 if(resC.ok) {
                     clientesRegistrados = await resC.json(); 
-                    
-                    // REORDENAMIENTO: Las formaciones más nuevas (futuro/recientes) van arriba
-                    clientesRegistrados.sort((a, b) => new Date(b.fecha_atencion) - new Date(a.fecha_atencion));
+                    clientesRegistrados.sort((a, b) => parseFechaLocal(b.fecha_atencion) - parseFechaLocal(a.fecha_atencion));
+
+                    // Contamos cuántos días tiene cada grupo_id
+                    const conteoGrupos = {};
+                    clientesRegistrados.forEach(c => {
+                        if (c.grupo_id) conteoGrupos[c.grupo_id] = (conteoGrupos[c.grupo_id] || 0) + 1;
+                    });
                     
                     tbC.innerHTML = '';
                     if(clientesRegistrados.length===0) tbC.innerHTML='<tr><td colspan="4">Sin programas</td></tr>';
                     clientesRegistrados.forEach(c => { 
-                        let d = new Date(c.fecha_atencion); 
-                        tbC.innerHTML += `<tr><td>${d.toLocaleDateString()}</td><td>${c.nombre_cliente}</td><td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span></td>
-                        <td style="min-width: 160px;">
-                            <button class="btn-accion btn-editar" onclick="abrirModalEditarCliente(${c.id})">Editar</button>
-                            <button class="btn-accion btn-borrar" onclick="borrarRegistro('clientes', ${c.id})">Borrar</button>
-                        </td></tr>`; 
+                        let d = parseFechaLocal(c.fecha_atencion);
+                        let cantGrupo = c.grupo_id ? (conteoGrupos[c.grupo_id] || 1) : 1;
+                        let badgeGrupo = cantGrupo > 1 ? `<span class="badge-bloque">Bloque ${cantGrupo}d</span>` : '';
+
+                        tbC.innerHTML += `<tr>
+                            <td>${d.toLocaleDateString()}</td>
+                            <td>${c.nombre_cliente}</td>
+                            <td>${c.accion_formacion} <span style="color:var(--acento-amarillo);">(👤 ${c.participantes})</span>${badgeGrupo}</td>
+                            <td style="min-width: 160px;">
+                                <button class="btn-accion btn-editar" onclick="abrirModalEditarCliente(${c.id})">Editar</button>
+                                <button class="btn-accion btn-borrar" onclick="confirmarBorradoCliente(${c.id})">Borrar</button>
+                            </td>
+                        </tr>`; 
                     });
                 }
                 const resT = await fetch('/api/tareas?t='+ts, conf); const tbT = document.getElementById('tbody-tareas');
                 if(resT.ok) {
                     let tareas = await resT.json(); 
-                    
-                    // REORDENAMIENTO: Las misiones más nuevas van arriba
-                    tareas.sort((a, b) => new Date(b.fecha_limite) - new Date(a.fecha_limite));
+                    tareas.sort((a, b) => parseFechaLocal(b.fecha_limite) - parseFechaLocal(a.fecha_limite));
                     
                     tbT.innerHTML = '';
                     if(tareas.length===0) tbT.innerHTML='<tr><td colspan="4">Sin tareas</td></tr>';
@@ -645,6 +695,70 @@
             } catch (error) {}
         }
 
+        // --- BORRADO INTELIGENTE PARA CLIENTES (PREGUNTA SI ES BLOQUE O INDIVIDUAL) ---
+        function confirmarBorradoCliente(id) {
+            const c = clientesRegistrados.find(x => x.id === id);
+            if (!c) return;
+
+            const hermanos = c.grupo_id ? clientesRegistrados.filter(x => x.grupo_id === c.grupo_id) : [];
+
+            if (hermanos.length > 1) {
+                const d = parseFechaLocal(c.fecha_atencion);
+                const fechaTexto = d.toLocaleDateString();
+
+                document.getElementById('modal-borrar-texto').innerHTML = `
+                    <p style="margin-bottom: 12px;">Esta formación forma parte de un bloque de <strong style="color: var(--acento-amarillo);">${hermanos.length} días</strong>:</p>
+                    <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 6px; border-left: 3px solid var(--btn-borrar); margin-bottom: 12px;">
+                        <b>Cliente:</b> ${c.nombre_cliente}<br>
+                        <b>Acción:</b> ${c.accion_formacion}<br>
+                        <b>Día seleccionado:</b> ${fechaTexto}
+                    </div>
+                    <p>¿Deseas eliminar únicamente este día o todos los días del bloque?</p>
+                `;
+
+                const btnUno = document.getElementById('btn-borrar-solo-uno');
+                const btnTodo = document.getElementById('btn-borrar-todo-bloque');
+
+                btnTodo.textContent = `Borrar todos (${hermanos.length} días)`;
+
+                btnUno.onclick = () => ejecutarBorradoCliente(c.id, null, false);
+                btnTodo.onclick = () => {
+                    if (confirm(`¿Confirmas eliminar definitivamente los ${hermanos.length} días de esta formación?`)) {
+                        ejecutarBorradoCliente(c.id, c.grupo_id, true);
+                    }
+                };
+
+                document.getElementById('modal-borrar-cliente').classList.add('active');
+            } else {
+                if (confirm('¿Eliminar este registro de forma definitiva?')) {
+                    ejecutarBorradoCliente(c.id, null, false);
+                }
+            }
+        }
+
+        function cerrarModalBorrar() {
+            document.getElementById('modal-borrar-cliente').classList.remove('active');
+        }
+
+        async function ejecutarBorradoCliente(id, grupoId, borrarGrupo) {
+            try {
+                const res = await fetch('/api/clientes', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: id, grupo_id: grupoId, borrar_grupo: borrarGrupo })
+                });
+                if (res.ok) {
+                    cerrarModalBorrar();
+                    cargarDatosGestion();
+                    cargarProgramasDropdown();
+                } else {
+                    alert("No se pudo eliminar el registro.");
+                }
+            } catch (error) {
+                alert("Error de conexión al eliminar.");
+            }
+        }
+
         async function borrarRegistro(tipo, id) {
             if(confirm('¿Eliminar este registro de forma definitiva?')) {
                 await fetch(`/api/${tipo}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
@@ -652,11 +766,26 @@
             }
         }
 
+        // --- EDICIÓN INDIVIDUAL O EN BLOQUE ---
+        function toggleModoEdicionGrupo() {
+            const marcado = document.getElementById('edit-aplicar-grupo').checked;
+            const inputFecha = document.getElementById('edit-fecha');
+            const textoAyuda = document.getElementById('texto-ayuda-grupo');
+
+            inputFecha.disabled = marcado;
+            if (marcado) {
+                textoAyuda.textContent = "Cada día conservará su fecha original; la nueva hora y demás campos se aplicarán a todo el bloque.";
+                textoAyuda.style.color = "var(--acento-amarillo)";
+            } else {
+                textoAyuda.textContent = "Si la dejas desmarcada, solo editarás este día puntual.";
+                textoAyuda.style.color = "var(--texto-secundario)";
+            }
+        }
+
         function abrirModalEditarCliente(id) {
             const c = clientesRegistrados.find(x => x.id === id);
             if(!c) return;
 
-            // Inyectamos las listas en el modal
             document.getElementById('edit-cliente').innerHTML = document.getElementById('cliente-directorio').innerHTML;
             document.getElementById('edit-accion').innerHTML = document.getElementById('accion-formacion-cliente').innerHTML;
             document.getElementById('edit-facilitador').innerHTML = document.getElementById('facilitador-cliente').innerHTML;
@@ -673,7 +802,22 @@
             document.getElementById('edit-duracion').value = c.duracion_curso || '';
             document.getElementById('edit-estatus').value = c.estatus;
 
-            // Sincronizamos Select2 con los valores previos
+            // Verificar si pertenece a un bloque de varios días
+            const hermanos = c.grupo_id ? clientesRegistrados.filter(x => x.grupo_id === c.grupo_id) : [];
+            const boxGrupo = document.getElementById('contenedor-editar-grupo');
+            const checkGrupo = document.getElementById('edit-aplicar-grupo');
+            checkGrupo.checked = false;
+            toggleModoEdicionGrupo();
+
+            if (hermanos.length > 1) {
+                document.getElementById('edit-grupo-id').value = c.grupo_id;
+                document.getElementById('edit-grupo-cantidad').textContent = hermanos.length;
+                boxGrupo.style.display = 'block';
+            } else {
+                document.getElementById('edit-grupo-id').value = '';
+                boxGrupo.style.display = 'none';
+            }
+
             $('#edit-cliente').val(c.nombre_cliente).trigger('change');
             $('#edit-accion').val(c.accion_formacion).trigger('change');
             
@@ -692,7 +836,6 @@
             document.getElementById('modal-editar-cliente').classList.remove('active');
         }
 
-        // SISTEMA DE EDICIÓN INTELIGENTE (PIDE PERMISO SI HAY CHOQUE AL EDITAR)
         async function editarFormacionPrincipal(forzarGuardado = false) {
             const btn = document.getElementById('btn-actualizar-modal');
             btn.textContent = "Actualizando..."; btn.disabled = true;
@@ -701,6 +844,8 @@
             let selectFac = document.getElementById('edit-facilitador');
             let facId = selectFac.value;
             let facNombre = selectFac.options[selectFac.selectedIndex].text;
+            let aplicarGrupo = document.getElementById('edit-aplicar-grupo').checked;
+            let grupoId = document.getElementById('edit-grupo-id').value || null;
 
             try {
                 const res = await fetch('/api/clientes', { 
@@ -708,6 +853,8 @@
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({
                         id: document.getElementById('edit-id').value,
+                        grupo_id: grupoId,
+                        aplicar_grupo: aplicarGrupo,
                         fecha_atencion: fechaFormateada,
                         nombre_cliente: document.getElementById('edit-cliente').value, 
                         lugar_atencion: document.getElementById('edit-lugar').value, 
@@ -718,7 +865,7 @@
                         facilitador: facNombre, 
                         facilitador_id: facId,
                         estatus: document.getElementById('edit-estatus').value,
-                        forzar: forzarGuardado // Envía la autorización
+                        forzar: forzarGuardado
                     })
                 });
                 
@@ -726,14 +873,14 @@
                     const data = await res.json();
                     if (data.confirmacion_requerida) {
                         if (confirm(data.error)) {
-                            editarFormacionPrincipal(true); // Intento forzado
+                            editarFormacionPrincipal(true);
                             return; 
                         } else {
                             alert("Modificación cancelada exitosamente.");
                         }
                     }
                 } else if (res.ok) { 
-                    alert("Formación actualizada correctamente."); 
+                    alert(aplicarGrupo ? "Bloque de formaciones actualizado correctamente." : "Formación actualizada correctamente."); 
                     cerrarModalEditar();
                     cargarDatosGestion(); 
                     cargarProgramasDropdown();
@@ -754,7 +901,6 @@
             editarFormacionPrincipal(false);
         });
 
-        // ARRANCAR EL SISTEMA
         $(document).ready(function() {
             inicializarBuscadores();
             inicializarFechas(); 
