@@ -9,7 +9,7 @@
         
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         
-        /* FIX DEFINITIVO PARA SMART TVS */
+        /* MODO PANTALLA GRANDE / SMART TV */
         html, body { position: absolute; top: 0; bottom: 0; left: 0; right: 0; width: 100%; height: 100%; overflow: hidden; background-color: var(--bg-principal); color: var(--texto-principal); }
         
         body { padding: 15px; display: flex; flex-direction: column; }
@@ -36,6 +36,7 @@
 
         .reloj { font-size: 1.8rem; font-weight: bold; color: var(--acento-amarillo); font-family: monospace; display: flex; align-items: center; }
         #dia-actual-header { color: var(--texto-principal); font-size: 1.2rem; margin-right: 10px; font-family: 'Segoe UI', sans-serif; text-transform: uppercase; }
+        .separador-reloj { color: var(--texto-secundario); margin: 0 10px; }
         
         .menu-container { position: relative; }
         .btn-hamburguesa { background: none; border: none; color: var(--texto-principal); font-size: 2.2rem; cursor: pointer; padding: 0 10px; }
@@ -45,7 +46,6 @@
         .menu-item:hover { background-color: rgba(255, 215, 0, 0.1); color: var(--texto-principal); }
         .menu-item.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border-left: 4px solid var(--acento-amarillo); }
         
-        /* ESTILOS DEL NUEVO BUSCADOR Y FILTROS */
         .filtros-semanales { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 15px; }
         .filtros-semanales select, .filtros-semanales input[type="date"], .filtros-semanales input[type="text"] { width: 100%; background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--texto-secundario); padding: 10px; font-size: 1rem; font-weight: bold; border-radius: 5px; cursor: pointer; outline: none; }
         .filtros-semanales input[type="text"] { cursor: text; }
@@ -55,7 +55,6 @@
         .vista { display: none; background-color: var(--bg-paneles); flex: 1 1 auto; min-height: 0; border-radius: 12px; padding: 20px; flex-direction: column; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); overflow: hidden; }
         .vista.active { display: flex !important; }
         
-        /* TABLA ANTI-ZOOM CON CABECERA FIJA */
         .tabla-wrapper { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-x: auto; width: 100%; }
         .tabla-header-container { flex-shrink: 0; min-width: 1200px; padding-right: 8px; }
         .tabla-body-container { flex: 1 1 auto; min-height: 0; overflow-y: auto; min-width: 1200px; padding-right: 8px; }
@@ -107,11 +106,11 @@
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; }
+        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
         .modal-header { background-color: rgba(255, 215, 0, 0.1); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .modal-header h2 { color: var(--acento-amarillo); font-size: 1.5rem; margin: 0; text-transform: uppercase; }
         .modal-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
-        .modal-body { padding: 25px; font-size: 1.1rem; line-height: 1.6; color: var(--texto-principal); }
+        .modal-body { padding: 25px; font-size: 1.1rem; line-height: 1.6; color: var(--texto-principal); overflow-y: auto; }
         .modal-seccion { background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--urgencia-baja); }
         .modal-seccion strong { color: var(--texto-secundario); display: block; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 5px; }
         
@@ -120,6 +119,336 @@
         .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
         .btn-modal-proceso { background-color: var(--en-proceso); color: #000; }
         .btn-modal-completar { background-color: var(--completado); color: white; }
+
+        /* =========================================================
+           ADAPTACIÓN RESPONSIVA PARA TELÉFONOS Y PANTALLAS PEQUEÑAS
+           ========================================================= */
+        @media (max-width: 768px) {
+            html, body {
+                position: relative;
+                height: auto;
+                min-height: 100vh;
+                overflow-x: hidden;
+                overflow-y: auto;
+            }
+
+            body {
+                padding: 10px;
+            }
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                position: relative;
+                padding-bottom: 12px;
+                margin-bottom: 12px;
+            }
+
+            .brand {
+                width: 100%;
+                padding-right: 48px;
+                gap: 10px;
+            }
+
+            .brand img {
+                height: 36px;
+            }
+
+            .titulos h1 {
+                font-size: 1rem;
+                line-height: 1.2;
+            }
+
+            #subtitulo-vista {
+                font-size: 0.78rem;
+                letter-spacing: 0.8px;
+            }
+
+            .header-derecha {
+                width: 100%;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                gap: 8px;
+            }
+
+            .btn-sincronizar {
+                padding: 7px 12px;
+                font-size: 0.82rem;
+            }
+
+            .estado-conexion {
+                min-width: auto;
+                margin-right: 0;
+                font-size: 0.78rem;
+            }
+
+            .reloj {
+                width: 100%;
+                font-size: 1rem;
+                justify-content: space-between;
+                background-color: rgba(255, 255, 255, 0.04);
+                padding: 6px 10px;
+                border-radius: 6px;
+            }
+
+            #dia-actual-header {
+                font-size: 0.78rem;
+                margin-right: 0;
+            }
+
+            .separador-reloj {
+                display: none;
+            }
+
+            .menu-container {
+                position: absolute;
+                top: 2px;
+                right: 0;
+            }
+
+            .btn-hamburguesa {
+                font-size: 1.9rem;
+                padding: 0 6px;
+            }
+
+            .menu-desplegable {
+                right: 0;
+                width: calc(100vw - 20px);
+                max-width: 340px;
+                min-width: 250px;
+                max-height: 82vh;
+                overflow-y: auto;
+            }
+
+            .menu-item {
+                font-size: 0.95rem;
+                padding: 10px;
+            }
+
+            .vista {
+                padding: 12px;
+                overflow: visible;
+                flex: none;
+            }
+
+            .tabla-wrapper {
+                overflow-x: visible;
+            }
+
+            .tabla-header-container {
+                display: none;
+            }
+
+            .tabla-body-container {
+                min-width: 0;
+                width: 100%;
+                padding-right: 0;
+                overflow-y: visible;
+            }
+
+            /* TARJETA COMPACTA DE 2 COLUMNAS PARA FORMACIONES EN TELÉFONO */
+            .fila-item.grid-clientes {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 8px 10px;
+                padding: 14px;
+                margin-bottom: 12px;
+                border-radius: 10px;
+                background-color: rgba(255, 255, 255, 0.04);
+            }
+
+            .fila-item.grid-clientes:hover {
+                transform: none;
+            }
+
+            /* 1. Fecha y Hora */
+            .fila-item.grid-clientes > div:nth-child(1) {
+                grid-column: 1 / 2;
+                grid-row: 1;
+                font-size: 0.95rem;
+            }
+
+            /* 10. Estatus */
+            .fila-item.grid-clientes > div:nth-child(10) {
+                grid-column: 2 / 3;
+                grid-row: 1;
+                justify-self: end;
+                text-align: right !important;
+            }
+
+            .fila-item.grid-clientes > div:nth-child(10) .badge {
+                width: auto;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            /* 2. Logo */
+            .fila-item.grid-clientes > div:nth-child(2) {
+                grid-column: 1 / 2;
+                grid-row: 2;
+                text-align: left !important;
+                align-self: center;
+                width: 38px;
+            }
+
+            /* 3. Cliente */
+            .fila-item.grid-clientes > div:nth-child(3) {
+                grid-column: 1 / 3;
+                grid-row: 2;
+                padding-left: 46px;
+                align-self: center;
+                font-size: 1.05rem !important;
+                line-height: 1.25;
+            }
+
+            /* 7. Acción de Formación */
+            .fila-item.grid-clientes > div:nth-child(7) {
+                grid-column: 1 / 3;
+                grid-row: 3;
+                text-align: left !important;
+                font-size: 0.98rem !important;
+                background-color: rgba(0, 0, 0, 0.22);
+                padding: 8px 10px;
+                border-radius: 6px;
+                line-height: 1.35;
+            }
+
+            /* 4. Lugar */
+            .fila-item.grid-clientes > div:nth-child(4) {
+                grid-column: 1 / 2;
+                grid-row: 4;
+                font-size: 0.88rem;
+                color: var(--texto-secundario);
+            }
+
+            /* 5. Ciudad */
+            .fila-item.grid-clientes > div:nth-child(5) {
+                grid-column: 2 / 3;
+                grid-row: 4;
+                text-align: right;
+                font-size: 0.88rem;
+                color: var(--texto-secundario);
+            }
+
+            /* 6. Participantes */
+            .fila-item.grid-clientes > div:nth-child(6) {
+                grid-column: 1 / 2;
+                grid-row: 5;
+                text-align: left !important;
+                font-size: 0.95rem !important;
+            }
+
+            /* 8. Duración */
+            .fila-item.grid-clientes > div:nth-child(8) {
+                grid-column: 2 / 3;
+                grid-row: 5;
+                text-align: right !important;
+                font-size: 0.9rem !important;
+            }
+
+            .fila-item.grid-clientes > div:nth-child(8)::before {
+                content: "⏱ ";
+            }
+
+            /* 9. Facilitador */
+            .fila-item.grid-clientes > div:nth-child(9) {
+                grid-column: 1 / 3;
+                grid-row: 6;
+                border-top: 1px solid rgba(255, 255, 255, 0.08);
+                padding-top: 8px;
+                margin-top: 2px;
+                font-size: 0.95rem;
+            }
+
+            /* TARJETA COMPACTA PARA TAREAS EN TELÉFONO */
+            .fila-item.grid-tareas {
+                display: grid;
+                grid-template-columns: 1fr auto;
+                gap: 8px 10px;
+                padding: 14px;
+                margin-bottom: 12px;
+                border-radius: 10px;
+            }
+
+            .fila-item.grid-tareas > div:nth-child(1) {
+                grid-column: 1 / 2;
+                grid-row: 1;
+            }
+
+            .fila-item.grid-tareas > div:nth-child(5) {
+                grid-column: 2 / 3;
+                grid-row: 1;
+                justify-self: end;
+            }
+
+            .fila-item.grid-tareas > div:nth-child(5) .badge {
+                width: auto;
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+
+            .fila-item.grid-tareas > div:nth-child(2) {
+                grid-column: 1 / 3;
+                grid-row: 2;
+                padding-right: 0 !important;
+                font-size: 0.98rem !important;
+                background-color: rgba(0, 0, 0, 0.22);
+                padding: 8px 10px;
+                border-radius: 6px;
+            }
+
+            .fila-item.grid-tareas > div:nth-child(3) {
+                grid-column: 1 / 2;
+                grid-row: 3;
+                font-size: 0.95rem !important;
+                color: var(--acento-amarillo);
+            }
+
+            .fila-item.grid-tareas > div:nth-child(4) {
+                grid-column: 2 / 3;
+                grid-row: 3;
+                text-align: right;
+                font-size: 0.88rem;
+                color: var(--texto-secundario);
+            }
+
+            /* ALMANAQUE EN 1 COLUMNA PARA TELÉFONO */
+            .almanaque-container {
+                grid-template-columns: 1fr;
+                padding-right: 0;
+                height: auto;
+            }
+
+            /* MODAL ADAPTADO A MÓVIL */
+            .modal-content {
+                width: 95%;
+            }
+
+            .modal-header {
+                padding: 15px;
+            }
+
+            .modal-header h2 {
+                font-size: 1.15rem;
+            }
+
+            .modal-body {
+                padding: 15px;
+                font-size: 0.98rem;
+            }
+
+            .modal-footer {
+                padding: 15px;
+                flex-direction: column;
+            }
+
+            .btn-modal {
+                width: 100%;
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -141,7 +470,7 @@
             </div>
             <div class="reloj">
                 <span id="dia-actual-header">FECHA</span>
-                <span style="color: var(--texto-secundario); margin: 0 10px;">|</span>
+                <span class="separador-reloj">|</span>
                 <span id="reloj-digital">00:00:00</span>
             </div>
             
@@ -154,8 +483,6 @@
                     <button class="menu-item" id="btn-tareas" onclick="cambiarVista('tareas')">Delegación de Funciones</button>
                     
                     <div class="filtros-semanales">
-                        
-                        <!-- NUEVO: BUSCADOR DE TEXTO LIBRE -->
                         <div id="contenedor-buscador-index">
                             <label>Buscador Rápido</label>
                             <input type="text" id="buscador-index" placeholder="Cliente, acción o facilitador..." onkeyup="renderizarVistas()">
@@ -166,7 +493,6 @@
                             <input type="date" id="filtro-dia" onchange="renderizarVistas()">
                         </div>
                         
-                        <!-- NUEVO: FILTRO POR EMPRESA (CLIENTE) -->
                         <div id="contenedor-filtro-cliente" style="display: block; margin-top: 10px;">
                             <label>Filtrar por Empresa</label>
                             <select id="filtro-cliente" onchange="renderizarVistas()">
@@ -316,7 +642,6 @@
                 facilitadoresUnicos.forEach(f => selectFac.add(new Option(f, f)));
                 if (facilitadoresUnicos.includes(valorActualFac)) selectFac.value = valorActualFac;
 
-                // NUEVO: CARGAR EL SELECTOR DE CLIENTES (EMPRESAS)
                 const clientesUnicos = [...new Set(clientes.map(c => c.nombre_cliente))].sort();
                 const selectCli = document.getElementById('filtro-cliente');
                 const valorActualCli = selectCli.value;
@@ -369,7 +694,6 @@
             }
         }
 
-        // SE ACTUALIZAN LAS REGLAS DE VISIBILIDAD PARA EL MENÚ
         function cambiarVista(vistaId) {
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.menu-item').forEach(b => b.classList.remove('active'));
@@ -411,7 +735,6 @@
         }
 
         function renderizarVistas() {
-            // CAPTURAMOS LOS VALORES DE TODOS LOS FILTROS
             const diaFiltro = document.getElementById('filtro-dia').value;
             const filtroFac = document.getElementById('filtro-facilitador').value;
             const filtroResp = document.getElementById('filtro-responsable').value;
@@ -470,7 +793,6 @@
                 }).join('');
             };
 
-            // FILTRADO INTELIGENTE: CRONOGRAMA DIARIO
             const contC = document.getElementById('lista-clientes');
             const filtC = clientes.filter(c => {
                 let d = parseFechaLocal(c.fecha_atencion);
@@ -487,10 +809,9 @@
                               
                 return pasaDia && pasaFac && pasaCli && pasaBus;
             });
-            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones que coincidan con la búsqueda.</div>`;
+            if (filtC.length === 0) contC.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.1rem;">No hay formaciones que coincidan con la búsqueda.</div>`;
             else contC.innerHTML = mapearClientes(filtC, true);
 
-            // FILTRADO INTELIGENTE: CRONOGRAMA GENERAL
             const contG = document.getElementById('lista-general');
             let filtG = clientes.filter(c => {
                 let pasaFac = filtroFac === 'TODOS' || c.facilitador === filtroFac;
@@ -505,7 +826,7 @@
             });
             
             if (filtG.length === 0) {
-                contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay formaciones que coincidan con la búsqueda.</div>`;
+                contG.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.1rem;">No hay formaciones que coincidan con la búsqueda.</div>`;
             } else {
                 let formacionesHoy = []; let formacionesFuturo = []; let formacionesPasado = [];
                 
@@ -523,7 +844,6 @@
                 contG.innerHTML = mapearClientes(listaOrdenada, true);
             }
 
-            // FILTRADO INTELIGENTE: TAREAS
             const contT = document.getElementById('lista-tareas');
             const filtT = tareas.filter(t => {
                 let d = parseFechaLocal(t.fecha_limite);
@@ -540,7 +860,7 @@
             });
 
             if (filtT.length === 0) {
-                contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.2rem;">No hay funciones delegadas que coincidan.</div>`;
+                contT.innerHTML = `<div style="text-align:center; padding:30px; color:var(--texto-secundario); font-size:1.1rem;">No hay funciones delegadas que coincidan.</div>`;
             } else {
                 contT.innerHTML = '';
                 filtT.forEach(t => {
