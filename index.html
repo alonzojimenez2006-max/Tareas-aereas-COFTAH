@@ -21,7 +21,7 @@
         .titulos { display: flex; flex-direction: column; justify-content: center; }
         .titulos h1 { font-size: 1.4rem; font-weight: 600; letter-spacing: 1px; margin-bottom: 2px; }
         #subtitulo-vista { font-size: 1rem; color: var(--acento-amarillo); font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase; }
-        .header-derecha { display: flex; align-items: center; gap: 20px; }
+        .header-derecha { display: flex; align-items: center; gap: 16px; }
         
         .btn-sincronizar { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 1px solid var(--acento-amarillo); padding: 10px 18px; border-radius: 6px; font-size: 1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; text-transform: uppercase; }
         .btn-sincronizar:hover { background-color: var(--acento-amarillo); color: #000; box-shadow: 0 0 15px rgba(255, 215, 0, 0.4); }
@@ -30,7 +30,14 @@
         .icono-girar { animation: rotar 1s linear infinite; }
         @keyframes rotar { 100% { transform: rotate(360deg); } }
 
-        .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 10px; min-width: 140px; }
+        /* BOTÓN Y BURBUJA DE NOTIFICACIONES */
+        .btn-notificaciones { position: relative; background-color: rgba(255, 255, 255, 0.06); color: var(--texto-principal); border: 1px solid rgba(255, 255, 255, 0.25); padding: 10px 15px; border-radius: 6px; font-size: 0.95rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s; text-transform: uppercase; }
+        .btn-notificaciones:hover { background-color: rgba(255, 215, 0, 0.15); border-color: var(--acento-amarillo); color: var(--acento-amarillo); }
+        .btn-notificaciones.tiene-nuevas { border-color: var(--urgencia-critica); background-color: rgba(255, 51, 102, 0.14); box-shadow: 0 0 12px rgba(255, 51, 102, 0.3); }
+        .badge-notif { position: absolute; top: -9px; right: -9px; background-color: var(--urgencia-critica); color: #FFFFFF; font-size: 0.78rem; font-weight: bold; min-width: 23px; height: 23px; padding: 0 6px; border-radius: 999px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(255, 51, 102, 0.8); border: 2px solid var(--bg-principal); animation: popBadge 0.3s ease; }
+        @keyframes popBadge { 0% { transform: scale(0.6); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+        .estado-conexion { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--urgencia-baja); font-weight: bold; margin-right: 6px; min-width: 135px; }
         .punto-verde { width: 10px; height: 10px; background-color: var(--urgencia-baja); border-radius: 50%; box-shadow: 0 0 8px var(--urgencia-baja); animation: titilar 2s infinite; }
         @keyframes titilar { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
 
@@ -104,21 +111,41 @@
         ::-webkit-scrollbar-track { background: var(--bg-paneles); }
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
+        /* MODALES (TAREAS Y NOTIFICACIONES) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 680px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 88vh; }
         .modal-header { background-color: rgba(255, 215, 0, 0.1); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
-        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.5rem; margin: 0; text-transform: uppercase; }
+        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.4rem; margin: 0; text-transform: uppercase; }
         .modal-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
         .modal-body { padding: 25px; font-size: 1.1rem; line-height: 1.6; color: var(--texto-principal); overflow-y: auto; }
         .modal-seccion { background-color: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid var(--urgencia-baja); }
         .modal-seccion strong { color: var(--texto-secundario); display: block; font-size: 0.9rem; text-transform: uppercase; margin-bottom: 5px; }
         
-        .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 15px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
-        .btn-modal { padding: 12px 25px; border: none; border-radius: 6px; font-weight: bold; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; }
+        .modal-footer { padding: 18px 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; gap: 15px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
+        .modal-footer-btns { display: flex; gap: 12px; margin-left: auto; flex-wrap: wrap; }
+        .btn-modal { padding: 11px 22px; border: none; border-radius: 6px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: all 0.3s; }
+        .btn-modal:hover { filter: brightness(1.15); }
         .btn-modal-cancelar { background-color: transparent; color: white; border: 1px solid var(--texto-secundario); }
         .btn-modal-proceso { background-color: var(--en-proceso); color: #000; }
         .btn-modal-completar { background-color: var(--completado); color: white; }
+        .btn-modal-leidas { background-color: var(--acento-amarillo); color: #000; }
+
+        /* TARJETAS DE NOTIFICACIONES DEL DÍA */
+        .notif-item { background-color: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 4px solid var(--acento-amarillo); border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; transition: 0.2s; }
+        .notif-item.no-leida { background-color: rgba(255, 215, 0, 0.09); border-color: rgba(255, 215, 0, 0.35); border-left-color: var(--urgencia-critica); }
+        .notif-item.tipo-tarea { border-left-color: var(--urgencia-baja); }
+        .notif-item.no-leida.tipo-tarea { border-left-color: var(--urgencia-critica); }
+        .notif-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+        .notif-tag { font-size: 0.75rem; font-weight: bold; padding: 3px 9px; border-radius: 12px; text-transform: uppercase; }
+        .tag-formacion { background-color: rgba(255, 215, 0, 0.2); color: var(--acento-amarillo); }
+        .tag-tarea { background-color: rgba(100, 255, 218, 0.18); color: var(--urgencia-baja); }
+        .tag-nueva { background-color: var(--urgencia-critica); color: #FFF; margin-left: 6px; }
+        .notif-hora { font-size: 0.82rem; color: var(--texto-secundario); font-family: monospace; }
+        .notif-titulo { font-weight: bold; font-size: 1.02rem; color: #FFFFFF; margin-bottom: 4px; }
+        .notif-detalle { font-size: 0.92rem; color: var(--texto-secundario); line-height: 1.45; }
+        .notif-vacia { text-align: center; padding: 35px 15px; color: var(--texto-secundario); font-size: 1.05rem; }
+        .notif-nota-24h { font-size: 0.82rem; color: var(--texto-secundario); }
 
         /* =========================================================
            ADAPTACIÓN RESPONSIVA PARA TELÉFONOS Y PANTALLAS PEQUEÑAS
@@ -173,14 +200,23 @@
             }
 
             .btn-sincronizar {
-                padding: 7px 12px;
-                font-size: 0.82rem;
+                padding: 7px 11px;
+                font-size: 0.8rem;
+            }
+
+            .btn-notificaciones {
+                padding: 7px 11px;
+                font-size: 0.8rem;
+            }
+
+            .texto-notif-btn {
+                display: none;
             }
 
             .estado-conexion {
                 min-width: auto;
                 margin-right: 0;
-                font-size: 0.78rem;
+                font-size: 0.76rem;
             }
 
             .reloj {
@@ -247,7 +283,6 @@
                 overflow-y: visible;
             }
 
-            /* TARJETA COMPACTA DE 2 COLUMNAS PARA FORMACIONES EN TELÉFONO */
             .fila-item.grid-clientes {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
@@ -262,14 +297,12 @@
                 transform: none;
             }
 
-            /* 1. Fecha y Hora */
             .fila-item.grid-clientes > div:nth-child(1) {
                 grid-column: 1 / 2;
                 grid-row: 1;
                 font-size: 0.95rem;
             }
 
-            /* 10. Estatus */
             .fila-item.grid-clientes > div:nth-child(10) {
                 grid-column: 2 / 3;
                 grid-row: 1;
@@ -283,7 +316,6 @@
                 font-size: 0.75rem;
             }
 
-            /* 2. Logo */
             .fila-item.grid-clientes > div:nth-child(2) {
                 grid-column: 1 / 2;
                 grid-row: 2;
@@ -292,7 +324,6 @@
                 width: 38px;
             }
 
-            /* 3. Cliente */
             .fila-item.grid-clientes > div:nth-child(3) {
                 grid-column: 1 / 3;
                 grid-row: 2;
@@ -302,7 +333,6 @@
                 line-height: 1.25;
             }
 
-            /* 7. Acción de Formación */
             .fila-item.grid-clientes > div:nth-child(7) {
                 grid-column: 1 / 3;
                 grid-row: 3;
@@ -314,7 +344,6 @@
                 line-height: 1.35;
             }
 
-            /* 4. Lugar */
             .fila-item.grid-clientes > div:nth-child(4) {
                 grid-column: 1 / 2;
                 grid-row: 4;
@@ -322,7 +351,6 @@
                 color: var(--texto-secundario);
             }
 
-            /* 5. Ciudad */
             .fila-item.grid-clientes > div:nth-child(5) {
                 grid-column: 2 / 3;
                 grid-row: 4;
@@ -331,7 +359,6 @@
                 color: var(--texto-secundario);
             }
 
-            /* 6. Participantes */
             .fila-item.grid-clientes > div:nth-child(6) {
                 grid-column: 1 / 2;
                 grid-row: 5;
@@ -339,7 +366,6 @@
                 font-size: 0.95rem !important;
             }
 
-            /* 8. Duración */
             .fila-item.grid-clientes > div:nth-child(8) {
                 grid-column: 2 / 3;
                 grid-row: 5;
@@ -351,7 +377,6 @@
                 content: "⏱ ";
             }
 
-            /* 9. Facilitador */
             .fila-item.grid-clientes > div:nth-child(9) {
                 grid-column: 1 / 3;
                 grid-row: 6;
@@ -361,7 +386,6 @@
                 font-size: 0.95rem;
             }
 
-            /* TARJETA COMPACTA PARA TAREAS EN TELÉFONO */
             .fila-item.grid-tareas {
                 display: grid;
                 grid-template-columns: 1fr auto;
@@ -413,14 +437,12 @@
                 color: var(--texto-secundario);
             }
 
-            /* ALMANAQUE EN 1 COLUMNA PARA TELÉFONO */
             .almanaque-container {
                 grid-template-columns: 1fr;
                 padding-right: 0;
                 height: auto;
             }
 
-            /* MODAL ADAPTADO A MÓVIL */
             .modal-content {
                 width: 95%;
             }
@@ -441,6 +463,13 @@
             .modal-footer {
                 padding: 15px;
                 flex-direction: column;
+                align-items: stretch;
+            }
+
+            .modal-footer-btns {
+                margin-left: 0;
+                flex-direction: column;
+                width: 100%;
             }
 
             .btn-modal {
@@ -463,6 +492,13 @@
         <div class="header-derecha">
             <button id="btn-sincronizar" class="btn-sincronizar" onclick="cargarDatos()">
                 <span id="icono-sync">🔄</span> Sincronizar
+            </button>
+
+            <!-- BOTÓN DE NOTIFICACIONES CON BURBUJA CONTADORA -->
+            <button id="btn-notificaciones" class="btn-notificaciones" onclick="abrirModalNotificaciones()" title="Notificaciones del día">
+                <span>🔔</span>
+                <span class="texto-notif-btn">Notificaciones</span>
+                <span id="badge-notificaciones" class="badge-notif" style="display: none;">0</span>
             </button>
 
             <div class="estado-conexion" id="estado-conexion">
@@ -560,6 +596,7 @@
         </div>
     </div>
 
+    <!-- MODAL: DETALLES DE TAREA -->
     <div class="modal-overlay" id="modal-tarea">
         <div class="modal-content">
             <div class="modal-header">
@@ -568,14 +605,36 @@
             </div>
             <div class="modal-body" id="modal-body"></div>
             <div class="modal-footer" id="modal-footer">
-                <button class="btn-modal btn-modal-cancelar" onclick="cerrarModal()">Volver</button>
-                <button class="btn-modal btn-modal-proceso" id="btn-proceso-modal">Realizando</button>
-                <button class="btn-modal btn-modal-completar" id="btn-completar-modal">Marcar como Hecho</button>
+                <div class="modal-footer-btns">
+                    <button class="btn-modal btn-modal-cancelar" onclick="cerrarModal()">Volver</button>
+                    <button class="btn-modal btn-modal-proceso" id="btn-proceso-modal">Realizando</button>
+                    <button class="btn-modal btn-modal-completar" id="btn-completar-modal">Marcar como Hecho</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CENTRO DE NOTIFICACIONES DEL DÍA (24 HORAS) -->
+    <div class="modal-overlay" id="modal-notificaciones">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔔 Notificaciones del Día</h2>
+                <button class="modal-close" onclick="cerrarModalNotificaciones()">×</button>
+            </div>
+            <div class="modal-body" id="lista-notificaciones-body"></div>
+            <div class="modal-footer">
+                <span class="notif-nota-24h">Se acumulan durante 24h y se reinician a las 12:00 AM.</span>
+                <div class="modal-footer-btns">
+                    <button type="button" class="btn-modal btn-modal-leidas" id="btn-marcar-leidas" onclick="marcarTodasNotificacionesLeidas()">Marcar como leídas</button>
+                    <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalNotificaciones()">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        const NOTIF_STORAGE_KEY = 'coftah_notificaciones_dia_v1';
+
         document.body.addEventListener('click', function() {
             if ('speechSynthesis' in window) {
                 let msg = new SpeechSynthesisUtterance("");
@@ -598,23 +657,137 @@
         
         function parseFechaLocal(fechaStr) {
             if (!fechaStr) return new Date();
-            let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
+            let limpia = String(fechaStr).endsWith('Z') ? String(fechaStr).slice(0, -1) : String(fechaStr);
             return new Date(limpia);
         }
 
-        function inicializarFechas() {
+        function obtenerFechaHoyStr() {
             let hoy = new Date();
             let yyyy = hoy.getFullYear();
             let mm = String(hoy.getMonth() + 1).padStart(2, '0');
             let dd = String(hoy.getDate()).padStart(2, '0');
-            document.getElementById('filtro-dia').value = `${yyyy}-${mm}-${dd}`;
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function inicializarFechas() {
+            let hoy = new Date();
+            document.getElementById('filtro-dia').value = obtenerFechaHoyStr();
             
             let textoF = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('dia-actual-header').textContent = textoF.replace(',', '').replace(' de 20', ' del 20').toUpperCase();
         }
 
+        // ==================== SISTEMA DE NOTIFICACIONES DIARIAS (24H) ====================
+        function obtenerEstadoNotificaciones() {
+            const hoyStr = obtenerFechaHoyStr();
+            try {
+                const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === 'object') {
+                        // Si ya cambió el día (pasaron las 24h), limpiar notificaciones del día anterior
+                        if (parsed.fecha !== hoyStr) {
+                            const reiniciado = {
+                                fecha: hoyStr,
+                                items: [],
+                                knownClientes: Array.isArray(parsed.knownClientes) ? parsed.knownClientes : null,
+                                knownTareas: Array.isArray(parsed.knownTareas) ? parsed.knownTareas : null
+                            };
+                            localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(reiniciado));
+                            return reiniciado;
+                        }
+                        return parsed;
+                    }
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        function guardarEstadoNotificaciones(estado) {
+            try {
+                localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(estado));
+            } catch (e) {}
+        }
+
+        function actualizarBadgeNotificaciones() {
+            const estado = obtenerEstadoNotificaciones();
+            const btn = document.getElementById('btn-notificaciones');
+            const badge = document.getElementById('badge-notificaciones');
+
+            if (!estado || !Array.isArray(estado.items)) {
+                badge.style.display = 'none';
+                btn.classList.remove('tiene-nuevas');
+                return;
+            }
+
+            const noLeidas = estado.items.filter(n => !n.leida).length;
+            if (noLeidas > 0) {
+                badge.textContent = noLeidas;
+                badge.style.display = 'flex';
+                btn.classList.add('tiene-nuevas');
+            } else {
+                badge.style.display = 'none';
+                btn.classList.remove('tiene-nuevas');
+            }
+        }
+
+        function verificarCambioDeDiaNotificaciones() {
+            const estado = obtenerEstadoNotificaciones();
+            if (estado) actualizarBadgeNotificaciones();
+        }
+
+        function abrirModalNotificaciones() {
+            const estado = obtenerEstadoNotificaciones();
+            const contenedor = document.getElementById('lista-notificaciones-body');
+            const btnLeidas = document.getElementById('btn-marcar-leidas');
+
+            if (!estado || !estado.items || estado.items.length === 0) {
+                contenedor.innerHTML = `<div class="notif-vacia">No se han registrado nuevas formaciones ni funciones delegadas en el transcurso de hoy.</div>`;
+                btnLeidas.style.display = 'none';
+            } else {
+                const hayNoLeidas = estado.items.some(n => !n.leida);
+                btnLeidas.style.display = hayNoLeidas ? 'inline-block' : 'none';
+
+                contenedor.innerHTML = estado.items.map(n => {
+                    const esTarea = n.tipo === 'tarea';
+                    const etiquetaTipo = esTarea
+                        ? `<span class="notif-tag tag-tarea">Función Delegada</span>`
+                        : `<span class="notif-tag tag-formacion">Nueva Formación</span>`;
+                    const etiquetaNueva = !n.leida ? `<span class="notif-tag tag-nueva">Nueva</span>` : '';
+
+                    return `
+                        <div class="notif-item ${esTarea ? 'tipo-tarea' : ''} ${!n.leida ? 'no-leida' : ''}">
+                            <div class="notif-top">
+                                <div>${etiquetaTipo}${etiquetaNueva}</div>
+                                <span class="notif-hora">Recibida: ${n.horaDeteccion}</span>
+                            </div>
+                            <div class="notif-titulo">${n.titulo}</div>
+                            <div class="notif-detalle">${n.detalle}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('modal-notificaciones').classList.add('active');
+        }
+
+        function cerrarModalNotificaciones() {
+            document.getElementById('modal-notificaciones').classList.remove('active');
+        }
+
+        function marcarTodasNotificacionesLeidas() {
+            const estado = obtenerEstadoNotificaciones();
+            if (!estado || !estado.items) return;
+
+            estado.items = estado.items.map(n => ({ ...n, leida: true }));
+            guardarEstadoNotificaciones(estado);
+            actualizarBadgeNotificaciones();
+            abrirModalNotificaciones();
+        }
+
+        // ==================== CARGA Y SINCRONIZACIÓN DE DATOS ====================
         let clientes = []; let tareas = [];
-        let tareasAvisadas = new Set(); let clientesConocidos = new Set(); let tareasConocidas = new Set(); let esPrimeraCarga = true;
+        let tareasAvisadas = new Set(); let esPrimeraCarga = true;
 
         async function cargarDatos() {
             const ind = document.getElementById('estado-conexion');
@@ -656,30 +829,88 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                if (esPrimeraCarga) {
-                    clientes.forEach(c => clientesConocidos.add(c.id));
-                    tareas.forEach(t => tareasConocidas.add(t.id));
-                    esPrimeraCarga = false;
+                // DETECCIÓN DE NOVEDADES PARA NOTIFICACIONES DEL DÍA
+                const hoyStr = obtenerFechaHoyStr();
+                const horaDeteccion = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+                let estadoNotif = obtenerEstadoNotificaciones();
+
+                if (!estadoNotif || !Array.isArray(estadoNotif.knownClientes) || !Array.isArray(estadoNotif.knownTareas)) {
+                    // Primera vez en este navegador: inicializamos memoria sin inundar con historial viejo
+                    estadoNotif = {
+                        fecha: hoyStr,
+                        items: [],
+                        knownClientes: clientes.map(c => c.id),
+                        knownTareas: tareas.map(t => t.id)
+                    };
+                    guardarEstadoNotificaciones(estadoNotif);
                 } else {
-                    clientes.forEach(c => { 
-                        if (!clientesConocidos.has(c.id)) { 
+                    const setClientesConocidos = new Set(estadoNotif.knownClientes);
+                    const setTareasConocidas = new Set(estadoNotif.knownTareas);
+                    let huboNuevas = false;
+
+                    clientes.forEach(c => {
+                        if (!setClientesConocidos.has(c.id)) {
                             let d = parseFechaLocal(c.fecha_atencion);
-                            let fechaTexto = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-                            hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTexto}.`); 
-                            clientesConocidos.add(c.id); 
+                            let fechaCorta = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                            let horaCurso = d.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+                            let fechaTextoVoz = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+
+                            estadoNotif.items.unshift({
+                                idUnico: `cliente-${c.id}`,
+                                tipo: 'formacion',
+                                titulo: `${c.nombre_cliente} — ${c.accion_formacion}`,
+                                detalle: `Fecha: ${fechaCorta} (${horaCurso}) | Facilitador: ${c.facilitador} | Lugar: ${c.lugar_atencion}, ${c.ciudad} | Part.: ${c.participantes || 0}`,
+                                horaDeteccion: horaDeteccion,
+                                leida: false
+                            });
+
+                            setClientesConocidos.add(c.id);
+                            huboNuevas = true;
+
+                            if (!esPrimeraCarga) {
+                                hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTextoVoz}.`);
+                            }
                         }
                     });
-                    tareas.forEach(t => { 
-                        if (!tareasConocidas.has(t.id)) { 
-                            let msj = t.nombre_cliente
-                                ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion || ''} y la tarea es: ${t.descripcion}.`
-                                : `Se le dio una nueva función a ${t.responsable} y la tarea es: ${t.descripcion}.`;
-                            hablar(msj); 
-                            tareasConocidas.add(t.id); 
+
+                    tareas.forEach(t => {
+                        if (!setTareasConocidas.has(t.id)) {
+                            let dLim = parseFechaLocal(t.fecha_limite);
+                            let horaLim = dLim.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+                            let contextoVinculo = t.nombre_cliente
+                                ? `Para empresa: ${t.nombre_cliente} (${t.accion_formacion || ''}) | `
+                                : '';
+
+                            estadoNotif.items.unshift({
+                                idUnico: `tarea-${t.id}`,
+                                tipo: 'tarea',
+                                titulo: `Asignada a ${t.responsable}`,
+                                detalle: `${t.descripcion} — ${contextoVinculo}Límite: ${horaLim} | Urgencia: ${(t.urgencia || 'rutina').toUpperCase()}`,
+                                horaDeteccion: horaDeteccion,
+                                leida: false
+                            });
+
+                            setTareasConocidas.add(t.id);
+                            huboNuevas = true;
+
+                            if (!esPrimeraCarga) {
+                                let msj = t.nombre_cliente
+                                    ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion || ''} y la tarea es: ${t.descripcion}.`
+                                    : `Se le dio una nueva función a ${t.responsable} y la tarea es: ${t.descripcion}.`;
+                                hablar(msj);
+                            }
                         }
                     });
+
+                    if (huboNuevas) {
+                        estadoNotif.knownClientes = Array.from(setClientesConocidos);
+                        estadoNotif.knownTareas = Array.from(setTareasConocidas);
+                        guardarEstadoNotificaciones(estadoNotif);
+                    }
                 }
-                
+
+                esPrimeraCarga = false;
+                actualizarBadgeNotificaciones();
                 renderizarVistas();
                 
                 let horaF = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute:'2-digit' });
@@ -1032,6 +1263,9 @@
         }
 
         function verificarTiempos() {
+            // Revisa también localmente si cambió el día para limpiar notificaciones de 24h sin gastar consultas
+            verificarCambioDeDiaNotificaciones();
+
             const ahora = new Date();
             tareas.forEach(t => {
                 if (t.completada || !t.created_at) return; 
@@ -1044,7 +1278,9 @@
             });
         }
 
-        inicializarFechas(); cargarDatos(); 
+        inicializarFechas();
+        actualizarBadgeNotificaciones();
+        cargarDatos(); 
         setInterval(verificarTiempos, 10000); 
     </script>
 </body>
