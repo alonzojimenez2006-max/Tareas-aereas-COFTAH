@@ -11,21 +11,158 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <style>
-        :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --input-bg: #1A365D; --borde-input: #234E8A; --btn-borrar: #FF3366; --btn-editar: #00BFFF; --btn-restaurar: #2E8B57; }
+        :root {
+            --bg-principal: #0A192F;
+            --bg-paneles: #112240;
+            --texto-principal: #FFFFFF;
+            --texto-secundario: #8892B0;
+            --acento-amarillo: #FFD700;
+            --input-bg: #1A365D;
+            --borde-input: #234E8A;
+            --btn-borrar: #FF3366;
+            --btn-editar: #00BFFF;
+            --btn-restaurar: #2E8B57;
+            --badge-crear: #2E8B57;
+            --badge-editar: #00BFFF;
+            --badge-eliminar: #FF3366;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-principal); color: var(--texto-principal); min-height: 100vh; padding: 20px; }
-        header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--bg-paneles); }
-        header img { height: 45px; width: auto; }
-        header h1 { font-size: 1.5rem; font-weight: 600; color: var(--acento-amarillo); }
+
+        /* ================= PANTALLA DE LOGIN ================= */
+        .login-wrapper {
+            min-height: calc(100vh - 40px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-card {
+            background-color: var(--bg-paneles);
+            border: 2px solid var(--acento-amarillo);
+            border-radius: 14px;
+            padding: 35px 30px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7);
+            text-align: center;
+        }
+        .login-card img {
+            height: 60px;
+            width: auto;
+            margin-bottom: 15px;
+        }
+        .login-card h2 {
+            color: var(--acento-amarillo);
+            font-size: 1.4rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .login-card p {
+            color: var(--texto-secundario);
+            font-size: 0.92rem;
+            margin-bottom: 25px;
+        }
+        .login-card .form-group {
+            text-align: left;
+        }
+        .login-error {
+            display: none;
+            background-color: rgba(255, 51, 102, 0.15);
+            border: 1px solid var(--btn-borrar);
+            color: #ff809f;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        /* ================= HEADER Y SESIÓN ================= */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--bg-paneles);
+        }
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .header-brand img { height: 45px; width: auto; }
+        .header-brand h1 { font-size: 1.5rem; font-weight: 600; color: var(--acento-amarillo); }
+
+        .sesion-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background-color: var(--bg-paneles);
+            padding: 8px 14px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            flex-wrap: wrap;
+        }
+        .sesion-info {
+            font-size: 0.92rem;
+            color: var(--texto-principal);
+            font-weight: 600;
+        }
+        .sesion-usuario-tag {
+            color: var(--texto-secundario);
+            font-weight: normal;
+            font-size: 0.85rem;
+        }
+        .rol-badge {
+            padding: 3px 9px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .rol-master {
+            background-color: rgba(255, 215, 0, 0.2);
+            color: var(--acento-amarillo);
+            border: 1px solid var(--acento-amarillo);
+        }
+        .rol-admin {
+            background-color: rgba(0, 191, 255, 0.18);
+            color: #00BFFF;
+            border: 1px solid #00BFFF;
+        }
+        .btn-logout {
+            background-color: rgba(255, 51, 102, 0.18);
+            color: #ff6b8b;
+            border: 1px solid var(--btn-borrar);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-logout:hover {
+            background-color: var(--btn-borrar);
+            color: #FFFFFF;
+        }
+
+        /* ================= PESTAÑAS Y CONTENEDORES ================= */
         .tabs-container { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .tab-btn { background-color: var(--bg-paneles); color: var(--texto-secundario); border: 2px solid transparent; padding: 12px 20px; font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
+        .tab-btn { background-color: var(--bg-paneles); color: var(--texto-secundario); border: 2px solid transparent; padding: 12px 18px; font-size: 0.95rem; font-weight: bold; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
         .tab-btn.active { background-color: rgba(255, 215, 0, 0.15); color: var(--acento-amarillo); border: 2px solid var(--acento-amarillo); }
-        .vista { display: none; background-color: var(--bg-paneles); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); max-width: 900px; margin: 0 auto; }
+        .tab-btn.tab-master-only { border-color: rgba(255, 215, 0, 0.25); }
+
+        .vista { display: none; background-color: var(--bg-paneles); border-radius: 12px; padding: 30px; box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5); max-width: 980px; margin: 0 auto; }
         .vista.active { display: block; }
-        .panel-titulo { font-size: 1.3rem; text-transform: uppercase; color: var(--acento-amarillo); margin-bottom: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+        .panel-titulo { font-size: 1.3rem; text-transform: uppercase; color: var(--acento-amarillo); margin-bottom: 25px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
         .form-group { margin-bottom: 20px; }
-        .row-group { display: flex; gap: 15px; margin-bottom: 20px; }
-        .row-group > div { flex: 1; }
+        .row-group { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .row-group > div { flex: 1; min-width: 180px; }
         label { display: block; margin-bottom: 8px; color: var(--texto-secundario); font-weight: bold; }
         
         input, select, textarea { width: 100%; padding: 12px; background-color: var(--input-bg); border: 1px solid var(--borde-input); border-radius: 6px; color: var(--texto-principal); font-size: 1rem; outline: none; }
@@ -41,32 +178,50 @@
         .select2-results__option--highlighted.select2-results__option--selectable { background-color: var(--acento-amarillo) !important; color: #000 !important; }
 
         .radio-group { display: flex; gap: 20px; background-color: var(--input-bg); padding: 12px; border-radius: 6px; }
-        .tabla-gestion { width: 100%; border-collapse: collapse; margin-bottom: 30px; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
+        .tabla-scroll { width: 100%; overflow-x: auto; margin-bottom: 30px; border-radius: 8px; }
+        .tabla-gestion { width: 100%; border-collapse: collapse; background-color: var(--input-bg); border-radius: 8px; overflow: hidden; }
         .tabla-gestion th, .tabla-gestion td { padding: 12px; text-align: left; border-bottom: 1px solid var(--borde-input); vertical-align: middle; }
-        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); font-size: 0.9rem; }
+        .tabla-gestion th { background-color: var(--bg-principal); color: var(--acento-amarillo); font-size: 0.88rem; text-transform: uppercase; }
         
-        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px; transition: 0.2s;}
+        .btn-accion { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; margin-right: 5px; margin-bottom: 3px; transition: 0.2s; font-size: 0.85rem; }
         .btn-borrar { background-color: var(--btn-borrar); }
         .btn-editar { background-color: var(--btn-editar); color: #000; }
         .btn-mover { background-color: #d4a017; color: #000; }
         .btn-restaurar { background-color: var(--btn-restaurar); }
         .btn-accion:hover { filter: brightness(1.2); }
         
-        .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 30px; }
+        .btn-submit { width: 100%; padding: 15px; background-color: var(--acento-amarillo); color: #000; border: none; border-radius: 6px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-bottom: 20px; transition: 0.2s; }
+        .btn-submit:hover { filter: brightness(1.08); }
+        .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
         #grupo-programa-vinculado { display: none; }
-        .grid-personal { display: flex; gap: 20px; margin-bottom: 30px; }
-        .grid-personal > div { flex: 1; }
+        .grid-personal { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+        .grid-personal > div { flex: 1; min-width: 260px; }
         .papelera-box { border: 2px dashed var(--btn-borrar); padding: 20px; border-radius: 8px; background-color: rgba(255, 51, 102, 0.05); }
         input[type="file"] { padding: 9px; cursor: pointer; }
         input[type="file"]::file-selector-button { background-color: var(--bg-principal); color: var(--texto-principal); border: 1px solid var(--acento-amarillo); padding: 8px 16px; border-radius: 4px; margin-right: 15px; cursor: pointer; }
         ::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         
         .buscador-contenedor { background-color: rgba(255, 215, 0, 0.1); border: 1px solid var(--acento-amarillo); padding: 15px; border-radius: 8px; margin-bottom: 25px; }
-        .buscador-contenedor input { background-color: transparent; border: none; color: white; font-size: 1.1rem; width: 100%; outline: none; }
+        .buscador-contenedor input { background-color: transparent; border: none; color: white; font-size: 1.05rem; width: 100%; outline: none; padding: 0; }
         .buscador-contenedor input::placeholder { color: var(--texto-secundario); }
+
+        .filtros-movimientos { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filtros-movimientos input { flex: 2; min-width: 220px; }
+        .filtros-movimientos select { flex: 1; min-width: 160px; }
 
         .avatar-mini { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; border: 2px solid var(--acento-amarillo); margin-right: 10px; display: inline-block; vertical-align: middle; background-color: white;}
         .badge-bloque { display: inline-block; background-color: rgba(0, 191, 255, 0.18); color: #00BFFF; border: 1px solid #00BFFF; font-size: 0.75rem; font-weight: bold; padding: 2px 7px; border-radius: 10px; margin-left: 6px; vertical-align: middle; }
+
+        /* BADGES DE MOVIMIENTOS Y USUARIOS */
+        .badge-mov { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: bold; text-transform: uppercase; }
+        .mov-CREAR { background-color: rgba(46, 139, 87, 0.25); color: #64FFDA; border: 1px solid #2E8B57; }
+        .mov-EDITAR { background-color: rgba(0, 191, 255, 0.2); color: #00BFFF; border: 1px solid #00BFFF; }
+        .mov-ELIMINAR { background-color: rgba(255, 51, 102, 0.2); color: #FF6B8B; border: 1px solid #FF3366; }
+
+        .detalle-mov-texto { font-size: 0.85rem; color: var(--texto-secundario); margin-top: 4px; line-height: 1.4; }
+        .estado-activo { color: #64FFDA; font-weight: bold; }
+        .estado-inactivo { color: #FF6B8B; font-weight: bold; }
 
         /* CAJA DE OPCIÓN PARA EDITAR EN BLOQUE */
         .bloque-check-box { background-color: rgba(0, 191, 255, 0.12); border: 1px solid var(--btn-editar); border-radius: 8px; padding: 14px; margin-bottom: 20px; }
@@ -74,14 +229,15 @@
         .bloque-check-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--acento-amarillo); }
         .bloque-check-ayuda { font-size: 0.85rem; color: var(--texto-secundario); margin-top: 6px; margin-left: 28px; }
 
+        /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-overlay.active { display: flex; }
-        .modal-content { background-color: var(--bg-paneles); width: 90%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
+        .modal-content { background-color: var(--bg-paneles); width: 92%; max-width: 650px; border-radius: 12px; border: 2px solid var(--acento-amarillo); overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); display: flex; flex-direction: column; max-height: 90vh; }
         .modal-content.modal-peligro { max-width: 520px; border-color: var(--btn-borrar); }
         .modal-header { background-color: rgba(255, 215, 0, 0.1); padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; }
         .modal-content.modal-peligro .modal-header { background-color: rgba(255, 51, 102, 0.15); }
         .modal-content.modal-peligro .modal-header h2 { color: var(--btn-borrar); }
-        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.4rem; margin: 0; text-transform: uppercase; }
+        .modal-header h2 { color: var(--acento-amarillo); font-size: 1.35rem; margin: 0; text-transform: uppercase; }
         .modal-close { background: none; border: none; color: white; font-size: 2rem; cursor: pointer; line-height: 1; }
         .modal-body { padding: 25px; overflow-y: auto; }
         .modal-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: flex-end; gap: 12px; background-color: rgba(0,0,0,0.2); flex-wrap: wrap; }
@@ -94,168 +250,293 @@
     </style>
 </head>
 <body>
-    <header>
-        <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
-        <h1>PANEL DE ADMINISTRACIÓN</h1>
-    </header>
 
-    <div class="tabs-container">
-        <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Formación</button>
-        <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
-        <button class="tab-btn" id="btn-formaciones" onclick="cambiarFormulario('formaciones'); cargarFormaciones();">Directorio Formaciones</button>
-        <button class="tab-btn" id="btn-directorio" onclick="cambiarFormulario('directorio'); cargarDirectorio();">Directorio Empresas</button>
-        <button class="tab-btn" id="btn-personal" onclick="cambiarFormulario('personal')">Equipo de Trabajo</button>
-        <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
+    <!-- ==================== PANTALLA DE ACCESO (LOGIN) ==================== -->
+    <div id="login-screen" class="login-wrapper">
+        <div class="login-card">
+            <img src="COFTAH.png.png" alt="Logo COFTAH" onerror="this.style.display='none'">
+            <h2>Acceso Administrativo</h2>
+            <p>Ingresa tus credenciales autorizadas para gestionar el tablero.</p>
+            <div id="login-error" class="login-error"></div>
+            <form id="form-login">
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <input type="text" id="login-usuario" placeholder="Ej: admin" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required>
+                </div>
+                <button type="submit" id="btn-login" class="btn-submit" style="margin-bottom: 0;">Iniciar Sesión</button>
+            </form>
+        </div>
     </div>
 
-    <!-- VISTA PROGRAMAR FORMACIÓN -->
-    <div class="vista active" id="vista-clientes">
-        <h2 class="panel-titulo">Datos de la Formación</h2>
-        <form id="form-cliente">
-            <div class="row-group">
-                <div>
-                    <label>Días de duración</label>
-                    <input type="number" id="dias-formacion" min="1" max="10" value="1" onchange="generarCamposFechas()" required>
-                </div>
-                <div>
-                    <label>Hora de inicio</label>
-                    <input type="time" id="hora-cliente" required>
-                </div>
+    <!-- ==================== APLICACIÓN PRINCIPAL ADMIN ==================== -->
+    <div id="admin-app" style="display: none;">
+        <header>
+            <div class="header-brand">
+                <img src="COFTAH.png.png" alt="Logo" onerror="this.style.display='none'">
+                <h1>PANEL DE ADMINISTRACIÓN</h1>
             </div>
-            
-            <div id="contenedor-fechas" style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
-            
-            <div class="form-group">
-                <label>Cliente / Empresa</label>
-                <select id="cliente-directorio" class="select-buscador" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
+            <div class="sesion-bar">
+                <span class="sesion-info" id="sesion-nombre-display">Usuario</span>
+                <span class="rol-badge" id="sesion-rol-display">ADMIN</span>
+                <button type="button" class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
             </div>
-            
-            <div class="row-group">
-                <div style="flex: 2;"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
-                <div style="flex: 1.5;"><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
-                <div style="flex: 1;"><label>Participantes</label><input type="number" id="participantes-cliente" min="1" value="10" required></div>
-            </div>
+        </header>
 
-            <div class="row-group">
-                <div style="flex: 3;">
-                    <label>Acción de Formación</label>
-                    <select id="accion-formacion-cliente" class="select-buscador" required>
-                        <option value="" disabled selected>Cargando formaciones...</option>
+        <div class="tabs-container">
+            <button class="tab-btn active" id="btn-clientes" onclick="cambiarFormulario('clientes')">Programar Formación</button>
+            <button class="tab-btn" id="btn-tareas" onclick="cambiarFormulario('tareas')">Delegar Función</button>
+            <button class="tab-btn" id="btn-formaciones" onclick="cambiarFormulario('formaciones'); cargarFormaciones();">Directorio Formaciones</button>
+            <button class="tab-btn" id="btn-directorio" onclick="cambiarFormulario('directorio'); cargarDirectorio();">Directorio Empresas</button>
+            <button class="tab-btn" id="btn-personal" onclick="cambiarFormulario('personal')">Equipo de Trabajo</button>
+            <button class="tab-btn" id="btn-gestion" onclick="cambiarFormulario('gestion'); cargarDatosGestion();">Gestión General</button>
+            <button class="tab-btn" id="btn-movimientos" onclick="cambiarFormulario('movimientos'); cargarMovimientos();">Movimientos</button>
+            <button class="tab-btn tab-master-only" id="btn-usuarios" style="display: none;" onclick="cambiarFormulario('usuarios'); cargarUsuarios();">Crear Usuario</button>
+        </div>
+
+        <!-- VISTA 1: PROGRAMAR FORMACIÓN -->
+        <div class="vista active" id="vista-clientes">
+            <h2 class="panel-titulo">Datos de la Formación</h2>
+            <form id="form-cliente">
+                <div class="row-group">
+                    <div>
+                        <label>Días de duración</label>
+                        <input type="number" id="dias-formacion" min="1" max="10" value="1" onchange="generarCamposFechas()" required>
+                    </div>
+                    <div>
+                        <label>Hora de inicio</label>
+                        <input type="time" id="hora-cliente" required>
+                    </div>
+                </div>
+                
+                <div id="contenedor-fechas" style="background-color: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+                
+                <div class="form-group">
+                    <label>Cliente / Empresa</label>
+                    <select id="cliente-directorio" class="select-buscador" required><option value="" disabled selected>Cargando empresas del directorio...</option></select>
+                </div>
+                
+                <div class="row-group">
+                    <div style="flex: 2;"><label>Lugar</label><input type="text" id="lugar-cliente" required></div>
+                    <div style="flex: 1.5;"><label>Ciudad</label><input type="text" id="ciudad-cliente" required></div>
+                    <div style="flex: 1;"><label>Participantes</label><input type="number" id="participantes-cliente" min="1" value="10" required></div>
+                </div>
+
+                <div class="row-group">
+                    <div style="flex: 3;">
+                        <label>Acción de Formación</label>
+                        <select id="accion-formacion-cliente" class="select-buscador" required>
+                            <option value="" disabled selected>Cargando formaciones...</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Duración de AF</label>
+                        <input type="text" id="duracion-cliente" placeholder="Ej: 8 Hrs" required>
+                    </div>
+                </div>
+                
+                <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" class="select-buscador" required><option value="" disabled selected>Cargando personal...</option></select></div>
+                <div class="form-group">
+                    <label>Estatus inicial</label>
+                    <select id="estatus-cliente" required>
+                        <option value="programado">Programado</option>
+                        <option value="importante">Aviso Próximo</option>
+                        <option value="retrasado">Retrasado</option>
+                        <option value="cancelado">Cancelada</option>
                     </select>
                 </div>
-                <div style="flex: 1;">
-                    <label>Duración de AF</label>
-                    <input type="text" id="duracion-cliente" placeholder="Ej: 8 Hrs" required>
+                <button type="submit" id="btn-guardar-formacion" class="btn-submit">Guardar Formación</button>
+            </form>
+        </div>
+
+        <!-- VISTA 2: DIRECTORIO FORMACIONES -->
+        <div class="vista" id="vista-formaciones">
+            <h2 class="panel-titulo">Añadir Acción de Formación</h2>
+            <form id="form-formacion">
+                <div class="form-group">
+                    <label>Nombre de la Formación (Ej: Básico H2S, Manejo Defensivo)</label>
+                    <input type="text" id="nombre-formacion" required>
+                </div>
+                <button type="submit" class="btn-submit">Guardar en Directorio Permanente</button>
+            </form>
+            <h3 style="color: var(--acento-amarillo); margin-bottom: 10px; margin-top: 20px;">📋 Formaciones Registradas</h3>
+            <div class="tabla-scroll">
+                <table class="tabla-gestion" style="margin-bottom:0;"><tbody id="tbody-formaciones"><tr><td>Cargando...</td></tr></tbody></table>
+            </div>
+        </div>
+
+        <!-- VISTA 3: TAREAS -->
+        <div class="vista" id="vista-tareas">
+            <h2 class="panel-titulo">Asignación de Tareas</h2>
+            <form id="form-tarea">
+                <div class="form-group"><label>Tipo de Función</label><div class="radio-group"><label><input type="radio" name="tipo-tarea" value="aislada" checked> Aislada</label><label><input type="radio" name="tipo-tarea" value="vinculada"> Vincular</label></div></div>
+                <div class="form-group" id="grupo-programa-vinculado"><label>Programa Activo</label><select id="programa-vinculado" class="select-buscador"></select></div>
+                <div class="form-group"><label>Responsable</label><select id="responsable-tarea" class="select-buscador" required><option value="" disabled selected>Cargando personal...</option></select></div>
+                <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
+                <div class="row-group">
+                    <div><label>Fecha Límite</label><input type="date" id="fecha-tarea" required></div>
+                    <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
+                </div>
+                <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
+                <button type="submit" class="btn-submit">Delegar Función</button>
+            </form>
+        </div>
+
+        <!-- VISTA 4: DIRECTORIO EMPRESAS -->
+        <div class="vista" id="vista-directorio">
+            <h2 class="panel-titulo">Añadir Empresa al Directorio</h2>
+            <form id="form-directorio">
+                <div class="form-group"><label>Nombre de la Empresa (Ej: SLB)</label><input type="text" id="nombre-empresa" required></div>
+                <div class="form-group"><label>Logo Oficial</label><input type="file" id="logo-empresa" accept="image/png, image/jpeg, image/webp" required></div>
+                <button type="submit" class="btn-submit">Guardar en Directorio Permanente</button>
+            </form>
+            <h3 style="color: var(--acento-amarillo); margin-bottom: 10px; margin-top: 20px;">📋 Empresas Registradas</h3>
+            <div class="tabla-scroll">
+                <table class="tabla-gestion" style="margin-bottom:0;"><tbody id="tbody-empresas"><tr><td>Cargando...</td></tr></tbody></table>
+            </div>
+        </div>
+
+        <!-- VISTA 5: PERSONAL -->
+        <div class="vista" id="vista-personal">
+            <h2 class="panel-titulo">Añadir Nuevo Miembro</h2>
+            <form id="form-personal">
+                <div class="row-group">
+                    <div><label>Nombre (Apodo)</label><input type="text" id="nombre-personal" required></div>
+                    <div><label>Rol</label><select id="rol-personal" required><option value="facilitador">Facilitador</option><option value="responsable">Responsable</option></select></div>
+                </div>
+                <div class="form-group">
+                    <label>Foto de Perfil (Opcional)</label>
+                    <input type="file" id="foto-personal" accept="image/png, image/jpeg, image/webp">
+                </div>
+                <button type="submit" class="btn-submit">Añadir al Equipo</button>
+            </form>
+
+            <div class="grid-personal">
+                <div>
+                    <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Facilitadores</h3>
+                    <table class="tabla-gestion"><tbody id="tbody-facilitadores"><tr><td>Cargando...</td></tr></tbody></table>
+                </div>
+                <div>
+                    <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Responsables</h3>
+                    <table class="tabla-gestion"><tbody id="tbody-responsables"><tr><td>Cargando...</td></tr></tbody></table>
                 </div>
             </div>
-            
-            <div class="form-group"><label>Facilitador</label><select id="facilitador-cliente" class="select-buscador" required><option value="" disabled selected>Cargando personal...</option></select></div>
-            <div class="form-group">
-                <label>Estatus inicial</label>
-                <select id="estatus-cliente" required>
-                    <option value="programado">Programado</option>
-                    <option value="importante">Aviso Próximo</option>
-                    <option value="retrasado">Retrasado</option>
-                    <option value="cancelado">Cancelada</option>
+
+            <div class="papelera-box">
+                <h3 style="color: var(--btn-borrar); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">🗑️ Papelera de Reciclaje</h3>
+                <table class="tabla-gestion" style="margin-bottom: 0;"><tbody id="tbody-papelera"><tr><td style="color: var(--texto-secundario);">La papelera está vacía.</td></tr></tbody></table>
+            </div>
+        </div>
+
+        <!-- VISTA 6: GESTIÓN GENERAL -->
+        <div class="vista" id="vista-gestion">
+            <div class="buscador-contenedor">
+                <input type="text" id="buscador-general" placeholder="🔍 Buscar rápidamente por fecha, cliente, acción..." onkeyup="filtrarGestion()">
+            </div>
+            <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
+            <div class="tabla-scroll">
+                <table class="tabla-gestion" style="margin-bottom:0;">
+                    <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción y Participantes</th><th>Acción</th></tr></thead>
+                    <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
+                </table>
+            </div>
+            <h2 class="panel-titulo">Funciones Delegadas</h2>
+            <div class="tabla-scroll">
+                <table class="tabla-gestion" style="margin-bottom:0;">
+                    <thead><tr><th>Responsable</th><th>Descripción</th><th>Estatus</th><th>Acción</th></tr></thead>
+                    <tbody id="tbody-tareas"><tr><td colspan="4">Cargando...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- VISTA 7: MOVIMIENTOS (AUDITORÍA: EDITABLE POR MASTER, SOLO LECTURA PARA ADMIN) -->
+        <div class="vista" id="vista-movimientos">
+            <h2 class="panel-titulo">
+                <span>Historial de Movimientos y Auditoría</span>
+                <button type="button" class="btn-accion btn-editar" onclick="cargarMovimientos()">🔄 Actualizar</button>
+            </h2>
+            <div class="filtros-movimientos">
+                <input type="text" id="buscador-movimientos" placeholder="🔍 Buscar por usuario, cliente, acción o detalle..." onkeyup="renderizarTablaMovimientos()">
+                <select id="filtro-mov-accion" onchange="renderizarTablaMovimientos()">
+                    <option value="TODAS">Todas las acciones</option>
+                    <option value="CREAR">Creaciones</option>
+                    <option value="EDITAR">Ediciones</option>
+                    <option value="ELIMINAR">Eliminaciones</option>
+                </select>
+                <select id="filtro-mov-modulo" onchange="renderizarTablaMovimientos()">
+                    <option value="TODOS">Todos los módulos</option>
+                    <option value="Formaciones">Formaciones</option>
+                    <option value="Tareas">Tareas</option>
+                    <option value="Equipo">Equipo</option>
+                    <option value="Directorio Empresas">Directorio Empresas</option>
+                    <option value="Directorio Formaciones">Directorio Formaciones</option>
+                    <option value="Usuarios">Usuarios</option>
                 </select>
             </div>
-            <button type="submit" id="btn-guardar-formacion" class="btn-submit">Guardar Formación</button>
-        </form>
-    </div>
-
-    <!-- DIRECTORIO FORMACIONES -->
-    <div class="vista" id="vista-formaciones">
-        <h2 class="panel-titulo">Añadir Acción de Formación</h2>
-        <form id="form-formacion">
-            <div class="form-group">
-                <label>Nombre de la Formación (Ej: Básico H2S, Manejo Defensivo)</label>
-                <input type="text" id="nombre-formacion" required>
-            </div>
-            <button type="submit" class="btn-submit">Guardar en Directorio Permanente</button>
-        </form>
-        <h3 style="color: var(--acento-amarillo); margin-bottom: 10px; margin-top: 30px;">📋 Formaciones Registradas</h3>
-        <table class="tabla-gestion"><tbody id="tbody-formaciones"><tr><td>Cargando...</td></tr></tbody></table>
-    </div>
-
-    <!-- VISTA TAREAS -->
-    <div class="vista" id="vista-tareas">
-        <h2 class="panel-titulo">Asignación de Tareas</h2>
-        <form id="form-tarea">
-            <div class="form-group"><label>Tipo de Función</label><div class="radio-group"><label><input type="radio" name="tipo-tarea" value="aislada" checked> Aislada</label><label><input type="radio" name="tipo-tarea" value="vinculada"> Vincular</label></div></div>
-            <div class="form-group" id="grupo-programa-vinculado"><label>Programa Activo</label><select id="programa-vinculado" class="select-buscador"></select></div>
-            <div class="form-group"><label>Responsable</label><select id="responsable-tarea" class="select-buscador" required><option value="" disabled selected>Cargando personal...</option></select></div>
-            <div class="form-group"><label>Descripción</label><textarea id="descripcion-tarea" required></textarea></div>
-            <div class="row-group">
-                <div><label>Fecha Límite</label><input type="date" id="fecha-tarea" required></div>
-                <div><label>Hora Límite</label><input type="time" id="hora-tarea" required></div>
-            </div>
-            <div class="form-group"><label>Urgencia</label><select id="urgencia-tarea" required><option value="rutina">Rutina</option><option value="importante">Importante</option><option value="urgente">Urgente</option><option value="critica">Crítica</option></select></div>
-            <button type="submit" class="btn-submit">Delegar Función</button>
-        </form>
-    </div>
-
-    <!-- VISTA DIRECTORIO EMPRESAS -->
-    <div class="vista" id="vista-directorio">
-        <h2 class="panel-titulo">Añadir Empresa al Directorio</h2>
-        <form id="form-directorio">
-            <div class="form-group"><label>Nombre de la Empresa (Ej: SLB)</label><input type="text" id="nombre-empresa" required></div>
-            <div class="form-group"><label>Logo Oficial</label><input type="file" id="logo-empresa" accept="image/png, image/jpeg, image/webp" required></div>
-            <button type="submit" class="btn-submit">Guardar en Directorio Permanente</button>
-        </form>
-        <h3 style="color: var(--acento-amarillo); margin-bottom: 10px; margin-top: 30px;">📋 Empresas Registradas</h3>
-        <table class="tabla-gestion"><tbody id="tbody-empresas"><tr><td>Cargando...</td></tr></tbody></table>
-    </div>
-
-    <!-- VISTA PERSONAL -->
-    <div class="vista" id="vista-personal">
-        <h2 class="panel-titulo">Añadir Nuevo Miembro</h2>
-        <form id="form-personal">
-            <div class="row-group">
-                <div><label>Nombre (Apodo)</label><input type="text" id="nombre-personal" required></div>
-                <div><label>Rol</label><select id="rol-personal" required><option value="facilitador">Facilitador</option><option value="responsable">Responsable</option></select></div>
-            </div>
-            <div class="form-group">
-                <label>Foto de Perfil (Opcional)</label>
-                <input type="file" id="foto-personal" accept="image/png, image/jpeg, image/webp">
-            </div>
-            <button type="submit" class="btn-submit">Añadir al Equipo</button>
-        </form>
-
-        <div class="grid-personal">
-            <div>
-                <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Facilitadores</h3>
-                <table class="tabla-gestion"><tbody id="tbody-facilitadores"><tr><td>Cargando...</td></tr></tbody></table>
-            </div>
-            <div>
-                <h3 style="color: var(--acento-amarillo); margin-bottom: 10px;">📋 Responsables</h3>
-                <table class="tabla-gestion"><tbody id="tbody-responsables"><tr><td>Cargando...</td></tr></tbody></table>
+            <div class="tabla-scroll">
+                <table class="tabla-gestion" style="margin-bottom:0;">
+                    <thead>
+                        <tr id="thead-movimientos-row">
+                            <th>Fecha / Hora</th>
+                            <th>Usuario</th>
+                            <th>Acción</th>
+                            <th>Módulo</th>
+                            <th>Detalle del Movimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-movimientos">
+                        <tr><td colspan="6">Cargando historial...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div class="papelera-box">
-            <h3 style="color: var(--btn-borrar); margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">🗑️ Papelera de Reciclaje</h3>
-            <table class="tabla-gestion" style="margin-bottom: 0;"><tbody id="tbody-papelera"><tr><td style="color: var(--texto-secundario);">La papelera está vacía.</td></tr></tbody></table>
+        <!-- VISTA 8: CREAR USUARIO (EXCLUSIVA PARA USUARIO MAESTRO) -->
+        <div class="vista" id="vista-usuarios">
+            <h2 class="panel-titulo">Crear Nuevo Usuario Administrador</h2>
+            <form id="form-crear-usuario">
+                <div class="row-group">
+                    <div>
+                        <label>Nombre Completo</label>
+                        <input type="text" id="nuevo-user-nombre" placeholder="Ej: María Pérez" required>
+                    </div>
+                    <div>
+                        <label>Usuario de Acceso</label>
+                        <input type="text" id="nuevo-user-usuario" placeholder="Ej: mperez" required>
+                    </div>
+                    <div>
+                        <label>Contraseña</label>
+                        <input type="text" id="nuevo-user-password" placeholder="Ej: coftah123" required>
+                    </div>
+                </div>
+                <button type="submit" id="btn-crear-usuario" class="btn-submit">Crear Usuario Admin</button>
+            </form>
+
+            <h3 style="color: var(--acento-amarillo); margin-bottom: 12px;">🔐 Cuentas Registradas en el Sistema</h3>
+            <div class="tabla-scroll">
+                <table class="tabla-gestion" style="margin-bottom:0;">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Usuario</th>
+                            <th>Contraseña</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody-usuarios">
+                        <tr><td colspan="6">Cargando usuarios...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- VISTA GESTIÓN GENERAL -->
-    <div class="vista" id="vista-gestion">
-        <div class="buscador-contenedor">
-            <input type="text" id="buscador-general" placeholder="🔍 Buscar rápidamente por fecha, cliente, acción..." onkeyup="filtrarGestion()">
-        </div>
-        <h2 class="panel-titulo">Acciones de Formación Programadas</h2>
-        <table class="tabla-gestion">
-            <thead><tr><th>Fecha</th><th>Cliente</th><th>Acción y Participantes</th><th>Acción</th></tr></thead>
-            <tbody id="tbody-clientes"><tr><td colspan="4">Cargando...</td></tr></tbody>
-        </table>
-        <h2 class="panel-titulo">Funciones Delegadas</h2>
-        <table class="tabla-gestion">
-            <thead><tr><th>Responsable</th><th>Descripción</th><th>Estatus</th><th>Acción</th></tr></thead>
-            <tbody id="tbody-tareas"><tr><td colspan="4">Cargando...</td></tr></tbody>
-        </table>
-    </div>
-
-    <!-- MODAL DE EDICIÓN DE CLIENTE/FORMACIÓN -->
+    <!-- ==================== MODAL: EDITAR FORMACIÓN ==================== -->
     <div class="modal-overlay" id="modal-editar-cliente">
         <div class="modal-content">
             <div class="modal-header">
@@ -267,7 +548,6 @@
                     <input type="hidden" id="edit-id">
                     <input type="hidden" id="edit-grupo-id">
 
-                    <!-- OPCIÓN DE EDICIÓN EN BLOQUE (SOLO VISIBLE SI HAY VARIOS DÍAS) -->
                     <div id="contenedor-editar-grupo" class="bloque-check-box" style="display: none;">
                         <label class="bloque-check-label">
                             <input type="checkbox" id="edit-aplicar-grupo" onchange="toggleModoEdicionGrupo()">
@@ -323,7 +603,7 @@
         </div>
     </div>
 
-    <!-- MODAL DE CONFIRMACIÓN PARA BORRAR BLOQUE O DÍA INDIVIDUAL -->
+    <!-- ==================== MODAL: BORRAR BLOQUE O DÍA ==================== -->
     <div class="modal-overlay" id="modal-borrar-cliente">
         <div class="modal-content modal-peligro">
             <div class="modal-header">
@@ -339,15 +619,210 @@
         </div>
     </div>
 
+    <!-- ==================== MODAL: EDITAR MOVIMIENTO (SOLO MASTER) ==================== -->
+    <div class="modal-overlay" id="modal-editar-movimiento">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Registro de Auditoría</h2>
+                <button class="modal-close" onclick="cerrarModalMovimiento()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-movimiento">
+                    <input type="hidden" id="edit-mov-id">
+                    <div class="row-group">
+                        <div>
+                            <label>Usuario</label>
+                            <input type="text" id="edit-mov-usuario" required>
+                        </div>
+                        <div>
+                            <label>Acción</label>
+                            <select id="edit-mov-accion" required>
+                                <option value="CREAR">CREAR</option>
+                                <option value="EDITAR">EDITAR</option>
+                                <option value="ELIMINAR">ELIMINAR</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>Módulo</label>
+                            <input type="text" id="edit-mov-modulo" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Resumen Principal</label>
+                        <input type="text" id="edit-mov-resumen" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Detalle de Cambios / Observación</label>
+                        <textarea id="edit-mov-detalle" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalMovimiento()">Cancelar</button>
+                <button type="submit" form="form-editar-movimiento" id="btn-guardar-movimiento" class="btn-modal btn-modal-guardar">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: EDITAR USUARIO (SOLO MASTER) ==================== -->
+    <div class="modal-overlay" id="modal-editar-usuario">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Editar Credenciales de Usuario</h2>
+                <button class="modal-close" onclick="cerrarModalUsuario()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="form-editar-usuario">
+                    <input type="hidden" id="edit-user-id">
+                    <input type="hidden" id="edit-user-rol">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="edit-user-nombre" required>
+                    </div>
+                    <div class="row-group">
+                        <div>
+                            <label>Usuario de Acceso</label>
+                            <input type="text" id="edit-user-usuario" required>
+                        </div>
+                        <div>
+                            <label>Contraseña</label>
+                            <input type="text" id="edit-user-password" required>
+                        </div>
+                    </div>
+                    <div class="form-group" id="contenedor-edit-user-activo">
+                        <label class="bloque-check-label">
+                            <input type="checkbox" id="edit-user-activo">
+                            <span>Cuenta Activa (puede iniciar sesión en el panel)</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalUsuario()">Cancelar</button>
+                <button type="submit" form="form-editar-usuario" id="btn-guardar-usuario" class="btn-modal btn-modal-guardar">Actualizar Usuario</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        const SESSION_KEY = 'coftah_admin_session_v1';
+        let usuarioActual = null;
         let clientesRegistrados = [];
+        let movimientosRegistrados = [];
+        let usuariosRegistrados = [];
+
+        function getUsuarioFirma() {
+            if (!usuarioActual) return 'Admin';
+            return `${usuarioActual.nombre} (@${usuarioActual.usuario})`;
+        }
+
+        function getHeadersConSesion() {
+            return {
+                'Content-Type': 'application/json',
+                'x-user-nombre': getUsuarioFirma(),
+                'x-user-rol': usuarioActual ? usuarioActual.rol : 'admin'
+            };
+        }
 
         function parseFechaLocal(fechaStr) {
             if (!fechaStr) return new Date();
-            let limpia = fechaStr.endsWith('Z') ? fechaStr.slice(0, -1) : fechaStr;
+            let limpia = String(fechaStr).endsWith('Z') ? String(fechaStr).slice(0, -1) : String(fechaStr);
             return new Date(limpia);
         }
 
+        // ==================== GESTIÓN DE SESIÓN Y LOGIN ====================
+        function verificarSesionInicial() {
+            try {
+                const raw = localStorage.getItem(SESSION_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && parsed.id && parsed.usuario && parsed.rol) {
+                        usuarioActual = parsed;
+                        activarInterfazAutenticada();
+                        return;
+                    }
+                }
+            } catch (e) {
+                localStorage.removeItem(SESSION_KEY);
+            }
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('admin-app').style.display = 'none';
+        }
+
+        function activarInterfazAutenticada() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('admin-app').style.display = 'block';
+
+            document.getElementById('sesion-nombre-display').innerHTML =
+                `${usuarioActual.nombre} <span class="sesion-usuario-tag">(@${usuarioActual.usuario})</span>`;
+
+            const badgeRol = document.getElementById('sesion-rol-display');
+            if (usuarioActual.rol === 'master') {
+                badgeRol.textContent = 'MAESTRO';
+                badgeRol.className = 'rol-badge rol-master';
+                document.getElementById('btn-usuarios').style.display = 'inline-block';
+            } else {
+                badgeRol.textContent = 'ADMIN';
+                badgeRol.className = 'rol-badge rol-admin';
+                document.getElementById('btn-usuarios').style.display = 'none';
+                document.getElementById('vista-usuarios').classList.remove('active');
+            }
+
+            inicializarBuscadores();
+            inicializarFechas();
+            cargarPersonal();
+            cargarDirectorio();
+            cargarProgramasDropdown();
+            cargarFormaciones();
+        }
+
+        document.getElementById('form-login').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login');
+            const errBox = document.getElementById('login-error');
+            errBox.style.display = 'none';
+            btn.textContent = 'Verificando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/usuarios', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'login',
+                        usuario: document.getElementById('login-usuario').value.trim(),
+                        password: document.getElementById('login-password').value
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    usuarioActual = data;
+                    localStorage.setItem(SESSION_KEY, JSON.stringify(usuarioActual));
+                    document.getElementById('form-login').reset();
+                    activarInterfazAutenticada();
+                } else {
+                    errBox.textContent = data.error || 'No se pudo iniciar sesión.';
+                    errBox.style.display = 'block';
+                }
+            } catch (error) {
+                errBox.textContent = 'Error de conexión con el servidor.';
+                errBox.style.display = 'block';
+            } finally {
+                btn.textContent = 'Iniciar Sesión';
+                btn.disabled = false;
+            }
+        });
+
+        function cerrarSesion() {
+            if (confirm('¿Deseas cerrar tu sesión en el panel administrativo?')) {
+                localStorage.removeItem(SESSION_KEY);
+                usuarioActual = null;
+                location.reload();
+            }
+        }
+
+        // ==================== NAVEGACIÓN Y UTILIDADES ====================
         function inicializarBuscadores() {
             $('.select-buscador').select2({ width: '100%', placeholder: 'Escribe para buscar...' });
             $('.select-buscador-modal').select2({ 
@@ -357,6 +832,10 @@
         }
 
         function cambiarFormulario(vistaId) {
+            if (vistaId === 'usuarios' && (!usuarioActual || usuarioActual.rol !== 'master')) {
+                alert('Acceso restringido exclusivamente al usuario Maestro.');
+                return;
+            }
             document.querySelectorAll('.vista').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(`vista-${vistaId}`).classList.add('active');
@@ -403,6 +882,7 @@
             });
         }
 
+        // ==================== DIRECTORIO FORMACIONES ====================
         async function cargarFormaciones() {
             try {
                 const res = await fetch('/api/formaciones?t=' + new Date().getTime(), { cache: 'no-store' });
@@ -428,18 +908,30 @@
         document.getElementById('form-formacion').addEventListener('submit', async function(e) {
             e.preventDefault(); const btn = this.querySelector('button[type="submit"]'); btn.textContent = "Guardando..."; btn.disabled = true;
             try {
-                const res = await fetch('/api/formaciones', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-formacion').value }) });
+                const res = await fetch('/api/formaciones', {
+                    method: 'POST',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        nombre: document.getElementById('nombre-formacion').value,
+                        usuario_solicitante: getUsuarioFirma()
+                    })
+                });
                 if (res.ok) { alert("Formación registrada."); document.getElementById('form-formacion').reset(); cargarFormaciones(); } else alert("Error al guardar.");
             } catch (error) {} finally { btn.textContent = "Guardar en Directorio Permanente"; btn.disabled = false; }
         });
 
         async function borrarFormacion(id) {
             if(confirm("¿Seguro que deseas eliminar esta formación del directorio?")) {
-                await fetch(`/api/formaciones`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                await fetch(`/api/formaciones`, {
+                    method: 'DELETE',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({ id: id, usuario_solicitante: getUsuarioFirma() })
+                });
                 cargarFormaciones();
             }
         }
 
+        // ==================== DIRECTORIO EMPRESAS ====================
         async function cargarDirectorio() {
             try {
                 const res = await fetch('/api/directorio?t=' + new Date().getTime(), { cache: 'no-store' });
@@ -468,7 +960,15 @@
             
             const procesarDirectorio = async (logoStr) => {
                 try {
-                    const res = await fetch('/api/directorio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-empresa').value, logo_url: logoStr }) });
+                    const res = await fetch('/api/directorio', {
+                        method: 'POST',
+                        headers: getHeadersConSesion(),
+                        body: JSON.stringify({
+                            nombre: document.getElementById('nombre-empresa').value,
+                            logo_url: logoStr,
+                            usuario_solicitante: getUsuarioFirma()
+                        })
+                    });
                     if (res.ok) { alert("Empresa registrada en el directorio."); document.getElementById('form-directorio').reset(); cargarDirectorio(); } else alert("Error al guardar.");
                 } catch (error) {} finally { btn.textContent = "Guardar en Directorio Permanente"; btn.disabled = false; }
             };
@@ -480,11 +980,16 @@
 
         async function borrarEmpresa(id) {
             if(confirm("¿Seguro que deseas eliminar esta empresa del directorio?")) {
-                await fetch(`/api/directorio`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                await fetch(`/api/directorio`, {
+                    method: 'DELETE',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({ id: id, usuario_solicitante: getUsuarioFirma() })
+                });
                 cargarDirectorio();
             }
         }
 
+        // ==================== EQUIPO DE TRABAJO ====================
         let personalCompleto = []; let enPapelera = new Set(); 
         async function cargarPersonal() {
             try {
@@ -515,7 +1020,14 @@
             if (accion === 'mover') { enPapelera.add(id); renderizarTablasPersonal(); actualizarSelectoresPersonal(); } 
             else if (accion === 'restaurar') { enPapelera.delete(id); renderizarTablasPersonal(); actualizarSelectoresPersonal(); } 
             else if (accion === 'eliminar') {
-                if(confirm("¿Eliminar definitivamente?")) { await fetch(`/api/personal`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) }); enPapelera.delete(id); cargarPersonal(); }
+                if(confirm("¿Eliminar definitivamente?")) {
+                    await fetch(`/api/personal`, {
+                        method: 'DELETE',
+                        headers: getHeadersConSesion(),
+                        body: JSON.stringify({ id: id, usuario_solicitante: getUsuarioFirma() })
+                    });
+                    enPapelera.delete(id); cargarPersonal();
+                }
             }
         }
 
@@ -539,7 +1051,16 @@
 
             const procesarPersonal = async (fotoStr) => {
                 try {
-                    await fetch('/api/personal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('nombre-personal').value, rol: document.getElementById('rol-personal').value, foto_url: fotoStr }) });
+                    await fetch('/api/personal', {
+                        method: 'POST',
+                        headers: getHeadersConSesion(),
+                        body: JSON.stringify({
+                            nombre: document.getElementById('nombre-personal').value,
+                            rol: document.getElementById('rol-personal').value,
+                            foto_url: fotoStr,
+                            usuario_solicitante: getUsuarioFirma()
+                        })
+                    });
                     document.getElementById('form-personal').reset(); cargarPersonal();
                 } catch (error) {} finally { btn.textContent = "Añadir al Equipo"; btn.disabled = false; }
             };
@@ -547,6 +1068,7 @@
             if (fileInput.files.length > 0) { const reader = new FileReader(); reader.onload = function(evt) { procesarPersonal(evt.target.result); }; reader.readAsDataURL(fileInput.files[0]); } else { procesarPersonal(""); }
         });
 
+        // ==================== PROGRAMAR FORMACIÓN Y TAREAS ====================
         document.querySelectorAll('input[name="tipo-tarea"]').forEach(r => r.addEventListener('change', function() {
             document.getElementById('grupo-programa-vinculado').style.display = this.value === 'vinculada' ? 'block' : 'none';
             document.getElementById('programa-vinculado').required = this.value === 'vinculada';
@@ -566,7 +1088,6 @@
             } catch (error) {}
         }
 
-        // GUARDADO CON AUTORIZACIÓN DE CHOQUE
         async function guardarFormacionPrincipal(forzarGuardado = false) {
             const btn = document.getElementById('btn-guardar-formacion');
             btn.textContent = "Guardando..."; btn.disabled = true;
@@ -583,7 +1104,7 @@
             try {
                 const res = await fetch('/api/clientes', { 
                     method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
+                    headers: getHeadersConSesion(), 
                     body: JSON.stringify({
                         fechas_atencion: arregloFechas,  
                         nombre_cliente: document.getElementById('cliente-directorio').value, 
@@ -595,7 +1116,8 @@
                         facilitador: facNombre, 
                         facilitador_id: facId,
                         estatus: document.getElementById('estatus-cliente').value,
-                        forzar: forzarGuardado
+                        forzar: forzarGuardado,
+                        usuario_solicitante: getUsuarioFirma()
                     })
                 });
                 
@@ -641,7 +1163,19 @@
             let fechaFormateada = document.getElementById('fecha-tarea').value + "T" + document.getElementById('hora-tarea').value + ":00";
             
             try {
-                const res = await fetch('/api/tareas', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo_tarea: tipo, programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null, responsable: document.getElementById('responsable-tarea').value, descripcion: document.getElementById('descripcion-tarea').value, fecha_limite: fechaFormateada, urgencia: document.getElementById('urgencia-tarea').value })});
+                const res = await fetch('/api/tareas', {
+                    method: 'POST',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        tipo_tarea: tipo,
+                        programa_id: tipo === 'vinculada' ? document.getElementById('programa-vinculado').value : null,
+                        responsable: document.getElementById('responsable-tarea').value,
+                        descripcion: document.getElementById('descripcion-tarea').value,
+                        fecha_limite: fechaFormateada,
+                        urgencia: document.getElementById('urgencia-tarea').value,
+                        usuario_solicitante: getUsuarioFirma()
+                    })
+                });
                 if (res.ok) { 
                     alert("Función delegada exitosamente."); this.reset(); inicializarFechas(); cargarDatosGestion(); 
                     $('#responsable-tarea').val('').trigger('change');
@@ -650,6 +1184,7 @@
             } catch (error) {} finally { btn.textContent = "Delegar Función"; btn.disabled = false; }
         });
 
+        // ==================== GESTIÓN GENERAL (EDICIÓN Y BORRADO) ====================
         async function cargarDatosGestion() {
             try {
                 const ts = new Date().getTime(); const conf = { cache: 'no-store' };
@@ -658,7 +1193,6 @@
                     clientesRegistrados = await resC.json(); 
                     clientesRegistrados.sort((a, b) => parseFechaLocal(b.fecha_atencion) - parseFechaLocal(a.fecha_atencion));
 
-                    // Contamos cuántos días tiene cada grupo_id
                     const conteoGrupos = {};
                     clientesRegistrados.forEach(c => {
                         if (c.grupo_id) conteoGrupos[c.grupo_id] = (conteoGrupos[c.grupo_id] || 0) + 1;
@@ -695,7 +1229,6 @@
             } catch (error) {}
         }
 
-        // --- BORRADO INTELIGENTE PARA CLIENTES (PREGUNTA SI ES BLOQUE O INDIVIDUAL) ---
         function confirmarBorradoCliente(id) {
             const c = clientesRegistrados.find(x => x.id === id);
             if (!c) return;
@@ -744,8 +1277,13 @@
             try {
                 const res = await fetch('/api/clientes', {
                     method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id: id, grupo_id: grupoId, borrar_grupo: borrarGrupo })
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        id: id,
+                        grupo_id: grupoId,
+                        borrar_grupo: borrarGrupo,
+                        usuario_solicitante: getUsuarioFirma()
+                    })
                 });
                 if (res.ok) {
                     cerrarModalBorrar();
@@ -761,12 +1299,15 @@
 
         async function borrarRegistro(tipo, id) {
             if(confirm('¿Eliminar este registro de forma definitiva?')) {
-                await fetch(`/api/${tipo}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+                await fetch(`/api/${tipo}`, {
+                    method: 'DELETE',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({ id: id, usuario_solicitante: getUsuarioFirma() })
+                });
                 cargarDatosGestion(); if(tipo==='clientes') cargarProgramasDropdown();
             }
         }
 
-        // --- EDICIÓN INDIVIDUAL O EN BLOQUE ---
         function toggleModoEdicionGrupo() {
             const marcado = document.getElementById('edit-aplicar-grupo').checked;
             const inputFecha = document.getElementById('edit-fecha');
@@ -802,7 +1343,6 @@
             document.getElementById('edit-duracion').value = c.duracion_curso || '';
             document.getElementById('edit-estatus').value = c.estatus;
 
-            // Verificar si pertenece a un bloque de varios días
             const hermanos = c.grupo_id ? clientesRegistrados.filter(x => x.grupo_id === c.grupo_id) : [];
             const boxGrupo = document.getElementById('contenedor-editar-grupo');
             const checkGrupo = document.getElementById('edit-aplicar-grupo');
@@ -850,7 +1390,7 @@
             try {
                 const res = await fetch('/api/clientes', { 
                     method: 'PUT', 
-                    headers: { 'Content-Type': 'application/json' }, 
+                    headers: getHeadersConSesion(), 
                     body: JSON.stringify({
                         id: document.getElementById('edit-id').value,
                         grupo_id: grupoId,
@@ -865,7 +1405,8 @@
                         facilitador: facNombre, 
                         facilitador_id: facId,
                         estatus: document.getElementById('edit-estatus').value,
-                        forzar: forzarGuardado
+                        forzar: forzarGuardado,
+                        usuario_solicitante: getUsuarioFirma()
                     })
                 });
                 
@@ -901,13 +1442,363 @@
             editarFormacionPrincipal(false);
         });
 
+        // ==================== SECCIÓN: MOVIMIENTOS (AUDITORÍA) ====================
+        async function cargarMovimientos() {
+            const tb = document.getElementById('tbody-movimientos');
+            tb.innerHTML = '<tr><td colspan="6">Cargando movimientos...</td></tr>';
+            try {
+                const res = await fetch('/api/movimientos?t=' + new Date().getTime(), { cache: 'no-store' });
+                if (res.ok) {
+                    movimientosRegistrados = await res.json();
+                    renderizarTablaMovimientos();
+                } else {
+                    tb.innerHTML = '<tr><td colspan="6">No se pudo cargar el historial.</td></tr>';
+                }
+            } catch (error) {
+                tb.innerHTML = '<tr><td colspan="6">Error de conexión al consultar movimientos.</td></tr>';
+            }
+        }
+
+        function renderizarTablaMovimientos() {
+            const esMaster = usuarioActual && usuarioActual.rol === 'master';
+            const theadRow = document.getElementById('thead-movimientos-row');
+            theadRow.innerHTML = `
+                <th>Fecha / Hora</th>
+                <th>Usuario</th>
+                <th>Acción</th>
+                <th>Módulo</th>
+                <th>Detalle del Movimiento</th>
+                ${esMaster ? '<th>Gestión</th>' : ''}
+            `;
+
+            const filtroTexto = document.getElementById('buscador-movimientos').value.toLowerCase();
+            const filtroAccion = document.getElementById('filtro-mov-accion').value;
+            const filtroModulo = document.getElementById('filtro-mov-modulo').value;
+
+            const filtrados = movimientosRegistrados.filter(m => {
+                const pasaAccion = filtroAccion === 'TODAS' || m.accion === filtroAccion;
+                const pasaModulo = filtroModulo === 'TODOS' || m.modulo === filtroModulo;
+                const pasaTexto = !filtroTexto ||
+                    (m.usuario && m.usuario.toLowerCase().includes(filtroTexto)) ||
+                    (m.resumen && m.resumen.toLowerCase().includes(filtroTexto)) ||
+                    (m.cambios_detalle && m.cambios_detalle.toLowerCase().includes(filtroTexto)) ||
+                    (m.modulo && m.modulo.toLowerCase().includes(filtroTexto));
+                return pasaAccion && pasaModulo && pasaTexto;
+            });
+
+            const tb = document.getElementById('tbody-movimientos');
+            tb.innerHTML = '';
+
+            if (filtrados.length === 0) {
+                tb.innerHTML = `<tr><td colspan="${esMaster ? 6 : 5}" style="color: var(--texto-secundario);">No hay movimientos registrados con ese filtro.</td></tr>`;
+                return;
+            }
+
+            filtrados.forEach(m => {
+                const d = parseFechaLocal(m.fecha_hora);
+                const fechaFmt = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+                const horaFmt = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                const botonesMaster = esMaster ? `
+                    <td style="min-width: 145px;">
+                        <button class="btn-accion btn-editar" onclick="abrirModalEditarMovimiento(${m.id})">Editar</button>
+                        <button class="btn-accion btn-borrar" onclick="eliminarMovimiento(${m.id})">Borrar</button>
+                    </td>
+                ` : '';
+
+                tb.innerHTML += `
+                    <tr>
+                        <td style="white-space: nowrap; font-size: 0.9rem;">
+                            <strong style="color: var(--acento-amarillo);">${fechaFmt}</strong><br>
+                            <span style="color: var(--texto-secundario); font-size: 0.82rem;">${horaFmt}</span>
+                        </td>
+                        <td style="font-weight: bold;">${m.usuario}</td>
+                        <td><span class="badge-mov mov-${m.accion}">${m.accion}</span></td>
+                        <td style="font-size: 0.9rem; color: #64FFDA;">${m.modulo}</td>
+                        <td>
+                            <div style="font-weight: 600; color: #FFFFFF;">${m.resumen}</div>
+                            ${m.cambios_detalle ? `<div class="detalle-mov-texto">${m.cambios_detalle}</div>` : ''}
+                        </td>
+                        ${botonesMaster}
+                    </tr>
+                `;
+            });
+        }
+
+        function abrirModalEditarMovimiento(id) {
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+            const m = movimientosRegistrados.find(x => x.id === id);
+            if (!m) return;
+
+            document.getElementById('edit-mov-id').value = m.id;
+            document.getElementById('edit-mov-usuario').value = m.usuario;
+            document.getElementById('edit-mov-accion').value = m.accion;
+            document.getElementById('edit-mov-modulo').value = m.modulo;
+            document.getElementById('edit-mov-resumen').value = m.resumen;
+            document.getElementById('edit-mov-detalle').value = m.cambios_detalle || '';
+
+            document.getElementById('modal-editar-movimiento').classList.add('active');
+        }
+
+        function cerrarModalMovimiento() {
+            document.getElementById('modal-editar-movimiento').classList.remove('active');
+        }
+
+        document.getElementById('form-editar-movimiento').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+
+            const btn = document.getElementById('btn-guardar-movimiento');
+            btn.textContent = 'Guardando...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/movimientos', {
+                    method: 'PUT',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        id: document.getElementById('edit-mov-id').value,
+                        usuario: document.getElementById('edit-mov-usuario').value.trim(),
+                        accion: document.getElementById('edit-mov-accion').value,
+                        modulo: document.getElementById('edit-mov-modulo').value.trim(),
+                        resumen: document.getElementById('edit-mov-resumen').value.trim(),
+                        cambios_detalle: document.getElementById('edit-mov-detalle').value.trim(),
+                        rol_solicitante: usuarioActual.rol
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Movimiento actualizado.');
+                    cerrarModalMovimiento();
+                    cargarMovimientos();
+                } else {
+                    alert(data.error || 'Error al editar movimiento.');
+                }
+            } catch (error) {
+                alert('Error de conexión.');
+            } finally {
+                btn.textContent = 'Guardar Cambios';
+                btn.disabled = false;
+            }
+        });
+
+        async function eliminarMovimiento(id) {
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+            if (!confirm('¿Eliminar este registro del historial de movimientos?')) return;
+
+            try {
+                const res = await fetch('/api/movimientos', {
+                    method: 'DELETE',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({ id: id, rol_solicitante: usuarioActual.rol })
+                });
+                if (res.ok) {
+                    cargarMovimientos();
+                } else {
+                    const data = await res.json();
+                    alert(data.error || 'No se pudo eliminar.');
+                }
+            } catch (error) {
+                alert('Error de conexión.');
+            }
+        }
+
+        // ==================== SECCIÓN: CREAR Y GESTIONAR USUARIOS (SOLO MASTER) ====================
+        async function cargarUsuarios() {
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+            const tb = document.getElementById('tbody-usuarios');
+            tb.innerHTML = '<tr><td colspan="6">Cargando usuarios...</td></tr>';
+
+            try {
+                const res = await fetch(`/api/usuarios?rol=${usuarioActual.rol}&t=${new Date().getTime()}`, {
+                    cache: 'no-store',
+                    headers: { 'x-user-rol': usuarioActual.rol }
+                });
+                if (res.ok) {
+                    usuariosRegistrados = await res.json();
+                    tb.innerHTML = '';
+
+                    usuariosRegistrados.forEach(u => {
+                        const esCuentaMaster = u.rol === 'master';
+                        const badgeRol = esCuentaMaster
+                            ? '<span class="rol-badge rol-master">MAESTRO</span>'
+                            : '<span class="rol-badge rol-admin">ADMIN</span>';
+                        const estadoHtml = u.activo
+                            ? '<span class="estado-activo">● Activo</span>'
+                            : '<span class="estado-inactivo">● Inactivo</span>';
+
+                        const btnEliminar = esCuentaMaster
+                            ? ''
+                            : `<button class="btn-accion btn-borrar" onclick="eliminarUsuarioAdmin(${u.id}, '${u.nombre}')">Eliminar</button>`;
+
+                        tb.innerHTML += `
+                            <tr>
+                                <td style="font-weight: bold;">${u.nombre}</td>
+                                <td style="color: var(--acento-amarillo);">@${u.usuario}</td>
+                                <td style="font-family: monospace;">${u.password}</td>
+                                <td>${badgeRol}</td>
+                                <td>${estadoHtml}</td>
+                                <td style="min-width: 155px;">
+                                    <button class="btn-accion btn-editar" onclick="abrirModalEditarUsuario(${u.id})">Editar</button>
+                                    ${btnEliminar}
+                                </td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    tb.innerHTML = '<tr><td colspan="6">Error al cargar usuarios.</td></tr>';
+                }
+            } catch (error) {
+                tb.innerHTML = '<tr><td colspan="6">Error de conexión.</td></tr>';
+            }
+        }
+
+        document.getElementById('form-crear-usuario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+
+            const btn = document.getElementById('btn-crear-usuario');
+            btn.textContent = 'Creando usuario...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/usuarios', {
+                    method: 'POST',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        nombre: document.getElementById('nuevo-user-nombre').value.trim(),
+                        usuario: document.getElementById('nuevo-user-usuario').value.trim(),
+                        password: document.getElementById('nuevo-user-password').value,
+                        rol_solicitante: usuarioActual.rol,
+                        usuario_solicitante: getUsuarioFirma()
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alert('Usuario Admin creado exitosamente.');
+                    document.getElementById('form-crear-usuario').reset();
+                    cargarUsuarios();
+                } else {
+                    alert(data.error || 'No se pudo crear el usuario.');
+                }
+            } catch (error) {
+                alert('Error de conexión con el servidor.');
+            } finally {
+                btn.textContent = 'Crear Usuario Admin';
+                btn.disabled = false;
+            }
+        });
+
+        function abrirModalEditarUsuario(id) {
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+            const u = usuariosRegistrados.find(x => x.id === id);
+            if (!u) return;
+
+            document.getElementById('edit-user-id').value = u.id;
+            document.getElementById('edit-user-rol').value = u.rol;
+            document.getElementById('edit-user-nombre').value = u.nombre;
+            document.getElementById('edit-user-usuario').value = u.usuario;
+            document.getElementById('edit-user-password').value = u.password;
+
+            const boxActivo = document.getElementById('contenedor-edit-user-activo');
+            const checkActivo = document.getElementById('edit-user-activo');
+
+            if (u.rol === 'master') {
+                checkActivo.checked = true;
+                boxActivo.style.display = 'none';
+            } else {
+                checkActivo.checked = Boolean(u.activo);
+                boxActivo.style.display = 'block';
+            }
+
+            document.getElementById('modal-editar-usuario').classList.add('active');
+        }
+
+        function cerrarModalUsuario() {
+            document.getElementById('modal-editar-usuario').classList.remove('active');
+        }
+
+        document.getElementById('form-editar-usuario').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+
+            const btn = document.getElementById('btn-guardar-usuario');
+            btn.textContent = 'Actualizando...';
+            btn.disabled = true;
+
+            const idEditado = Number(document.getElementById('edit-user-id').value);
+            const rolEditado = document.getElementById('edit-user-rol').value;
+
+            try {
+                const res = await fetch('/api/usuarios', {
+                    method: 'PUT',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        id: idEditado,
+                        nombre: document.getElementById('edit-user-nombre').value.trim(),
+                        usuario: document.getElementById('edit-user-usuario').value.trim(),
+                        password: document.getElementById('edit-user-password').value,
+                        activo: rolEditado === 'master' ? true : document.getElementById('edit-user-activo').checked,
+                        rol_solicitante: usuarioActual.rol,
+                        usuario_solicitante: getUsuarioFirma()
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    // Si el usuario Maestro editó su propia cuenta, actualizar su sesión activa
+                    if (usuarioActual.id === idEditado) {
+                        usuarioActual.nombre = data.nombre;
+                        usuarioActual.usuario = data.usuario;
+                        localStorage.setItem(SESSION_KEY, JSON.stringify(usuarioActual));
+                        document.getElementById('sesion-nombre-display').innerHTML =
+                            `${usuarioActual.nombre} <span class="sesion-usuario-tag">(@${usuarioActual.usuario})</span>`;
+                    }
+
+                    alert('Datos de usuario actualizados.');
+                    cerrarModalUsuario();
+                    cargarUsuarios();
+                } else {
+                    alert(data.error || 'No se pudo actualizar el usuario.');
+                }
+            } catch (error) {
+                alert('Error de conexión.');
+            } finally {
+                btn.textContent = 'Actualizar Usuario';
+                btn.disabled = false;
+            }
+        });
+
+        async function eliminarUsuarioAdmin(id, nombre) {
+            if (!usuarioActual || usuarioActual.rol !== 'master') return;
+            if (!confirm(`¿Seguro que deseas eliminar permanentemente al usuario "${nombre}"?`)) return;
+
+            try {
+                const res = await fetch('/api/usuarios', {
+                    method: 'DELETE',
+                    headers: getHeadersConSesion(),
+                    body: JSON.stringify({
+                        id: id,
+                        rol_solicitante: usuarioActual.rol,
+                        usuario_solicitante: getUsuarioFirma()
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert('Usuario eliminado.');
+                    cargarUsuarios();
+                } else {
+                    alert(data.error || 'No se pudo eliminar el usuario.');
+                }
+            } catch (error) {
+                alert('Error de conexión.');
+            }
+        }
+
+        // ARRANCAR VERIFICANDO SESIÓN
         $(document).ready(function() {
-            inicializarBuscadores();
-            inicializarFechas(); 
-            cargarPersonal(); 
-            cargarDirectorio(); 
-            cargarProgramasDropdown(); 
-            cargarFormaciones();
+            verificarSesionInicial();
         });
     </script>
 </body>
