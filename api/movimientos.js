@@ -8,7 +8,7 @@ const pool = new Pool({
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-user-rol');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -17,7 +17,21 @@ export default async function handler(req, res) {
     if (req.method === 'OPTIONS') return res.status(200).end();
 
     try {
-        // OBTENER HISTORIAL COMPLETO (Visible para Master y Admin)
+        // OBTENER NOTIFICACIONES DEL DÍA PARA EL TABLERO (PC, TV Y TELÉFONOS)
+        if (req.method === 'GET' && req.query.notif_hoy === '1') {
+            const result = await pool.query(`
+                SELECT id, usuario, accion, modulo, resumen, cambios_detalle, fecha_hora,
+                       COALESCE(leido_notif, FALSE) AS leido_notif
+                FROM historial_movimientos
+                WHERE DATE(fecha_hora) = DATE(NOW() AT TIME ZONE 'America/Caracas')
+                  AND accion = 'CREAR'
+                  AND modulo IN ('Formaciones', 'Tareas')
+                ORDER BY fecha_hora DESC, id DESC
+            `);
+            return res.status(200).json(result.rows);
+        }
+
+        // OBTENER HISTORIAL COMPLETO PARA EL PANEL ADMIN
         if (req.method === 'GET') {
             const result = await pool.query(`
                 SELECT id, usuario, accion, modulo, resumen, cambios_detalle, fecha_hora
@@ -28,7 +42,24 @@ export default async function handler(req, res) {
             return res.status(200).json(result.rows);
         }
 
-        // REGISTRAR MOVIMIENTO MANUAL (Opcional)
+        // MARCAR GRUPO DE NOTIFICACIONES DEL DÍA COMO LEÍDAS EN TODOS LOS DISPOSITIVOS
+        if (req.method === 'PATCH') {
+            const { action } = req.body;
+            if (action === 'marcar_leidas') {
+                await pool.query(`
+                    UPDATE historial_movimientos
+                    SET leido_notif = TRUE
+                    WHERE DATE(fecha_hora) = DATE(NOW() AT TIME ZONE 'America/Caracas')
+                      AND accion = 'CREAR'
+                      AND modulo IN ('Formaciones', 'Tareas')
+                      AND COALESCE(leido_notif, FALSE) = FALSE
+                `);
+                return res.status(200).json({ message: 'Notificaciones del día marcadas como leídas.' });
+            }
+            return res.status(400).json({ error: 'Acción no válida.' });
+        }
+
+        // REGISTRAR MOVIMIENTO MANUAL
         if (req.method === 'POST') {
             const { usuario, accion, modulo, resumen, cambios_detalle } = req.body;
             if (!usuario || !accion || !modulo || !resumen) {
