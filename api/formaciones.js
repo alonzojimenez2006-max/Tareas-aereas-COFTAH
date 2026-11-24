@@ -18,39 +18,18 @@ async function registrarMovimiento(usuario, accion, modulo, resumen, cambiosDeta
     }
 }
 
-async function resolverTablaFormaciones() {
-    const tablasRes = await pool.query(`
-        SELECT table_name
-        FROM information_schema.tables
-        WHERE table_schema = 'public'
-          AND table_name IN ('formaciones', 'acciones_formacion', 'catalogo_formaciones', 'cursos')
+async function obtenerColumnaFormaciones() {
+    const colsRes = await pool.query(`
+        SELECT column_name, data_type
+        FROM information_schema.columns
+        WHERE table_schema = 'public' AND table_name = 'directorio_formaciones'
+        ORDER BY ordinal_position ASC
     `);
 
-    const candidatas = ['formaciones', 'acciones_formacion', 'catalogo_formaciones', 'cursos'];
-    const existentes = tablasRes.rows.map(r => r.table_name);
-    let tabla = candidatas.find(t => existentes.includes(t));
-
-    if (!tabla) {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS formaciones (
-                id SERIAL PRIMARY KEY,
-                nombre VARCHAR(255) NOT NULL
-            )
-        `);
-        return { tabla: 'formaciones', columna: 'nombre' };
-    }
-
-    const colsRes = await pool.query(`
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_schema = 'public' AND table_name = $1
-    `, [tabla]);
-
     const cols = colsRes.rows.map(r => r.column_name);
-    const colCandidatas = ['nombre', 'nombre_formacion', 'accion_formacion', 'titulo', 'descripcion'];
-    const columna = colCandidatas.find(c => cols.includes(c)) || cols.find(c => c !== 'id') || 'nombre';
-
-    return { tabla, columna };
+    const prioritarias = ['nombre', 'nombre_formacion', 'accion_formacion', 'titulo', 'descripcion'];
+    const colTexto = colsRes.rows.find(r => r.data_type.includes('char') || r.data_type === 'text');
+    return prioritarias.find(c => cols.includes(c)) || (colTexto && colTexto.column_name) || 'nombre';
 }
 
 export default async function handler(req, res) {
@@ -66,11 +45,11 @@ export default async function handler(req, res) {
     const usuarioActivo = req.body?.usuario_solicitante || req.headers['x-user-nombre'] || 'Admin';
 
     try {
-        const { tabla, columna } = await resolverTablaFormaciones();
+        const columna = await obtenerColumnaFormaciones();
 
         if (req.method === 'GET') {
             const result = await pool.query(
-                `SELECT id, "${columna}" AS nombre FROM "${tabla}" ORDER BY "${columna}" ASC`
+                `SELECT id, "${columna}" AS nombre FROM directorio_formaciones ORDER BY "${columna}" ASC`
             );
             return res.status(200).json(result.rows);
         }
@@ -80,7 +59,7 @@ export default async function handler(req, res) {
             if (!nombre) return res.status(400).json({ error: 'El nombre de la formación es obligatorio' });
 
             const result = await pool.query(
-                `INSERT INTO "${tabla}" ("${columna}") VALUES ($1) RETURNING id, "${columna}" AS nombre`,
+                `INSERT INTO directorio_formaciones ("${columna}") VALUES ($1) RETURNING id, "${columna}" AS nombre`,
                 [nombre.trim()]
             );
 
@@ -89,7 +68,7 @@ export default async function handler(req, res) {
                 'CREAR',
                 'Directorio Formaciones',
                 `Acción de formación agregada: ${nombre.trim()}`,
-                `Registrada en el catálogo permanente`
+                `Registrada en directorio permanente`
             );
 
             return res.status(201).json(result.rows[0]);
@@ -97,8 +76,11 @@ export default async function handler(req, res) {
 
         if (req.method === 'DELETE') {
             const { id } = req.body;
-            const prevRes = await pool.query(`SELECT id, "${columna}" AS nombre FROM "${tabla}" WHERE id = $1`, [id]);
-            await pool.query(`DELETE FROM "${tabla}" WHERE id = $1`, [id]);
+            const prevRes = await pool.query(
+                `SELECT id, "${columna}" AS nombre FROM directorio_formaciones WHERE id = $1`,
+                [id]
+            );
+            await pool.query(`DELETE FROM directorio_formaciones WHERE id = $1`, [id]);
 
             if (prevRes.rows.length > 0) {
                 await registrarMovimiento(
@@ -106,7 +88,7 @@ export default async function handler(req, res) {
                     'ELIMINAR',
                     'Directorio Formaciones',
                     `Acción de formación eliminada: ${prevRes.rows[0].nombre}`,
-                    `Eliminada del catálogo`
+                    `Eliminada del directorio permanente`
                 );
             }
 
@@ -116,6 +98,6 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Método no permitido' });
     } catch (error) {
         console.error('🚨 ERROR EN API FORMACIONES:', error);
-        return res.status(500).json({ error: 'Error interno en el servidor', detalle: error.message });
+        return res.status(500).json({ error: 'Error en formaciones', detalle: error.message });
     }
 }
