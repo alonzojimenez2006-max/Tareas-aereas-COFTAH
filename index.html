@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard COFTAH</title>
+    <link rel="icon" type="image/png" href="COFTAH.png.png">
+    <link rel="apple-touch-icon" href="COFTAH.png.png">
     <style>
         :root { --bg-principal: #0A192F; --bg-paneles: #112240; --texto-principal: #FFFFFF; --texto-secundario: #8892B0; --acento-amarillo: #FFD700; --urgencia-baja: #64FFDA; --urgencia-media: #FFD700; --urgencia-alta: #FF8C00; --urgencia-critica: #FF3366; --completado: #2E8B57; --en-proceso: #00BFFF; --cancelado: #4B5563; }
         
@@ -141,9 +143,11 @@
         .tag-formacion { background-color: rgba(255, 215, 0, 0.2); color: var(--acento-amarillo); }
         .tag-tarea { background-color: rgba(100, 255, 218, 0.18); color: var(--urgencia-baja); }
         .tag-nueva { background-color: var(--urgencia-critica); color: #FFF; margin-left: 6px; }
+        .tag-vista { background-color: rgba(255, 255, 255, 0.12); color: var(--texto-secundario); margin-left: 6px; }
         .notif-hora { font-size: 0.82rem; color: var(--texto-secundario); font-family: monospace; }
         .notif-titulo { font-weight: bold; font-size: 1.02rem; color: #FFFFFF; margin-bottom: 4px; }
         .notif-detalle { font-size: 0.92rem; color: var(--texto-secundario); line-height: 1.45; }
+        .notif-autor { font-size: 0.8rem; color: var(--acento-amarillo); margin-top: 6px; opacity: 0.9; }
         .notif-vacia { text-align: center; padding: 35px 15px; color: var(--texto-secundario); font-size: 1.05rem; }
         .notif-nota-24h { font-size: 0.82rem; color: var(--texto-secundario); }
 
@@ -494,7 +498,7 @@
                 <span id="icono-sync">🔄</span> Sincronizar
             </button>
 
-            <!-- BOTÓN DE NOTIFICACIONES CON BURBUJA CONTADORA -->
+            <!-- BOTÓN DE NOTIFICACIONES SINCRONIZADO EN TODOS LOS DISPOSITIVOS -->
             <button id="btn-notificaciones" class="btn-notificaciones" onclick="abrirModalNotificaciones()" title="Notificaciones del día">
                 <span>🔔</span>
                 <span class="texto-notif-btn">Notificaciones</span>
@@ -614,7 +618,7 @@
         </div>
     </div>
 
-    <!-- MODAL: CENTRO DE NOTIFICACIONES DEL DÍA (24 HORAS) -->
+    <!-- MODAL: CENTRO DE NOTIFICACIONES DEL DÍA (24 HORAS COMPARTIDAS) -->
     <div class="modal-overlay" id="modal-notificaciones">
         <div class="modal-content">
             <div class="modal-header">
@@ -623,7 +627,7 @@
             </div>
             <div class="modal-body" id="lista-notificaciones-body"></div>
             <div class="modal-footer">
-                <span class="notif-nota-24h">Se acumulan durante 24h y se reinician a las 12:00 AM.</span>
+                <span class="notif-nota-24h">Sincronizadas en todos los equipos • Se reinician a las 12:00 AM.</span>
                 <div class="modal-footer-btns">
                     <button type="button" class="btn-modal btn-modal-leidas" id="btn-marcar-leidas" onclick="marcarTodasNotificacionesLeidas()">Marcar como leídas</button>
                     <button type="button" class="btn-modal btn-modal-cancelar" onclick="cerrarModalNotificaciones()">Cerrar</button>
@@ -633,8 +637,6 @@
     </div>
 
     <script>
-        const NOTIF_STORAGE_KEY = 'coftah_notificaciones_dia_v1';
-
         document.body.addEventListener('click', function() {
             if ('speechSynthesis' in window) {
                 let msg = new SpeechSynthesisUtterance("");
@@ -669,58 +671,26 @@
             return `${yyyy}-${mm}-${dd}`;
         }
 
+        let fechaDiaActivo = obtenerFechaHoyStr();
+
         function inicializarFechas() {
             let hoy = new Date();
-            document.getElementById('filtro-dia').value = obtenerFechaHoyStr();
+            fechaDiaActivo = obtenerFechaHoyStr();
+            document.getElementById('filtro-dia').value = fechaDiaActivo;
             
             let textoF = hoy.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             document.getElementById('dia-actual-header').textContent = textoF.replace(',', '').replace(' de 20', ' del 20').toUpperCase();
         }
 
-        // ==================== SISTEMA DE NOTIFICACIONES DIARIAS (24H) ====================
-        function obtenerEstadoNotificaciones() {
-            const hoyStr = obtenerFechaHoyStr();
-            try {
-                const raw = localStorage.getItem(NOTIF_STORAGE_KEY);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    if (parsed && typeof parsed === 'object') {
-                        // Si ya cambió el día (pasaron las 24h), limpiar notificaciones del día anterior
-                        if (parsed.fecha !== hoyStr) {
-                            const reiniciado = {
-                                fecha: hoyStr,
-                                items: [],
-                                knownClientes: Array.isArray(parsed.knownClientes) ? parsed.knownClientes : null,
-                                knownTareas: Array.isArray(parsed.knownTareas) ? parsed.knownTareas : null
-                            };
-                            localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(reiniciado));
-                            return reiniciado;
-                        }
-                        return parsed;
-                    }
-                }
-            } catch (e) {}
-            return null;
-        }
-
-        function guardarEstadoNotificaciones(estado) {
-            try {
-                localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(estado));
-            } catch (e) {}
-        }
+        // ==================== SISTEMA DE NOTIFICACIONES COMPARTIDAS (NEON) ====================
+        let notificacionesHoy = [];
+        let notifsAnunciadasVoz = new Set();
 
         function actualizarBadgeNotificaciones() {
-            const estado = obtenerEstadoNotificaciones();
             const btn = document.getElementById('btn-notificaciones');
             const badge = document.getElementById('badge-notificaciones');
+            const noLeidas = notificacionesHoy.filter(n => !n.leido_notif).length;
 
-            if (!estado || !Array.isArray(estado.items)) {
-                badge.style.display = 'none';
-                btn.classList.remove('tiene-nuevas');
-                return;
-            }
-
-            const noLeidas = estado.items.filter(n => !n.leida).length;
             if (noLeidas > 0) {
                 badge.textContent = noLeidas;
                 badge.style.display = 'flex';
@@ -731,38 +701,39 @@
             }
         }
 
-        function verificarCambioDeDiaNotificaciones() {
-            const estado = obtenerEstadoNotificaciones();
-            if (estado) actualizarBadgeNotificaciones();
-        }
-
         function abrirModalNotificaciones() {
-            const estado = obtenerEstadoNotificaciones();
             const contenedor = document.getElementById('lista-notificaciones-body');
             const btnLeidas = document.getElementById('btn-marcar-leidas');
 
-            if (!estado || !estado.items || estado.items.length === 0) {
-                contenedor.innerHTML = `<div class="notif-vacia">No se han registrado nuevas formaciones ni funciones delegadas en el transcurso de hoy.</div>`;
+            if (!notificacionesHoy || notificacionesHoy.length === 0) {
+                contenedor.innerHTML = `<div class="notif-vacia">No se han registrado nuevas formaciones ni funciones delegadas hoy.</div>`;
                 btnLeidas.style.display = 'none';
             } else {
-                const hayNoLeidas = estado.items.some(n => !n.leida);
+                const hayNoLeidas = notificacionesHoy.some(n => !n.leido_notif);
                 btnLeidas.style.display = hayNoLeidas ? 'inline-block' : 'none';
 
-                contenedor.innerHTML = estado.items.map(n => {
-                    const esTarea = n.tipo === 'tarea';
+                contenedor.innerHTML = notificacionesHoy.map(n => {
+                    const esTarea = n.modulo === 'Tareas';
+                    const leida = Boolean(n.leido_notif);
                     const etiquetaTipo = esTarea
                         ? `<span class="notif-tag tag-tarea">Función Delegada</span>`
                         : `<span class="notif-tag tag-formacion">Nueva Formación</span>`;
-                    const etiquetaNueva = !n.leida ? `<span class="notif-tag tag-nueva">Nueva</span>` : '';
+                    const etiquetaEstado = !leida
+                        ? `<span class="notif-tag tag-nueva">Nueva</span>`
+                        : `<span class="notif-tag tag-vista">Leída</span>`;
+
+                    const d = parseFechaLocal(n.fecha_hora);
+                    const horaFmt = d.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
 
                     return `
-                        <div class="notif-item ${esTarea ? 'tipo-tarea' : ''} ${!n.leida ? 'no-leida' : ''}">
+                        <div class="notif-item ${esTarea ? 'tipo-tarea' : ''} ${!leida ? 'no-leida' : ''}">
                             <div class="notif-top">
-                                <div>${etiquetaTipo}${etiquetaNueva}</div>
-                                <span class="notif-hora">Recibida: ${n.horaDeteccion}</span>
+                                <div>${etiquetaTipo}${etiquetaEstado}</div>
+                                <span class="notif-hora">${horaFmt}</span>
                             </div>
-                            <div class="notif-titulo">${n.titulo}</div>
-                            <div class="notif-detalle">${n.detalle}</div>
+                            <div class="notif-titulo">${n.resumen}</div>
+                            ${n.cambios_detalle ? `<div class="notif-detalle">${n.cambios_detalle}</div>` : ''}
+                            <div class="notif-autor">Registrado por: ${n.usuario}</div>
                         </div>
                     `;
                 }).join('');
@@ -775,14 +746,34 @@
             document.getElementById('modal-notificaciones').classList.remove('active');
         }
 
-        function marcarTodasNotificacionesLeidas() {
-            const estado = obtenerEstadoNotificaciones();
-            if (!estado || !estado.items) return;
+        async function marcarTodasNotificacionesLeidas() {
+            const btnLeidas = document.getElementById('btn-marcar-leidas');
+            btnLeidas.textContent = 'Marcando...';
+            btnLeidas.disabled = true;
 
-            estado.items = estado.items.map(n => ({ ...n, leida: true }));
-            guardarEstadoNotificaciones(estado);
-            actualizarBadgeNotificaciones();
-            abrirModalNotificaciones();
+            try {
+                const res = await fetch('/api/movimientos', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'marcar_leidas' })
+                });
+
+                if (res.ok) {
+                    notificacionesHoy = notificacionesHoy.map(n => {
+                        notifsAnunciadasVoz.add(n.id);
+                        return { ...n, leido_notif: true };
+                    });
+                    actualizarBadgeNotificaciones();
+                    abrirModalNotificaciones();
+                } else {
+                    alert('No se pudieron marcar como leídas.');
+                }
+            } catch (error) {
+                alert('Error de conexión al actualizar notificaciones.');
+            } finally {
+                btnLeidas.textContent = 'Marcar como leídas';
+                btnLeidas.disabled = false;
+            }
         }
 
         // ==================== CARGA Y SINCRONIZACIÓN DE DATOS ====================
@@ -802,11 +793,15 @@
                 const conf = { cache: 'no-store', headers: { 'Pragma': 'no-cache', 'Cache-Control': 'no-cache' } };
                 const ts = new Date().getTime();
                 
-                const resClientes = await fetch('/api/clientes?t=' + ts, conf);
-                if(resClientes.ok) clientes = await resClientes.json();
-                
-                const resTareas = await fetch('/api/tareas?t=' + ts, conf);
-                if(resTareas.ok) tareas = await resTareas.json();
+                const [resClientes, resTareas, resNotifs] = await Promise.all([
+                    fetch('/api/clientes?t=' + ts, conf),
+                    fetch('/api/tareas?t=' + ts, conf),
+                    fetch('/api/movimientos?notif_hoy=1&t=' + ts, conf)
+                ]);
+
+                if (resClientes.ok) clientes = await resClientes.json();
+                if (resTareas.ok) tareas = await resTareas.json();
+                if (resNotifs.ok) notificacionesHoy = await resNotifs.json();
                 
                 const facilitadoresUnicos = [...new Set(clientes.map(c => c.facilitador))].sort();
                 const selectFac = document.getElementById('filtro-facilitador');
@@ -829,88 +824,32 @@
                 responsablesUnicos.forEach(r => selectResp.add(new Option(r, r)));
                 if (responsablesUnicos.includes(valorActualResp)) selectResp.value = valorActualResp;
 
-                // DETECCIÓN DE NOVEDADES PARA NOTIFICACIONES DEL DÍA
-                const hoyStr = obtenerFechaHoyStr();
-                const horaDeteccion = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
-                let estadoNotif = obtenerEstadoNotificaciones();
-
-                if (!estadoNotif || !Array.isArray(estadoNotif.knownClientes) || !Array.isArray(estadoNotif.knownTareas)) {
-                    // Primera vez en este navegador: inicializamos memoria sin inundar con historial viejo
-                    estadoNotif = {
-                        fecha: hoyStr,
-                        items: [],
-                        knownClientes: clientes.map(c => c.id),
-                        knownTareas: tareas.map(t => t.id)
-                    };
-                    guardarEstadoNotificaciones(estadoNotif);
+                // GESTIÓN DE VOZ:
+                // - Al abrir la página por primera vez, se cargan las notificaciones en la campana sin lectura de voz.
+                // - Al pulsar "Sincronizar", solo se leen en voz las que siguen NO LEÍDAS en Neon y aún no se han anunciado.
+                // - Si ya fueron marcadas como leídas en otro dispositivo (leido_notif = true), solo se muestran y la voz NO las lee.
+                if (esPrimeraCarga) {
+                    notificacionesHoy.forEach(n => notifsAnunciadasVoz.add(n.id));
+                    esPrimeraCarga = false;
                 } else {
-                    const setClientesConocidos = new Set(estadoNotif.knownClientes);
-                    const setTareasConocidas = new Set(estadoNotif.knownTareas);
-                    let huboNuevas = false;
-
-                    clientes.forEach(c => {
-                        if (!setClientesConocidos.has(c.id)) {
-                            let d = parseFechaLocal(c.fecha_atencion);
-                            let fechaCorta = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-                            let horaCurso = d.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
-                            let fechaTextoVoz = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
-
-                            estadoNotif.items.unshift({
-                                idUnico: `cliente-${c.id}`,
-                                tipo: 'formacion',
-                                titulo: `${c.nombre_cliente} — ${c.accion_formacion}`,
-                                detalle: `Fecha: ${fechaCorta} (${horaCurso}) | Facilitador: ${c.facilitador} | Lugar: ${c.lugar_atencion}, ${c.ciudad} | Part.: ${c.participantes || 0}`,
-                                horaDeteccion: horaDeteccion,
-                                leida: false
-                            });
-
-                            setClientesConocidos.add(c.id);
-                            huboNuevas = true;
-
-                            if (!esPrimeraCarga) {
-                                hablar(`Se ha subido una nueva formación al cliente ${c.nombre_cliente} de ${c.participantes || 0} participantes de la acción de formación ${c.accion_formacion} el día ${fechaTextoVoz}.`);
-                            }
+                    notificacionesHoy.forEach(n => {
+                        if (n.leido_notif) {
+                            notifsAnunciadasVoz.add(n.id);
+                        } else if (!notifsAnunciadasVoz.has(n.id)) {
+                            const textoVoz = n.modulo === 'Tareas'
+                                ? `Nueva función delegada. ${n.resumen}.`
+                                : `Nueva formación registrada. ${n.resumen}.`;
+                            hablar(textoVoz);
+                            notifsAnunciadasVoz.add(n.id);
                         }
                     });
-
-                    tareas.forEach(t => {
-                        if (!setTareasConocidas.has(t.id)) {
-                            let dLim = parseFechaLocal(t.fecha_limite);
-                            let horaLim = dLim.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
-                            let contextoVinculo = t.nombre_cliente
-                                ? `Para empresa: ${t.nombre_cliente} (${t.accion_formacion || ''}) | `
-                                : '';
-
-                            estadoNotif.items.unshift({
-                                idUnico: `tarea-${t.id}`,
-                                tipo: 'tarea',
-                                titulo: `Asignada a ${t.responsable}`,
-                                detalle: `${t.descripcion} — ${contextoVinculo}Límite: ${horaLim} | Urgencia: ${(t.urgencia || 'rutina').toUpperCase()}`,
-                                horaDeteccion: horaDeteccion,
-                                leida: false
-                            });
-
-                            setTareasConocidas.add(t.id);
-                            huboNuevas = true;
-
-                            if (!esPrimeraCarga) {
-                                let msj = t.nombre_cliente
-                                    ? `Se le dio una nueva función a ${t.responsable} para la empresa ${t.nombre_cliente} para la formación ${t.accion_formacion || ''} y la tarea es: ${t.descripcion}.`
-                                    : `Se le dio una nueva función a ${t.responsable} y la tarea es: ${t.descripcion}.`;
-                                hablar(msj);
-                            }
-                        }
-                    });
-
-                    if (huboNuevas) {
-                        estadoNotif.knownClientes = Array.from(setClientesConocidos);
-                        estadoNotif.knownTareas = Array.from(setTareasConocidas);
-                        guardarEstadoNotificaciones(estadoNotif);
-                    }
                 }
 
-                esPrimeraCarga = false;
                 actualizarBadgeNotificaciones();
+                if (document.getElementById('modal-notificaciones').classList.contains('active')) {
+                    abrirModalNotificaciones();
+                }
+
                 renderizarVistas();
                 
                 let horaF = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute:'2-digit' });
@@ -1263,8 +1202,17 @@
         }
 
         function verificarTiempos() {
-            // Revisa también localmente si cambió el día para limpiar notificaciones de 24h sin gastar consultas
-            verificarCambioDeDiaNotificaciones();
+            // Reinicio automático a las 12:00 AM sin gastar consultas a Neon
+            const hoyAhora = obtenerFechaHoyStr();
+            if (hoyAhora !== fechaDiaActivo) {
+                fechaDiaActivo = hoyAhora;
+                notificacionesHoy = [];
+                notifsAnunciadasVoz.clear();
+                actualizarBadgeNotificaciones();
+                if (document.getElementById('modal-notificaciones').classList.contains('active')) {
+                    abrirModalNotificaciones();
+                }
+            }
 
             const ahora = new Date();
             tareas.forEach(t => {
