@@ -48,7 +48,7 @@ async function registrarMovimiento(usuario, accion, modulo, resumen, cambiosDeta
 
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-user-nombre, x-user-rol');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -56,12 +56,13 @@ export default async function handler(req, res) {
 
     if (req.method === 'OPTIONS') return res.status(200).end();
 
-    const usuarioActivo = req.body?.usuario_solicitante || req.headers['x-user-nombre'] || 'Admin';
+    const usuarioActivo = req.body?.usuario_solicitante || req.headers['x-user-nombre'] || 'Tablero Operativo';
 
     try {
         if (req.method === 'GET') {
             const result = await pool.query(`
                 SELECT c.*, 
+                       COALESCE(c.marcador_color, 'amarillo') AS marcador_color,
                        COALESCE(d.logo_url, c.logo_url, 'COFTAH.png.png') AS logo_url_final,
                        p.foto_url AS facilitador_foto
                 FROM clientes_agenda c
@@ -84,7 +85,6 @@ export default async function handler(req, res) {
             const duracionFinal = duracion_curso || '-';
             const grupoId = `GRP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
-            // VERIFICACIÓN DE CHOQUE DE FECHAS
             for (let fecha of fechas_atencion) {
                 const validacionTurno = await pool.query(
                     `SELECT id FROM clientes_agenda WHERE facilitador = $1 AND DATE(fecha_atencion) = DATE($2)`,
@@ -103,8 +103,8 @@ export default async function handler(req, res) {
             let registrosCreados = [];
             for (let fecha of fechas_atencion) {
                 const result = await pool.query(
-                    `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso, grupo_id) 
-                    VALUES ($1, 'default.png', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+                    `INSERT INTO clientes_agenda (fecha_atencion, logo_url, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso, grupo_id, marcador_color) 
+                    VALUES ($1, 'default.png', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'amarillo') RETURNING *`,
                     [fecha, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, idFacilitador, estatus, cantParticipantes, duracionFinal, grupoId]
                 );
                 registrosCreados.push(result.rows[0]);
@@ -121,6 +121,38 @@ export default async function handler(req, res) {
             return res.status(201).json(registrosCreados);
         }
 
+        // ACTUALIZAR COLOR DEL MARCADOR DESDE EL TABLERO (AMARILLO / AZUL / VERDE)
+        if (req.method === 'PATCH') {
+            const { id, marcador_color } = req.body;
+            const coloresValidos = ['amarillo', 'azul', 'verde'];
+
+            if (!id || !coloresValidos.includes(marcador_color)) {
+                return res.status(400).json({ error: 'ID o color de marcador no válido.' });
+            }
+
+            const prevRes = await pool.query('SELECT * FROM clientes_agenda WHERE id = $1', [id]);
+            if (prevRes.rows.length === 0) {
+                return res.status(404).json({ error: 'Formación no encontrada.' });
+            }
+            const prev = prevRes.rows[0];
+            const colorAnterior = (prev.marcador_color || 'amarillo').toUpperCase();
+
+            const result = await pool.query(
+                `UPDATE clientes_agenda SET marcador_color = $1 WHERE id = $2 RETURNING *`,
+                [marcador_color, id]
+            );
+
+            await registrarMovimiento(
+                usuarioActivo,
+                'EDITAR',
+                'Formaciones',
+                `Marcador actualizado: ${prev.nombre_cliente} - ${prev.accion_formacion} (${formatearFechaISO(prev.fecha_atencion)})`,
+                `Color de marcador: ${colorAnterior} → ${marcador_color.toUpperCase()}`
+            );
+
+            return res.status(200).json(result.rows[0]);
+        }
+
         if (req.method === 'PUT') {
             const { id, grupo_id, aplicar_grupo, fecha_atencion, nombre_cliente, lugar_atencion, ciudad, accion_formacion, facilitador, facilitador_id, estatus, participantes, duracion_curso, forzar } = req.body;
             
@@ -130,7 +162,6 @@ export default async function handler(req, res) {
             const idFacilitador = parseInt(facilitador_id) || null;
             const duracionFinal = duracion_curso || '-';
 
-            // EDICIÓN EN BLOQUE (TODOS LOS DÍAS DEL GRUPO)
             if (aplicar_grupo && grupo_id) {
                 const previoRes = await pool.query(
                     `SELECT * FROM clientes_agenda WHERE grupo_id = $1 ORDER BY fecha_atencion ASC`,
@@ -200,7 +231,6 @@ export default async function handler(req, res) {
                 return res.status(200).json(result.rows);
             }
 
-            // EDICIÓN INDIVIDUAL (UN SOLO DÍA)
             const previoIndivRes = await pool.query('SELECT * FROM clientes_agenda WHERE id = $1', [id]);
             if (previoIndivRes.rows.length === 0) {
                 return res.status(404).json({ error: 'Registro no encontrado en la base de datos' });
