@@ -104,6 +104,7 @@
         .btn-marcador:active { transform: scale(0.95); }
 
         .marcador-amarillo { background-color: #FFD700; box-shadow: 0 0 10px rgba(255, 215, 0, 0.75); }
+        .marcador-naranja { background-color: #FF8C00; box-shadow: 0 0 10px rgba(255, 140, 0, 0.8); }
         .marcador-azul { background-color: #00BFFF; box-shadow: 0 0 10px rgba(0, 191, 255, 0.8); }
         .marcador-verde { background-color: #2ECC71; box-shadow: 0 0 10px rgba(46, 204, 113, 0.8); }
 
@@ -1053,7 +1054,7 @@
                     let fechaCorta = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getFullYear()).slice(-2)}`;
                     let horaTexto = d.toLocaleString('en-US', { hour: '2-digit', minute:'2-digit', hour12: true });
 
-                    let colorMarcador = ['amarillo', 'azul', 'verde'].includes(c.marcador_color) ? c.marcador_color : 'amarillo';
+                    let colorMarcador = ['amarillo', 'naranja', 'azul', 'verde'].includes(c.marcador_color) ? c.marcador_color : 'amarillo';
                     let idPopover = `pop-${prefijoVista}-${c.id}`;
 
                     return `<div class="fila-item grid-clientes ${claseFilaExtra}">
@@ -1071,6 +1072,7 @@
                             <button type="button" class="btn-marcador marcador-${colorMarcador}" title="Cambiar color de marcador" onclick="abrirSelectorMarcador(event, '${idPopover}')"></button>
                             <div id="${idPopover}" class="popover-marcador" onclick="event.stopPropagation()">
                                 <button type="button" class="opcion-color-btn marcador-amarillo ${colorMarcador === 'amarillo' ? 'seleccionado' : ''}" title="Amarillo" onclick="cambiarColorMarcador(event, ${c.id}, 'amarillo')"></button>
+                                <button type="button" class="opcion-color-btn marcador-naranja ${colorMarcador === 'naranja' ? 'seleccionado' : ''}" title="Naranja" onclick="cambiarColorMarcador(event, ${c.id}, 'naranja')"></button>
                                 <button type="button" class="opcion-color-btn marcador-azul ${colorMarcador === 'azul' ? 'seleccionado' : ''}" title="Azul" onclick="cambiarColorMarcador(event, ${c.id}, 'azul')"></button>
                                 <button type="button" class="opcion-color-btn marcador-verde ${colorMarcador === 'verde' ? 'seleccionado' : ''}" title="Verde" onclick="cambiarColorMarcador(event, ${c.id}, 'verde')"></button>
                             </div>
