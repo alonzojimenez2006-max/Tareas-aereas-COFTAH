@@ -121,7 +121,7 @@ export default async function handler(req, res) {
             return res.status(201).json(registrosCreados);
         }
 
-        // ACTUALIZAR COLOR DEL MARCADOR DESDE EL TABLERO (AMARILLO / NARANJA / AZUL / VERDE)
+        // ACTUALIZAR COLOR DEL MARCADOR DESDE EL TABLERO (INDIVIDUAL O POR CONJUNTO/GRUPO)
         if (req.method === 'PATCH') {
             const { id, marcador_color } = req.body;
             const coloresValidos = ['amarillo', 'naranja', 'azul', 'verde'];
@@ -137,20 +137,32 @@ export default async function handler(req, res) {
             const prev = prevRes.rows[0];
             const colorAnterior = (prev.marcador_color || 'amarillo').toUpperCase();
 
-            const result = await pool.query(
-                `UPDATE clientes_agenda SET marcador_color = $1 WHERE id = $2 RETURNING *`,
-                [marcador_color, id]
-            );
+            const result = prev.grupo_id
+                ? await pool.query(
+                    `UPDATE clientes_agenda SET marcador_color = $1 WHERE grupo_id = $2 RETURNING *`,
+                    [marcador_color, prev.grupo_id]
+                )
+                : await pool.query(
+                    `UPDATE clientes_agenda SET marcador_color = $1 WHERE id = $2 RETURNING *`,
+                    [marcador_color, id]
+                );
+
+            const resumenMov = prev.grupo_id && result.rowCount > 1
+                ? `Marcador actualizado en bloque (${result.rowCount} días): ${prev.nombre_cliente} - ${prev.accion_formacion}`
+                : `Marcador actualizado: ${prev.nombre_cliente} - ${prev.accion_formacion} (${formatearFechaISO(prev.fecha_atencion)})`;
 
             await registrarMovimiento(
                 usuarioActivo,
                 'EDITAR',
                 'Formaciones',
-                `Marcador actualizado: ${prev.nombre_cliente} - ${prev.accion_formacion} (${formatearFechaISO(prev.fecha_atencion)})`,
+                resumenMov,
                 `Color de marcador: ${colorAnterior} → ${marcador_color.toUpperCase()}`
             );
 
-            return res.status(200).json(result.rows[0]);
+            return res.status(200).json({
+                actualizados: result.rows,
+                grupo_id: prev.grupo_id || null
+            });
         }
 
         if (req.method === 'PUT') {
