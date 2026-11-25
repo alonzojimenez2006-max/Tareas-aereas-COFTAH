@@ -746,7 +746,7 @@
             document.getElementById('dia-actual-header').textContent = textoF.replace(',', '').replace(' de 20', ' del 20').toUpperCase();
         }
 
-        // ==================== MARCADOR INTERACTIVO DE COLOR ====================
+        // ==================== MARCADOR INTERACTIVO DE COLOR (INDIVIDUAL O CONJUNTO) ====================
         function abrirSelectorMarcador(event, idPopover) {
             event.stopPropagation();
             const actual = document.getElementById(idPopover);
@@ -765,8 +765,17 @@
             const obj = clientes.find(c => c.id === idCliente);
             if (!obj || obj.marcador_color === nuevoColor) return;
 
-            const colorPrevio = obj.marcador_color || 'amarillo';
-            obj.marcador_color = nuevoColor;
+            // Si nació junto a otras formaciones (mismo grupo_id), actualiza todo el conjunto
+            const afectados = obj.grupo_id
+                ? clientes.filter(c => c.grupo_id === obj.grupo_id)
+                : [obj];
+
+            const coloresPrevios = afectados.map(item => ({
+                item,
+                color: item.marcador_color || 'amarillo'
+            }));
+
+            afectados.forEach(item => { item.marcador_color = nuevoColor; });
             renderizarVistas();
 
             try {
@@ -781,12 +790,12 @@
                 });
 
                 if (!res.ok) {
-                    obj.marcador_color = colorPrevio;
+                    coloresPrevios.forEach(({ item, color }) => { item.marcador_color = color; });
                     renderizarVistas();
                     alert('No se pudo guardar el color del marcador.');
                 }
             } catch (error) {
-                obj.marcador_color = colorPrevio;
+                coloresPrevios.forEach(({ item, color }) => { item.marcador_color = color; });
                 renderizarVistas();
                 alert('Error de conexión al actualizar el marcador.');
             }
