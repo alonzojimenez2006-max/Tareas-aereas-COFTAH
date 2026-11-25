@@ -121,10 +121,10 @@ export default async function handler(req, res) {
             return res.status(201).json(registrosCreados);
         }
 
-        // ACTUALIZAR COLOR DEL MARCADOR DESDE EL TABLERO (AMARILLO / AZUL / VERDE)
+        // ACTUALIZAR COLOR DEL MARCADOR DESDE EL TABLERO (AMARILLO / NARANJA / AZUL / VERDE)
         if (req.method === 'PATCH') {
             const { id, marcador_color } = req.body;
-            const coloresValidos = ['amarillo', 'azul', 'verde'];
+            const coloresValidos = ['amarillo', 'naranja', 'azul', 'verde'];
 
             if (!id || !coloresValidos.includes(marcador_color)) {
                 return res.status(400).json({ error: 'ID o color de marcador no válido.' });
